@@ -23,7 +23,7 @@ import Foundation
 /// JS `Set` with object identity: insertion-ordered, which the reference `FoldedModel.js`
 /// deliberately uses so the fold walk is deterministic (Java `HashSet` order would be
 /// identity-hash order; the JS port kept insertion order — see fold-audit.md §4).
-struct IdentityOrderedSet<Element: AnyObject> {
+struct FoldedIdentityOrderedSet<Element: AnyObject> {
     private var items: [Element]
     private var ids: Set<ObjectIdentifier>
 
@@ -65,7 +65,7 @@ struct IdentityOrderedSet<Element: AnyObject> {
 
 /// JS `Map` with object identity keys and insertion-order iteration (the reference's
 /// `valueToNodeMap`/`counts` in `DirectedGraph`); removal keeps the remaining insertion order.
-struct IdentityOrderedMap<Key: AnyObject, Value> {
+struct FoldedIdentityOrderedMap<Key: AnyObject, Value> {
     private var keys: [Key]
     private var values: [Value]
     private var indices: [ObjectIdentifier: Int]
@@ -293,8 +293,8 @@ public final class FoldedModel {
         let value: T
         var bottomToTopHeight = 0
         var topToBottomHeight = 0
-        var parents = IdentityOrderedSet<DirectedNode<T>>()
-        var children = IdentityOrderedSet<DirectedNode<T>>()
+        var parents = FoldedIdentityOrderedSet<DirectedNode<T>>()
+        var children = FoldedIdentityOrderedSet<DirectedNode<T>>()
 
         init(_ value: T) {
             self.value = value
@@ -355,7 +355,7 @@ public final class FoldedModel {
         /// along parents. Nodes left over from a cycle are broken by fewest unsolved neighbours.
         func getDrawOrder(_ z: Bool) -> [T] {
             var result: [T] = []
-            var counts = IdentityOrderedMap<DirectedNode<T>, IdentityOrderedSet<DirectedNode<T>>>()
+            var counts = FoldedIdentityOrderedMap<DirectedNode<T>, FoldedIdentityOrderedSet<DirectedNode<T>>>()
             var roots: [DirectedNode<T>] = []
             for node in nodes {
                 let unsolved = z ? node.children : node.parents
@@ -414,7 +414,7 @@ public final class FoldedModel {
         func getTopologicalSort(_ z: Bool) -> [DirectedNode<T>] {
             var result: [DirectedNode<T>] = []
             var stack: [DirectedNode<T>] = []
-            var counts = IdentityOrderedMap<DirectedNode<T>, IdentityOrderedSet<DirectedNode<T>>>()
+            var counts = FoldedIdentityOrderedMap<DirectedNode<T>, FoldedIdentityOrderedSet<DirectedNode<T>>>()
             for node in nodes {
                 let unsolved = z ? node.children : node.parents
                 if unsolved.isEmpty {
@@ -499,7 +499,7 @@ public final class FoldedModel {
     // MARK: - foldWithOverlap
 
     public func foldWithOverlap() {
-        var remaining = IdentityOrderedSet<OriFace>()
+        var remaining = FoldedIdentityOrderedSet<OriFace>()
         for face in mFaces { remaining.add(face) }
         var graphs: [DirectedGraph<OriFace>] = []
         while !remaining.isEmpty {
@@ -567,12 +567,12 @@ public final class FoldedModel {
         clear()
         let vertexList = HashList<OriVertex>()       // Java: HashList<OriVertex>, value semantics
         var halfEdgeMap: [String: Int] = [:]         // Java: HashMap<OriHalfEdge,Integer> (equals on vertices)
-        var faceEdgeSets: [IdentityOrderedSet<OriHalfEdge>] = []   // Java: ArrayList<HashSet<OriHalfEdge>>
+        var faceEdgeSets: [FoldedIdentityOrderedSet<OriHalfEdge>] = []   // Java: ArrayList<HashSet<OriHalfEdge>>
         var faceEdgeOrders: [[OriHalfEdge]] = []     // Java HashSet iteration order of each face's edges
 
         for polygon in facesCheck {
             let face = OriFace(mFaces.count)
-            var edgeSet = IdentityOrderedSet<OriHalfEdge>()
+            var edgeSet = FoldedIdentityOrderedSet<OriHalfEdge>()
             var edgeList: [OriHalfEdge] = []
             let size = polygon.points.count
             for i in 0..<size {
@@ -618,8 +618,8 @@ public final class FoldedModel {
             }
         }
 
-        var boundary = IdentityOrderedSet<OriFace>()    // Java: hashSet2 (faces still on the frontier)
-        var unprocessed = IdentityOrderedSet<OriFace>() // Java: hashSet3
+        var boundary = FoldedIdentityOrderedSet<OriFace>()    // Java: hashSet2 (faces still on the frontier)
+        var unprocessed = FoldedIdentityOrderedSet<OriFace>() // Java: hashSet3
         for face in mFaces { unprocessed.add(face) }
         guard let seed = unprocessed.first else { return }
         for halfEdge in seed.halfEdges {
@@ -637,7 +637,7 @@ public final class FoldedModel {
             var chosen: OriHalfEdge?
 
             if let face = currentFace {
-                var consumed = IdentityOrderedSet<OriHalfEdge>()
+                var consumed = FoldedIdentityOrderedSet<OriHalfEdge>()
                 let edgeIndex = face.index
                 let edges = faceEdgeSets[edgeIndex]
                 for halfEdge in faceEdgeOrders[edgeIndex] {
@@ -672,10 +672,10 @@ public final class FoldedModel {
                     continue
                 }
             } else {
-                var finished = IdentityOrderedSet<OriFace>()
+                var finished = FoldedIdentityOrderedSet<OriFace>()
                 for boundaryFace in boundary.array() {
                     if faceEdgeSets[boundaryFace.index].count > 0 {
-                        var consumed = IdentityOrderedSet<OriHalfEdge>()
+                        var consumed = FoldedIdentityOrderedSet<OriHalfEdge>()
                         for halfEdge in faceEdgeOrders[boundaryFace.index] {
                             if !faceEdgeSets[boundaryFace.index].contains(halfEdge) { continue }
                             consumed.add(halfEdge)

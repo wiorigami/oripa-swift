@@ -76,6 +76,12 @@ public final class GLDataCpLinesTypedWidth {
         return GLDataCpLinesTypedWidth(vertexPosition, vertexAngleDeg, lineDistance, vertexType, drawOrder)
     }
 
+    /// `getRenderDataSplit(OriLine, boolean z, boolean z2)`: the JS reference wraps a single
+    /// line in a one-element list before splitting.
+    public static func getRenderDataSplit(_ line: OriLine, _ z: Bool, _ z2: Bool) -> [GLDataCpLinesTypedWidth] {
+        getRenderDataSplit([line], z, z2)
+    }
+
     /// `getRenderDataSplit(Iterable<OriLine>, boolean z, boolean z2)`:
     /// split into at most 6 GL shape sets (16-bit index buffers on Android).
     public static func getRenderDataSplit(_ iterable: [OriLine], _ z: Bool, _ z2: Bool) -> [GLDataCpLinesTypedWidth] {

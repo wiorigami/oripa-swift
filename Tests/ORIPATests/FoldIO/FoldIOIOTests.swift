@@ -18,6 +18,7 @@ enum FoldIOIOTests {
             TestSuite("FoldIO.IO.malformedInput") { h in try malformedInput(h) },
             TestSuite("FoldIO.IO.loaderOpxcToGL") { h in try loaderOpxcToGL(h) },
             TestSuite("FoldIO.IO.exporterNaming") { h in try exporterNaming(h) },
+            TestSuite("FoldIO.IO.miscCoverage") { h in try miscCoverage(h) },
         ]
     }
 
@@ -335,6 +336,58 @@ enum FoldIOIOTests {
         h.expectEqual(exporter.getNewInternalFile("project_data"), "project_data", "getNewInternalFile dir only")
         h.expectEqual(exporter.getNewCopyInternalFile("project_data", "x"),
                       "project_data/x-copy", "getNewCopyInternalFile")
+    }
+
+    // MARK: - miscellaneous coverage
+
+    private static func miscCoverage(_ h: TestHarness) throws {
+        // FoldOverlapParams vertex-type constants (Java public static final byte).
+        h.expectEqual(FoldOverlapParams.TYPE_FACE_FRONT, 0, "FoldOverlapParams.TYPE_FACE_FRONT")
+        h.expectEqual(FoldOverlapParams.TYPE_FACE_BACK, 1, "FoldOverlapParams.TYPE_FACE_BACK")
+        h.expectEqual(FoldOverlapParams.TYPE_LINE, 2, "FoldOverlapParams.TYPE_LINE")
+        h.expectEqual(FoldOverlapParams.TYPE_SHADOW_INNER, 3, "FoldOverlapParams.TYPE_SHADOW_INNER")
+        h.expectEqual(FoldOverlapParams.TYPE_SHADOW_OUTER, 4, "FoldOverlapParams.TYPE_SHADOW_OUTER")
+
+        // FileUtil last-modified text helpers (locale-formatted, Android DateFormat replacement).
+        h.expect(FileUtil.getLastModifiedText(1_700_000_000_000).isEmpty == false,
+                 "getLastModifiedText returns text")
+        h.expect(FileUtil.getLastModifiedTextShort(1_700_000_000_000).isEmpty == false,
+                 "getLastModifiedTextShort returns text")
+
+        // detectFileType content sniffing.
+        h.expectEqual(OripaIO.detectFileType(OripaIO.textToBytes(
+            "<?xml version='1.0'?><java class=\"java.beans.XMLDecoder\"></java>")),
+                      FileType.opx, "detectFileType opx")
+        h.expectEqual(OripaIO.detectFileType(OripaIO.textToBytes("<data><line/></data>")),
+                      FileType.opxc, "detectFileType opxc")
+        h.expectEqual(OripaIO.detectFileType(OripaIO.textToBytes("1 0 0 1 1")),
+                      FileType.cp, "detectFileType cp")
+
+        // PNG export is owned by the UI layer: the IO facade rejects it.
+        var pngError = ""
+        do {
+            _ = try OripaIO.exportCreasePattern(.png, CreasePattern())
+        } catch {
+            pngError = String(describing: error)
+        }
+        h.expect(pngError.contains("PNG"), "exportCreasePattern(.png) throws a clear error: \(pngError)")
+
+        // Every text format agrees on the line set (no flat lines in this CP).
+        let cp = buildCreasePatternSegmented()
+        let viaOpx = try OripaIO.loadCreasePattern(data: OripaIO.exportOpx(cp), fileType: .opx)
+        let viaOpxc = try OripaIO.loadCreasePattern(data: OripaIO.exportOpxc(cp), fileType: .opxc)
+        let viaCp = try OripaIO.loadCreasePattern(data: OripaIO.exportCp(cp), fileType: .cp)
+        FoldIOTestSupport.expectLines(h, FoldIOTestSupport.dumpLines(viaOpx),
+                                      FoldIOTestSupport.dumpLines(cp), "opx vs source")
+        FoldIOTestSupport.expectLines(h, FoldIOTestSupport.dumpLines(viaOpxc),
+                                      FoldIOTestSupport.dumpLines(cp), "opxc vs source")
+        FoldIOTestSupport.expectLines(h, FoldIOTestSupport.dumpLines(viaCp),
+                                      FoldIOTestSupport.dumpLines(cp), "cp vs source")
+
+        // UTF-8 byte/text helpers round-trip (Java String <-> byte[]).
+        let text = "line type 2: -200.0 0.5 é"
+        h.expectEqual(OripaIO.bytesToText(OripaIO.textToBytes(text)), text, "textToBytes/bytesToText")
+        h.expectEqual(OripaIO.bytesToText(Data([0x61, 0x62])), "ab", "bytesToText ascii")
     }
 
     // MARK: - CP builders (mirror the JS generator exactly)

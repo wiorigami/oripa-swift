@@ -87,8 +87,11 @@ call("getDefaultIntKey", [-1.234567], [G.getDefaultIntKey(-1.234567)]);
 call("getIntKey", [10, 0.55], [G.getIntKey(10, 0.55)]);
 
 const convex = [new P(0, 0), new P(10, 0), new P(10, 10), new P(0, 10)];
-call("isPointInConvexPolygon", [100000, 0, 5, 5, 100, 5], [b(G.isPointInConvexPolygon(100000, false, new P(5, 5), new P(100, 5), convex))]);
-call("isPointInConvexPolygon", [100000, 0, 5, 5, 3, 3], [b(G.isPointInConvexPolygon(100000, false, new P(5, 5), new P(3, 3), convex))]);
+const convexArgs = convex.reduce(function (acc, p) { return acc.concat([p.x, p.y]); }, []);
+call("isPointInConvexPolygon", [100000, 0, 5, 5, 100, 5].concat(convexArgs),
+    [b(G.isPointInConvexPolygon(100000, false, new P(5, 5), new P(100, 5), convex))]);
+call("isPointInConvexPolygon", [100000, 0, 5, 5, 3, 3].concat(convexArgs),
+    [b(G.isPointInConvexPolygon(100000, false, new P(5, 5), new P(3, 3), convex))]);
 
 const poly1 = [new P(0, 0), new P(10, 0), new P(10, 10), new P(0, 10)];
 const poly2 = [new P(-5, 5), new P(5, 5), new P(5, 15), new P(-5, 15)];
@@ -195,14 +198,19 @@ const minMaxDouble = {
         new O.MinMaxDouble(0, 0, 10, 20).getMaxHalfSize(),
     ],
 };
+const mmfAssigned = new O.MinMaxFloat();
+mmfAssigned.minX = 0;
+mmfAssigned.minY = 0;
+mmfAssigned.maxX = 10;
+mmfAssigned.maxY = 20;
 const minMaxFloat = {
     empty: new O.MinMaxFloat().toArray(),
     readArray: O.MinMaxFloat.readArray([-1.5, -2.5, 5.5, 6.5]).toArray(),
     centers: [
-        new O.MinMaxFloat(0, 0, 10, 20).getCenterX(),
-        new O.MinMaxFloat(0, 0, 10, 20).getCenterY(),
-        new O.MinMaxFloat(0, 0, 10, 20).getHalfSizeX(),
-        new O.MinMaxFloat(0, 0, 10, 20).getMaxHalfSize(),
+        mmfAssigned.getCenterX(),
+        mmfAssigned.getCenterY(),
+        mmfAssigned.getHalfSizeX(),
+        mmfAssigned.getMaxHalfSize(),
     ],
 };
 

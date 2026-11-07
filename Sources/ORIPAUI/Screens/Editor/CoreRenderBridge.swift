@@ -74,17 +74,23 @@ public enum CoreRenderBridge {
 
     // MARK: - Grid
 
-    /// `GridManager.getRenderData()` -> segments (two vertices per line: start, end).
+    /// `GridManager.getRenderData()` -> grid segments.
+    ///
+    /// `GridRenderData.vertexPosition` keeps the Java/JS quad encoding: each grid line
+    /// contributes four vertices (start, start, end, end) so the GL shader can offset the
+    /// quad by `±LINE_HALF_WIDTH_GRID_DP`, exactly like `GLDataLinesWidth` / the JS
+    /// `eachLineQuad` (`drawOrder[i]` -> `drawOrder[i] + 2`). Canvas draws the same
+    /// segment as a stroked line: vertex 0 -> vertex 2 = 8 floats per line.
     public static func gridLines(from data: GridRenderData) -> [PaintLine] {
         let pos = data.vertexPosition
         var out: [PaintLine] = []
-        out.reserveCapacity(pos.count / 4)
+        out.reserveCapacity(pos.count / 8)
         var i = 0
-        while i + 3 < pos.count {
+        while i + 7 < pos.count {
             out.append(PaintLine(x0: CGFloat(pos[i]), y0: CGFloat(pos[i + 1]),
-                                 x1: CGFloat(pos[i + 2]), y1: CGFloat(pos[i + 3]),
+                                 x1: CGFloat(pos[i + 4]), y1: CGFloat(pos[i + 5]),
                                  typeCode: LineType.grid.rawValue))
-            i += 4
+            i += 8
         }
         return out
     }

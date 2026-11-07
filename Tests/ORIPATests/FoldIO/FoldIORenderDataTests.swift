@@ -80,6 +80,27 @@ enum FoldIORenderDataTests {
                 }
             }
 
+            // --- GLDataCpLinesTypedWidth on a single OriLine (JS `iterable.start` branch)
+            let expectedSingleWidth = FoldIOTestSupport.array(object["typedWidthSingle"])
+            if let firstLine = Array(cp.lineMVFB).first {
+                let actualSingleWidth = GLDataCpLinesTypedWidth.getRenderDataSplit(firstLine, true, true)
+                h.expectEqual(actualSingleWidth.count, expectedSingleWidth.count,
+                              "\(name): typedWidthSingle set count")
+                for (index, expectedSet) in expectedSingleWidth.enumerated() where index < actualSingleWidth.count {
+                    let expected = FoldIOTestSupport.dict(expectedSet)
+                    let set = actualSingleWidth[index]
+                    FoldIOTestSupport.expectFloatArray(h, set.vertexPosition,
+                                                       FoldIOTestSupport.array(expected["vertexPosition"]),
+                                                       "\(name): typedWidthSingle[\(index)].vertexPosition")
+                    FoldIOTestSupport.expectFloatArray(h, set.lineDistance,
+                                                       FoldIOTestSupport.array(expected["lineDistance"]),
+                                                       "\(name): typedWidthSingle[\(index)].lineDistance")
+                    FoldIOTestSupport.expectByteArray(h, set.vertexType,
+                                                      FoldIOTestSupport.array(expected["vertexType"]),
+                                                      "\(name): typedWidthSingle[\(index)].vertexType")
+                }
+            }
+
             // --- GLDataLinesWidth
             let linesWidth = FoldIOTestSupport.dict(object["linesWidth"])
             let expectedAll = FoldIOTestSupport.dict(linesWidth["all"])

@@ -3,8 +3,8 @@
  * fold-io golden fixture generator.
  *
  * Runs the reference JavaScript implementation (oripa-port/src/js) through
- * tools/fixtures/load_oripa.js and writes deterministic JSON that the Swift XCTests
- * under Tests/ORIPACoreTests/FoldIO decode. CI never runs Node.
+ * tools/fixtures/load_oripa.js and writes deterministic JSON that the Swift test suites
+ * under Tests/ORIPATests/FoldIO decode. CI never runs Node.
  *
  *   node tools/fixtures/foldio/gen_foldio.js
  *
@@ -557,6 +557,13 @@ function dumpRenderDataForCp(name, cp) {
             mvb: typedWidth(true, false),
             flatOnly: typedWidth(false, true),
         },
+        typedWidthSingle: lines.length > 0 ? O.GLDataCpLinesTypedWidth.getRenderDataSplit(lines[0], true, true).map((d) => ({
+            vertexPosition: arr(d.vertexPosition),
+            vertexAngleDeg: arr(d.vertexAngleDeg),
+            lineDistance: arr(d.lineDistance),
+            vertexType: arr(d.vertexType),
+            drawOrder: arr(d.drawOrder),
+        })) : [],
         linesWidth: {
             all: linesWidth(lines),
             single: lines.length > 0 ? linesWidth(lines[0]) : linesWidth(null),

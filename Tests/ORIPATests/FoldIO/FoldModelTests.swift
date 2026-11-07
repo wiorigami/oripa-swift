@@ -322,6 +322,10 @@ private func foldModelInvariants(
     }
 }
 
+/// `GLDataFmCrossLine` keeps the Java `float[]` encoding (contract §5.1) while the golden JSON
+/// stores the reference's plain JS number arrays (doubles), so CP cut-line coordinates can differ
+/// by one float rounding of the coordinate magnitude (<= ~1e-5 around +-200). The model matrices
+/// themselves are bit-identical (verified by the engine/case suites).
 private func crossLineNumbersClose(
     _ h: TestHarness,
     _ actual: [Float],

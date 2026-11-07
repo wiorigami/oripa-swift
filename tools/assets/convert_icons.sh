@@ -66,7 +66,7 @@ render_svg() {
 
   if python3 "$ROOT/tools/assets/normalize_svg.py" "$svg" "$norm" 2>"$TMP/normalize.err"; then
     if magick -background none -density 384 "$norm" \
-        -filter Lanczos -resize "${size}x${size}" \
+        -filter Lanczos -resize "${size}x${size}" -depth 8 \
         -strip -define png:exclude-chunks=date,time "$out" 2>/dev/null && [ -s "$out" ]; then
       return 0
     fi
@@ -90,7 +90,7 @@ EOF
       --force-device-scale-factor=1 --window-size="${size},${size}" \
       --screenshot="$out" "file://$html" >/dev/null 2>&1 || true
     if [ -s "$out" ]; then
-      magick "$out" -strip -define png:exclude-chunks=date,time "$out" 2>/dev/null || true
+      magick "$out" -depth 8 -strip -define png:exclude-chunks=date,time "$out" 2>/dev/null || true
       return 0
     fi
   fi

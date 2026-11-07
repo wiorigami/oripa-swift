@@ -20,12 +20,14 @@
 import SwiftUI
 import ORIPACore
 
+/// The fold screen with fragment lifecycle: the model is entered on appear and dropped on
+/// disappear (Android re-creates `FoldCpFragment` on every fold entry).
 @MainActor
 public struct FoldScreen: View {
     @StateObject private var model: FoldViewModel
-    /// When false the platform touch surface is omitted: SwiftUI `ImageRenderer` (headless
-    /// snapshot QA) cannot rasterise `UIViewRepresentable`/`NSViewRepresentable` and would
-    /// draw its "unsupported" placeholder. Production always renders the gestures.
+    /// When false the platform touch surface is omitted: headless snapshot rendering
+    /// (`ImageRenderer`) cannot rasterise `UIViewRepresentable`/`NSViewRepresentable`.
+    /// Production always renders the gestures.
     private let rendersPlatformGestures: Bool
 
     /// - Parameters:
@@ -45,22 +47,36 @@ public struct FoldScreen: View {
 
     public var body: some View {
         GeometryReader { geometry in
-            content(geometry: geometry)
+            FoldScreenContent(model: model,
+                              safeArea: geometry.safeAreaInsets,
+                              rendersPlatformGestures: rendersPlatformGestures)
+                .onAppear { model.enter(size: geometry.size) }
+                .onDisappear { model.leave() }
+                .onChange(of: geometry.size) { newSize in
+                    model.resize(newSize)
+                }
         }
         .ignoresSafeArea()
         .background(FoldTheme.surface)
     }
+}
 
-    // MARK: - Content
+/// The fold screen body without the lifecycle/geometry wrapper. Also used by the headless
+/// snapshot support, which pre-enters the view model so `ImageRenderer` can render the
+/// screen without relying on `.onAppear`.
+@MainActor
+struct FoldScreenContent: View {
+    @ObservedObject var model: FoldViewModel
+    var safeArea: EdgeInsets
+    var rendersPlatformGestures: Bool
 
-    @ViewBuilder
-    private func content(geometry: GeometryProxy) -> some View {
+    var body: some View {
         ZStack(alignment: .topLeading) {
             canvas
             if rendersPlatformGestures {
                 FoldGestureLayer(handlers: model.gestureHandlers)
             }
-            chrome(geometry: geometry)
+            chrome
             if let settings = model.settingsSheet {
                 settingsOverlay(settings)
             }
@@ -70,13 +86,8 @@ public struct FoldScreen: View {
             if model.showsModeMenu {
                 FoldModeMenu(model: model)
                     .padding(.leading, 52)
-                    .padding(.top, geometry.safeAreaInsets.top + 4)
+                    .padding(.top, safeArea.top + 4)
             }
-        }
-        .onAppear { model.enter(size: geometry.size) }
-        .onDisappear { model.leave() }
-        .onChange(of: geometry.size) { newSize in
-            model.resize(newSize)
         }
     }
 
@@ -96,16 +107,16 @@ public struct FoldScreen: View {
 
     /// Floating toolbar (top), Cut Line mini buttons (bottom-left) and export FAB
     /// (bottom-right, 16dp margins).
-    private func chrome(geometry: GeometryProxy) -> some View {
+    private var chrome: some View {
         ZStack(alignment: .topLeading) {
             VStack(spacing: 0) {
-                FoldToolbar(model: model, topInset: geometry.safeAreaInsets.top)
+                FoldToolbar(model: model, topInset: safeArea.top)
                 Spacer(minLength: 0)
             }
             ZStack(alignment: .bottomLeading) {
                 if model.crossButtonsVisible {
                     FoldCrossButtons(model: model)
-                        .padding(.leading, geometry.safeAreaInsets.leading)
+                        .padding(.leading, safeArea.leading)
                 }
                 HStack(spacing: 0) {
                     Spacer(minLength: 0)
@@ -116,7 +127,7 @@ public struct FoldScreen: View {
                     .padding(.bottom, 16)
                 }
             }
-            .padding(.bottom, geometry.safeAreaInsets.bottom)
+            .padding(.bottom, safeArea.bottom)
             .frame(maxHeight: .infinity, alignment: .bottom)
         }
     }

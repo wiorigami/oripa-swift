@@ -44,7 +44,8 @@ done
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
-PNG_OPTS=(-strip -define png:exclude-chunks=date,time)
+# 8-bit keeps the icons small and avoids 16-bit PNGs in the asset catalog.
+PNG_OPTS=(-depth 8 -strip -define png:exclude-chunks=date,time)
 
 mkdir -p "$ICONSET" "$LAUNCHSET"
 
