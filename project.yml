@@ -1,0 +1,108 @@
+# XcodeGen spec for the iOS/iPadOS app bundle.
+#
+#   xcodegen generate          # regenerate the committed ORIPA.xcodeproj
+#
+# The app target is a thin wrapper (`iOSApp/ORIPAApp.swift` + Info.plist +
+# Assets.xcassets); all UI and logic come from the local Swift package at the
+# repository root (`.`) via the ORIPACore + ORIPAUI products. The same SwiftUI code
+# is also built by SwiftPM as the macOS app (ORIPAMac) and the snapshot tool
+# (ORIPASnapshots), so keep deployment targets in sync with Package.swift:
+# iOS 16.0 / macOS 13.0.
+#
+# Building without a signing certificate (CI, local machine without a team):
+#   xcodebuild -project ORIPA.xcodeproj -scheme ORIPA -configuration Release \
+#     -sdk iphoneos -destination 'generic/platform=iOS' \
+#     CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build
+# `scripts/build_ipa.sh` wraps this and packages the unsigned IPA.
+name: ORIPA
+
+options:
+  minimumXcodeGenVersion: "2.42.0"
+  xcodeVersion: "16.0"
+  bundleIdPrefix: com.origamitoolbox
+  createIntermediateGroups: true
+  groupSortPosition: top
+  generateEmptyDirectories: true
+  deploymentTarget:
+    iOS: "16.0"
+
+configs:
+  Debug: debug
+  Release: release
+
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    IPHONEOS_DEPLOYMENT_TARGET: "16.0"
+    # Swift 5 language mode (the contract forbids Swift 6 strict concurrency).
+    SWIFT_STRICT_CONCURRENCY: minimal
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+    SWIFT_EMIT_LOC_STRINGS: NO
+    CLANG_ENABLE_MODULES: YES
+
+packages:
+  # Local SwiftPM package at the repository root (Package.swift => ORIPACore/ORIPAUI).
+  ORIPA:
+    path: "."
+
+targets:
+  ORIPA:
+    type: application
+    platform: iOS
+    deploymentTarget: "16.0"
+    sources:
+      - path: iOSApp
+        excludes:
+          - Info.plist
+      # Keep Info.plist in the project navigator but out of the copy-resources phase
+      # (Xcode would otherwise warn about it being copied twice).
+      - path: iOSApp/Info.plist
+        buildPhase: none
+    dependencies:
+      - package: ORIPA
+        product: ORIPACore
+      - package: ORIPA
+        product: ORIPAUI
+    settings:
+      base:
+        PRODUCT_NAME: ORIPA
+        PRODUCT_BUNDLE_IDENTIFIER: com.origamitoolbox.oripa
+        # Must match AppInfo.version/build in Sources/ORIPACore/Version.swift and the
+        # ported app (0.2.3.3 / build 2) so upgrades keep the same app container.
+        MARKETING_VERSION: "0.2.3.3"
+        CURRENT_PROJECT_VERSION: "2"
+        INFOPLIST_FILE: iOSApp/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        # iPhone + iPad (universal). iPad is the primary target (creased-pattern
+        # editing on a tablet), iPhone must stay usable.
+        TARGETED_DEVICE_FAMILY: "1,2"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        # SwiftUI previews are not needed (no Xcode on the main dev machine; visual QA
+        # happens through `swift run ORIPASnapshots`).
+        ENABLE_PREVIEWS: NO
+        # iOS-only app: the macOS build is the native ORIPAMac SwiftPM executable.
+        SUPPORTS_MACCATALYST: NO
+        CODE_SIGN_STYLE: Automatic
+        LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/Frameworks"
+      configs:
+        Debug:
+          DEBUG_INFORMATION_FORMAT: dwarf
+        Release:
+          DEBUG_INFORMATION_FORMAT: dwarf-with-dsym
+          SWIFT_COMPILATION_MODE: wholemodule
+          VALIDATE_PRODUCT: YES
+
+schemes:
+  ORIPA:
+    build:
+      targets:
+        ORIPA: all
+    run:
+      config: Debug
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release
+      customArchiveName: ORIPA

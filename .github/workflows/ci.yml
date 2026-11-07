@@ -1,0 +1,174 @@
+name: CI
+
+# Builds and tests ORIPA on GitHub's macOS runners:
+#   test  - Swift package build, hermetic test runner (ORIPATests), UI snapshots
+#   ios   - xcodegen-generated Xcode project -> unsigned iOS/iPadOS IPA
+#   macos - native macOS .app bundle (zipped)
+# The three jobs are independent: a failing job never hides the other artifacts.
+# No secrets, signing certificates or provisioning profiles are used.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  test:
+    name: Tests + UI snapshots
+    runs-on: macos-15
+    timeout-minutes: 30
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Toolchain info
+        run: |
+          set -x
+          sw_vers
+          swift --version
+          xcodebuild -version
+
+      - name: Cache SwiftPM build
+        uses: actions/cache@v4
+        with:
+          path: .build
+          key: ${{ runner.os }}-spm-test-${{ hashFiles('Package.swift') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-test-
+
+      - name: swift build
+        run: |
+          set -x
+          swift build 2>&1 | tee build.log
+
+      # NOTE: this toolchain has no XCTest under Command Line Tools, so the test
+      # suite is a hermetic executable target instead of `swift test`.
+      - name: swift run ORIPATests
+        run: |
+          set -x
+          swift run ORIPATests 2>&1 | tee tests.log
+
+      - name: Render UI snapshots (ImageRenderer, headless)
+        run: |
+          set -x
+          swift run ORIPASnapshots build-snapshots 2>&1 | tee snapshots.log
+
+      - name: Upload UI snapshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: oripa-ui-snapshots
+          path: build-snapshots/
+          if-no-files-found: warn
+          retention-days: 14
+
+  ios:
+    name: Unsigned iOS IPA
+    runs-on: macos-15
+    timeout-minutes: 60
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Toolchain info
+        run: |
+          set -x
+          sw_vers
+          swift --version
+          xcodebuild -version
+          xcode-select -p
+
+      - name: Install XcodeGen
+        run: |
+          set -x
+          if ! command -v xcodegen >/dev/null 2>&1; then
+            brew install xcodegen
+          fi
+          xcodegen --version
+
+      - name: Generate Xcode project
+        run: |
+          set -x
+          xcodegen generate
+          # The committed project must be regenerable from project.yml.
+          ls -la ORIPA.xcodeproj
+          plutil -lint ORIPA.xcodeproj/project.pbxproj
+          test -f ORIPA.xcodeproj/xcshareddata/xcschemes/ORIPA.xcscheme
+          xcodebuild -list -project ORIPA.xcodeproj
+
+      - name: Build + package unsigned IPA
+        run: |
+          set -x
+          bash scripts/build_ipa.sh
+
+      - name: Show xcodebuild log tail on failure
+        if: failure()
+        run: |
+          echo '--- build/ios/xcodebuild-ios.log (last 200 lines) ---'
+          tail -n 200 build/ios/xcodebuild-ios.log 2>/dev/null || true
+
+      - name: Upload xcodebuild log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-build-log
+          path: build/ios/xcodebuild-ios.log
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload unsigned IPA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ORIPA-unsigned.ipa
+          path: build/ios/ORIPA-unsigned.ipa
+          if-no-files-found: warn
+          retention-days: 14
+
+  macos:
+    name: macOS app bundle
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Toolchain info
+        run: |
+          set -x
+          sw_vers
+          swift --version
+
+      - name: Cache SwiftPM build
+        uses: actions/cache@v4
+        with:
+          path: .build
+          key: ${{ runner.os }}-spm-macos-${{ hashFiles('Package.swift') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-macos-
+
+      - name: Build and package macOS app
+        run: |
+          set -x
+          bash scripts/build_mac.sh
+
+      - name: Upload macOS app
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ORIPA-macOS
+          path: build/macos/ORIPA-macOS.zip
+          if-no-files-found: warn
+          retention-days: 14

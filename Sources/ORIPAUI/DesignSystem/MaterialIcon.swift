@@ -8,6 +8,10 @@
 // tint the multi-colour drawables keep their original colours.
 //
 // Consumed by every UI workstream — keep this API stable, extend only additively.
+//
+// Resources are resolved through `ORIPAUIResources` (not `Bundle.module`) so the same
+// loader works for `swift run`, the packaged macOS .app (Contents/Resources) and the iOS
+// app bundle with a valid code signature.
 import SwiftUI
 
 #if canImport(UIKit)
@@ -19,12 +23,12 @@ import AppKit
 public enum AssetLoader {
     /// PNG bytes for an icon (original colours), or nil when the asset is missing.
     public static func pngData(_ name: String) -> Data? {
-        guard let url = Bundle.module.url(forResource: name, withExtension: "png") else { return nil }
+        guard let url = ORIPAUIResources.url(forResource: name, withExtension: "png") else { return nil }
         return try? Data(contentsOf: url)
     }
 
     public static func image(_ name: String) -> Image? {
-        guard let url = Bundle.module.url(forResource: name, withExtension: "png") else { return nil }
+        guard let url = ORIPAUIResources.url(forResource: name, withExtension: "png") else { return nil }
         #if canImport(UIKit)
         guard let ui = UIImage(contentsOfFile: url.path) else { return nil }
         return Image(uiImage: ui)

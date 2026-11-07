@@ -1,0 +1,452 @@
+{
+ "defaults": {
+  "halfSize": 200,
+  "inputLineType": 2,
+  "modified": 0,
+  "lineCount": 0,
+  "pointCount": 0,
+  "facesCheckCount": 0,
+  "pointErrorCheckCount": 0,
+  "minMax": [
+   -200,
+   -200,
+   200,
+   200
+  ],
+  "gridRenderVertexCount": 80,
+  "hasUndo": 0,
+  "customHalfSize": 50,
+  "customInputLineType": 3,
+  "customMinMax": [
+   -50,
+   -50,
+   50,
+   50
+  ]
+ },
+ "square": {
+  "lineCount": 4,
+  "pointCount": 4,
+  "lines": [
+   [
+    -200,
+    -200,
+    -200,
+    200,
+    1
+   ],
+   [
+    -200,
+    -200,
+    200,
+    -200,
+    1
+   ],
+   [
+    -200,
+    200,
+    200,
+    200,
+    1
+   ],
+   [
+    200,
+    -200,
+    200,
+    200,
+    1
+   ]
+  ],
+  "points": [
+   [
+    -200000,
+    -200000,
+    -200,
+    -200
+   ],
+   [
+    -200000,
+    200000,
+    -200,
+    200
+   ],
+   [
+    200000,
+    -200000,
+    200,
+    -200
+   ],
+   [
+    200000,
+    200000,
+    200,
+    200
+   ]
+  ],
+  "minMax": [
+   -200,
+   -200,
+   200,
+   200
+  ],
+  "findPointCenter": [
+   200,
+   -200
+  ],
+  "findLineEdge": [
+   200,
+   -200,
+   200,
+   200,
+   1
+  ]
+ },
+ "addReject": {
+  "before": 4,
+  "afterAddReturn": 0,
+  "countAfterAdd": 5,
+  "pointCountAfterAdd": 6,
+  "countAfterDuplicate": 5,
+  "countAfterDiagonal": 6,
+  "countAfterDiagonalDuplicate": 6,
+  "countAfterDegenerate": 6,
+  "pointCountAfterDegenerate": 7
+ },
+ "findQueries": {
+  "pointNoSnapNearest": [
+   0,
+   0
+  ],
+  "pointNoSnapMiss": null,
+  "pointWithSnap": [
+   0,
+   0
+  ],
+  "lineNoSnapNearest": [
+   0,
+   0,
+   100,
+   0,
+   2
+  ],
+  "lineNoSnapMiss": null,
+  "lineWithGridNearest": [
+   100,
+   -200,
+   100,
+   200,
+   4
+  ]
+ },
+ "changeType": {
+  "typeAfter": 3,
+  "startCounts": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "startPoint": [
+   0,
+   0
+  ],
+  "errorThrows": 1
+ },
+ "removeOrphan": {
+  "lineCount": 4,
+  "pointCount": 4,
+  "containsOldPoint": 0,
+  "containsOldEndpoint": 0,
+  "containsSquareCorner": 1
+ },
+ "cleanStraight": {
+  "linesBefore": 2,
+  "lineCount": 1,
+  "historyItemCount": 1,
+  "oldLineCount": 2,
+  "newLineCount": 1,
+  "mergedStartX": 0,
+  "mergedEndX": 100,
+  "pointCount": 2,
+  "middleGone": 1,
+  "hasUndo": 0
+ },
+ "flatValid": {
+  "flat": 1,
+  "lines": [
+   [
+    -200,
+    -200,
+    -200,
+    0,
+    1
+   ],
+   [
+    -200,
+    -200,
+    0,
+    -200,
+    1
+   ],
+   [
+    -200,
+    0,
+    -200,
+    200,
+    1
+   ],
+   [
+    -200,
+    0,
+    0,
+    0,
+    3
+   ],
+   [
+    -200,
+    200,
+    0,
+    200,
+    1
+   ],
+   [
+    0,
+    -200,
+    0,
+    0,
+    2
+   ],
+   [
+    0,
+    -200,
+    200,
+    -200,
+    1
+   ],
+   [
+    0,
+    0,
+    0,
+    200,
+    3
+   ],
+   [
+    0,
+    0,
+    200,
+    0,
+    3
+   ],
+   [
+    0,
+    200,
+    200,
+    200,
+    1
+   ],
+   [
+    200,
+    -200,
+    200,
+    0,
+    1
+   ],
+   [
+    200,
+    0,
+    200,
+    200,
+    1
+   ]
+  ],
+  "pointCount": 9,
+  "pointErrorCount": 0,
+  "faceInvariants": {
+   "count": 4,
+   "areas": [
+    40000,
+    40000,
+    40000,
+    40000
+   ],
+   "pointCounts": [
+    4,
+    4,
+    4,
+    4
+   ],
+   "typeCounts": [
+    4,
+    4,
+    4,
+    4
+   ],
+   "areaSum": 160000
+  },
+  "centerCounts": [
+   0,
+   0,
+   1,
+   3
+  ],
+  "minMax": [
+   -200,
+   -200,
+   200,
+   200
+  ]
+ },
+ "flatInvalid": {
+  "flat": 0,
+  "lines": [
+   [
+    -200,
+    -200,
+    -200,
+    0,
+    1
+   ],
+   [
+    -200,
+    -200,
+    0,
+    -200,
+    1
+   ],
+   [
+    -200,
+    0,
+    -200,
+    200,
+    1
+   ],
+   [
+    -200,
+    0,
+    0,
+    0,
+    3
+   ],
+   [
+    -200,
+    200,
+    0,
+    200,
+    1
+   ],
+   [
+    0,
+    -200,
+    0,
+    0,
+    2
+   ],
+   [
+    0,
+    -200,
+    200,
+    -200,
+    1
+   ],
+   [
+    0,
+    0,
+    0,
+    200,
+    3
+   ],
+   [
+    0,
+    0,
+    200,
+    0,
+    2
+   ],
+   [
+    0,
+    200,
+    200,
+    200,
+    1
+   ],
+   [
+    200,
+    -200,
+    200,
+    0,
+    1
+   ],
+   [
+    200,
+    0,
+    200,
+    200,
+    1
+   ]
+  ],
+  "pointCount": 9,
+  "pointErrorCount": 1,
+  "errorPointKeys": [
+   [
+    0,
+    0
+   ]
+  ],
+  "faceCount": 4,
+  "clearCheckData": {
+   "pointErrorCount": 0,
+   "faceCount": 0
+  }
+ },
+ "clearAll": {
+  "lineCount": 0,
+  "pointCount": 0,
+  "faceCount": 0,
+  "pointErrorCount": 0,
+  "hasUndo": 0,
+  "hasRedo": 0,
+  "lineTreeEmpty": 1,
+  "pointTreeEmpty": 1
+ },
+ "history": {
+  "newLine": {
+   "afterAdd": 3,
+   "hasUndoAfterBranch": 1,
+   "hasRedoAfterBranch": 0,
+   "afterUndo": 2,
+   "hasUndoAfterUndo": 0,
+   "hasRedoAfterUndo": 1,
+   "pointCountAfterUndo": 4,
+   "afterRedo": 3,
+   "exactAfterRedo": 1,
+   "pointsAfterRedo": 4
+  },
+  "deleteLine": {
+   "afterDelete": 0,
+   "afterUndo": 1,
+   "pointCountAfterUndo": 2,
+   "exactAfterUndo": 1,
+   "afterRedo": 0
+  },
+  "typeChange": {
+   "typeAfterChange": 3,
+   "typeAfterUndo": 2,
+   "typeAfterRedo": 3
+  },
+  "branchClearsRedo": {
+   "redoBeforeNewBranch": 1,
+   "redoAfterNewBranch": 0,
+   "hasUndo": 1,
+   "lineCount": 3
+  },
+  "cap": {
+   "undoCount": 50,
+   "hasUndoAfterClear": 0
+  },
+  "merge": {
+   "linesAfterMerge": 1,
+   "linesAfterUndo": 2,
+   "linesAfterRedo": 1
+  }
+ }
+}

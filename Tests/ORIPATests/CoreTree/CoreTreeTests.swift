@@ -277,7 +277,7 @@ enum CoreTreeTests {
     static var all: [TestSuite] {
         [
             TestSuite("CoreTree.genericAVL") { h in
-                let fixture = Fixtures.decode(TreesFixture.self, "Fixtures/tree/trees.json")
+                let fixture = try Fixtures.decode(TreesFixture.self, "Fixtures/tree/trees.json")
                 let expected = fixture.genericAVL
                 let tree = NumberAvlTree()
                 h.expect(tree.isEmpty(), "new AVL tree is empty")
@@ -295,7 +295,7 @@ enum CoreTreeTests {
                 h.expectEqual(tree.isEmpty(), expected.isEmptyAfterClear, "clear")
             },
             TestSuite("CoreTree.genericRB") { h in
-                let fixture = Fixtures.decode(TreesFixture.self, "Fixtures/tree/trees.json")
+                let fixture = try Fixtures.decode(TreesFixture.self, "Fixtures/tree/trees.json")
                 let expected = fixture.genericRB
                 let tree = NumberRBTree()
                 for value in expected.inserts { tree.insert(NumberBox(value)) }
@@ -308,7 +308,7 @@ enum CoreTreeTests {
                 h.expectEqual(blackHeight(tree.root()), expected.blackHeightAfterRemove, "black height after removals")
             },
             TestSuite("CoreTree.avlPoint") { h in
-                let fixture = Fixtures.decode(TreesFixture.self, "Fixtures/tree/trees.json")
+                let fixture = try Fixtures.decode(TreesFixture.self, "Fixtures/tree/trees.json")
                 let expected = fixture.avlPoint
                 let tree = AvlPointTree()
                 fillPointTree { tree.addLine($0) }
@@ -334,7 +334,7 @@ enum CoreTreeTests {
                 )
             },
             TestSuite("CoreTree.rbPoint") { h in
-                let fixture = Fixtures.decode(TreesFixture.self, "Fixtures/tree/trees.json")
+                let fixture = try Fixtures.decode(TreesFixture.self, "Fixtures/tree/trees.json")
                 let expected = fixture.rbPoint
                 let tree = RedBlackPointTree()
                 fillPointTree { tree.addLine($0) }
@@ -360,7 +360,7 @@ enum CoreTreeTests {
                 )
             },
             TestSuite("CoreTree.avlLine") { h in
-                let fixture = Fixtures.decode(TreesFixture.self, "Fixtures/tree/trees.json")
+                let fixture = try Fixtures.decode(TreesFixture.self, "Fixtures/tree/trees.json")
                 let expected = fixture.avlLine
                 let tree = AvlLineTree()
                 let lines = expected.lines.map { makeLine(makePoint($0[0], $0[1]), makePoint($0[2], $0[3])) }
@@ -387,7 +387,7 @@ enum CoreTreeTests {
                 h.expectEqual(tree.isEmpty(), expected.isEmptyAfterClear, "empty after clear")
             },
             TestSuite("CoreTree.rbLine") { h in
-                let fixture = Fixtures.decode(TreesFixture.self, "Fixtures/tree/trees.json")
+                let fixture = try Fixtures.decode(TreesFixture.self, "Fixtures/tree/trees.json")
                 let expected = fixture.rbLine
                 let tree = RedBlackLineTree()
                 let lines = expected.lines.map { makeLine(makePoint($0[0], $0[1]), makePoint($0[2], $0[3])) }
@@ -405,10 +405,10 @@ enum CoreTreeTests {
                 h.expectEqual(tree.size(), expected.sizeAfterRemove, "RB size after removes")
                 var iteration: [[Double]] = []
                 for line in tree { iteration.append(coords(line)) }
-                h.expectEqual(iteration, lexicographicSort(expected.iteration.map(coords)), "RB line iteration order")
+                h.expectEqual(iteration, expected.iteration.map(coords), "RB line iteration order == reference JavaMap order")
             },
             TestSuite("CoreTree.rbLineDuplicateKeys") { h in
-                let fixture = Fixtures.decode(TreesFixture.self, "Fixtures/tree/trees.json")
+                let fixture = try Fixtures.decode(TreesFixture.self, "Fixtures/tree/trees.json")
                 let expected = fixture.rbLineDuplicateKeys
                 let tree = RedBlackLineTree()
                 for index in 0..<20 {

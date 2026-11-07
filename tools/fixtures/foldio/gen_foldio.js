@@ -6,7 +6,7 @@
  * tools/fixtures/load_oripa.js and writes deterministic JSON that the Swift XCTests
  * under Tests/ORIPACoreTests/FoldIO decode. CI never runs Node.
  *
- *   node tools/fixtures/foldio/gen_foldio.js [--check]
+ *   node tools/fixtures/foldio/gen_foldio.js
  *
  * Outputs (committed):
  *   Fixtures/foldio/roundtrip.json   file formats (CP/OPX/OPXC/SVG), FileUtil, XmlPullParser,

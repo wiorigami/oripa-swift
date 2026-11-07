@@ -1,0 +1,332 @@
+{
+ "lineTypes": {
+  "values": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   127
+  ],
+  "strings": [
+   "FLAT",
+   "BOUNDARY",
+   "MOUNTAIN",
+   "VALLEY",
+   "GRID",
+   "PICKED",
+   "SLICE",
+   "UNDEFINED",
+   null
+  ],
+  "abbreviations": [
+   "fl",
+   "bo",
+   "mo",
+   "va",
+   "gr",
+   "pi",
+   "sl",
+   "",
+   null
+  ],
+  "colors": [
+   [
+    0,
+    1,
+    1
+   ],
+   [
+    0,
+    0,
+    0
+   ],
+   [
+    1,
+    0,
+    0
+   ],
+   [
+    0,
+    0,
+    1
+   ],
+   [
+    0.5,
+    0.5,
+    0.5
+   ],
+   [
+    0,
+    1,
+    0
+   ],
+   [
+    1,
+    0,
+    1
+   ],
+   null,
+   null
+  ]
+ },
+ "gridTypes": {
+  "SQUARE": 0,
+  "TRIANGLE": 1,
+  "UNDEFINED": 127
+ },
+ "fileTypes": [
+  {
+   "name": "PNG",
+   "ordinal": 0,
+   "extension": "png",
+   "mime": "image/png",
+   "valueOfKnowsName": true
+  },
+  {
+   "name": "SVG",
+   "ordinal": 1,
+   "extension": "svg",
+   "mime": "image/svg+xml",
+   "valueOfKnowsName": true
+  },
+  {
+   "name": "OPX",
+   "ordinal": 2,
+   "extension": "opx",
+   "mime": "text/xml",
+   "valueOfKnowsName": true
+  },
+  {
+   "name": "OPXC",
+   "ordinal": 3,
+   "extension": "opxc",
+   "mime": "text/xml",
+   "valueOfKnowsName": true
+  },
+  {
+   "name": "CP",
+   "ordinal": 4,
+   "extension": "cp",
+   "mime": "text/plain",
+   "valueOfKnowsName": true
+  }
+ ],
+ "projectKeys": [
+  {
+   "name": "SRC_ADAPTER_POSITION",
+   "ordinal": 0,
+   "key": "com.origamitoolbox.oripa.ProjectKey.SRC_ADAPTER_POSITION"
+  },
+  {
+   "name": "SRC_FILENAME_NO_EXT",
+   "ordinal": 1,
+   "key": "com.origamitoolbox.oripa.ProjectKey.SRC_FILENAME_NO_EXT"
+  },
+  {
+   "name": "SRC_FILENAME_WITH_EXT",
+   "ordinal": 2,
+   "key": "com.origamitoolbox.oripa.ProjectKey.SRC_FILENAME_WITH_EXT"
+  },
+  {
+   "name": "SRC_PROJECT_DIR_PATH",
+   "ordinal": 3,
+   "key": "com.origamitoolbox.oripa.ProjectKey.SRC_PROJECT_DIR_PATH"
+  },
+  {
+   "name": "SRC_THUMB_DIR_PATH",
+   "ordinal": 4,
+   "key": "com.origamitoolbox.oripa.ProjectKey.SRC_THUMB_DIR_PATH"
+  },
+  {
+   "name": "SRC_PROJECT_FILE_PATH",
+   "ordinal": 5,
+   "key": "com.origamitoolbox.oripa.ProjectKey.SRC_PROJECT_FILE_PATH"
+  },
+  {
+   "name": "SRC_THUMB_FILE_PATH",
+   "ordinal": 6,
+   "key": "com.origamitoolbox.oripa.ProjectKey.SRC_THUMB_FILE_PATH"
+  },
+  {
+   "name": "SRC_IS_INTERNAL",
+   "ordinal": 7,
+   "key": "com.origamitoolbox.oripa.ProjectKey.SRC_IS_INTERNAL"
+  },
+  {
+   "name": "RESULT_CODE",
+   "ordinal": 8,
+   "key": "com.origamitoolbox.oripa.ProjectKey.RESULT_CODE"
+  },
+  {
+   "name": "RESULT_FILENAME_NO_EXT",
+   "ordinal": 9,
+   "key": "com.origamitoolbox.oripa.ProjectKey.RESULT_FILENAME_NO_EXT"
+  }
+ ],
+ "renderKeys": {
+  "BUNDLE_FOLD_OVERLAP": "BUNDLE_FOLD_OVERLAP",
+  "BUNDLE_FOLD_OVERLAP_SPLIT": "BUNDLE_FOLD_OVERLAP_SPLIT_%d",
+  "BUNDLE_FOLD_XRAY_CROSS": "BUNDLE_FOLD_XRAY_CROSS",
+  "CP_LINE_DRAW_ORDER": "CP_LINE_DRAW_ORDER",
+  "CP_LINE_POSITION": "CP_LINE_POSITION",
+  "CP_LINE_TYPE": "CP_LINE_TYPE",
+  "CP_POINT_POSITION": "CP_POINT_POSITION",
+  "CP_POINT_POSITION_ERROR": "CP_POINT_POSITION_ERROR",
+  "CP_POLYGON_DRAW_ORDER": "CP_POLYGON_DRAW_ORDER",
+  "CP_POLYGON_POSITION": "CP_POLYGON_POSITION",
+  "OVERLAP_ANGLE_DEG": "OVERLAP_ANGLE_DEG",
+  "OVERLAP_ANGLE_DEG_REVERSE": "OVERLAP_ANGLE_DEG_REVERSE",
+  "OVERLAP_DRAW_ORDER": "OVERLAP_DRAW_ORDER",
+  "OVERLAP_DRAW_ORDER_REVERSE": "OVERLAP_DRAW_ORDER_REVERSE",
+  "OVERLAP_POSITION": "OVERLAP_POSITION",
+  "OVERLAP_POSITION_REVERSE": "OVERLAP_POSITION_REVERSE",
+  "OVERLAP_TYPE": "OVERLAP_TYPE",
+  "OVERLAP_TYPE_REVERSE": "OVERLAP_TYPE_REVERSE",
+  "XRAY_FACE_DRAW_ORDER": "XRAY_FACE_DRAW_ORDER",
+  "XRAY_LINE_BOUNDARY_DRAW_ORDER": "XRAY_LINE_BOUNDARY_DRAW_ORDER",
+  "XRAY_LINE_CREASE_DRAW_ORDER": "XRAY_LINE_CREASE_DRAW_ORDER",
+  "XRAY_POINT_POSITION": "XRAY_POINT_POSITION"
+ },
+ "renderKeyExamples": [
+  [
+   "X",
+   "com.origamitoolbox.oripa.RenderKey.X"
+  ],
+  [
+   "CP_LINE_POSITION",
+   "com.origamitoolbox.oripa.RenderKey.CP_LINE_POSITION"
+  ],
+  [
+   "BUNDLE_FOLD_OVERLAP_SPLIT_%d",
+   "com.origamitoolbox.oripa.RenderKey.BUNDLE_FOLD_OVERLAP_SPLIT_%d"
+  ]
+ ],
+ "constants": {
+  "ALPHA_FOLD_CP_XRAY_FACE": 0.05000000074505806,
+  "ALPHA_FOLD_CP_XRAY_LINE_BOUNDARY": 0.20000000298023224,
+  "ALPHA_FOLD_CP_XRAY_LINE_CREASE": 0.15000000596046448,
+  "LINE_HALF_WIDTH_DEFAULT_DP": 1,
+  "LINE_HALF_WIDTH_DEFAULT_PX": 2,
+  "LINE_HALF_WIDTH_FOLD_CP_OVERLAP_DP": 1,
+  "LINE_HALF_WIDTH_FOLD_CP_OVERLAP_PX": 2,
+  "LINE_HALF_WIDTH_GRID_DP": 0.5,
+  "LINE_HALF_WIDTH_MIRROR_DP": 3,
+  "LINE_WIDTH_DEFAULT": 3,
+  "LINE_WIDTH_FOLD_CP_BOUNDARY": 10,
+  "LINE_WIDTH_FOLD_CP_CREASE": 4,
+  "LINE_WIDTH_FOLD_CP_CROSS": 6,
+  "LINE_WIDTH_FOLD_CP_CROSS_THICK": 10,
+  "LINE_WIDTH_SCREEN_DIVIDER": 10,
+  "MAX_SCALE_FACTOR": 10000,
+  "MIN_SCALE_FACTOR": 0.20000000298023224,
+  "POINT_SIZE_DEFAULT": 12,
+  "POINT_SIZE_EMPHASIS": 24,
+  "SCREEN_TOUCH_RADIUS_DP": 16,
+  "SELECTION_RECT_DASH_LENGTH_DP": 10,
+  "SINGLE_GRID_IMAGE_DIMEN_DP": 180,
+  "SINGLE_LIST_IMAGE_DIMEN_DP": 32,
+  "TOUCH_CIRCLE_DURATION_MILLISECONDS": 200
+ },
+ "colorConstants": {
+  "COLOR_BOUNDARY": [
+   0,
+   0,
+   0
+  ],
+  "COLOR_VALLEY": [
+   0,
+   0,
+   1
+  ],
+  "COLOR_MOUNTAIN": [
+   1,
+   0,
+   0
+  ],
+  "COLOR_FLAT": [
+   0,
+   1,
+   1
+  ],
+  "COLOR_GRID": [
+   0.5,
+   0.5,
+   0.5
+  ],
+  "COLOR_SLICE": [
+   1,
+   0,
+   1
+  ],
+  "COLOR_PICKED": [
+   0,
+   1,
+   0
+  ],
+  "COLOR_ERROR": [
+   1,
+   0,
+   0
+  ],
+  "COLOR_CP_POLYGON_FILL": [
+   1,
+   0.8240000009536743,
+   0.8240000009536743
+  ],
+  "COLOR_TOUCH_CIRCLE": [
+   0.9129999876022339,
+   0.11699999868869781,
+   0.3880000114440918
+  ],
+  "COLOR_SELECTION_RECT": [
+   0.9129999876022339,
+   0.11699999868869781,
+   0.3880000114440918
+  ],
+  "COLOR_XRAY_FACE": [
+   0,
+   0,
+   0
+  ],
+  "COLOR_XRAY_CREASE": [
+   0,
+   0,
+   0
+  ],
+  "COLOR_XRAY_BOUNDARY": [
+   0,
+   0,
+   0
+  ],
+  "COLOR_WIRE_CREASE": [
+   0.5,
+   0.5,
+   0.5
+  ],
+  "COLOR_WIRE_BOUNDARY": [
+   0,
+   0,
+   0
+  ]
+ },
+ "projectValues": {
+  "KEY_DIALOG": "DialogFragment.dialog",
+  "PROJECT_SUBDIRECTORY": "project_data",
+  "REQUEST_CODE_PREVIEW": 1,
+  "RESULT_CODE_COPY": 4,
+  "RESULT_CODE_DELETE": 5,
+  "RESULT_CODE_NO_CHANGE": -1,
+  "RESULT_CODE_RENAME": 3,
+  "THUMBNAIL_SUBDIRECTORY": "project_thumbs",
+  "projectDirNoBase": "project_data",
+  "projectDirBase": "/base/project_data",
+  "tempNoBase": "temp_save_file",
+  "tempBase": "/base/temp_save_file",
+  "thumbNoBase": "project_thumbs",
+  "thumbBase": "/base/project_thumbs"
+ }
+}

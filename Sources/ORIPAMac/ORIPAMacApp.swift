@@ -1,15 +1,17 @@
-// Native macOS entry point (SwiftPM executable, bundled by scripts/build_mac.sh).
-// The iOS entry point lives in iOSApp/ and shares the same ORIPAUI screens.
+// Native macOS entry point (SwiftPM executable, assembled into ORIPA.app by
+// scripts/build_mac.sh). The iOS entry point lives in iOSApp/ and both wrappers
+// share the same SwiftUI screens from the ORIPAUI library.
 import SwiftUI
 import ORIPAUI
 
 @main
 struct ORIPAMacApp: App {
     var body: some Scene {
-        WindowGroup {
+        WindowGroup("ORIPA") {
             ORIPARootView()
-                .frame(minWidth: 480, minHeight: 640)
+                .frame(minWidth: 640, minHeight: 480)
         }
-        .windowResizability(.contentSize)
+        .defaultSize(width: 1024, height: 768)
+        .windowResizability(.contentMinSize)
     }
 }

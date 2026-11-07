@@ -1,0 +1,1328 @@
+{
+ "calls": [
+  {
+   "fn": "getDistance",
+   "args": [
+    0,
+    0,
+    3,
+    4
+   ],
+   "expected": [
+    5
+   ]
+  },
+  {
+   "fn": "getDistance",
+   "args": [
+    -10,
+    5,
+    7,
+    -3
+   ],
+   "expected": [
+    18.788294228055936
+   ]
+  },
+  {
+   "fn": "getDistanceSquared",
+   "args": [
+    0,
+    0,
+    3,
+    4
+   ],
+   "expected": [
+    25
+   ]
+  },
+  {
+   "fn": "getDistanceSquared",
+   "args": [
+    1,
+    2,
+    4,
+    6
+   ],
+   "expected": [
+    25
+   ]
+  },
+  {
+   "fn": "getAngleRadians",
+   "args": [
+    0,
+    0,
+    1,
+    1
+   ],
+   "expected": [
+    0.7853981633974483
+   ]
+  },
+  {
+   "fn": "getAngleRadians",
+   "args": [
+    0,
+    0,
+    -1,
+    0
+   ],
+   "expected": [
+    3.141592653589793
+   ]
+  },
+  {
+   "fn": "getAngleRadBetweenLines",
+   "args": [
+    0,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0,
+    1
+   ],
+   "expected": [
+    1.5707963267948966
+   ]
+  },
+  {
+   "fn": "getAngleRadBetweenLines",
+   "args": [
+    0,
+    0,
+    1,
+    0,
+    0,
+    0,
+    1,
+    1
+   ],
+   "expected": [
+    0.7853981633974484
+   ]
+  },
+  {
+   "fn": "getDotProductLines2D",
+   "args": [
+    0,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0,
+    1
+   ],
+   "expected": [
+    0
+   ]
+  },
+  {
+   "fn": "getLineIntersect",
+   "args": [
+    0,
+    0,
+    10,
+    0,
+    5,
+    -5,
+    5,
+    5
+   ],
+   "expected": [
+    5,
+    0
+   ]
+  },
+  {
+   "fn": "getLineIntersect",
+   "args": [
+    0,
+    0,
+    1,
+    0,
+    0,
+    1,
+    1,
+    1
+   ],
+   "expected": []
+  },
+  {
+   "fn": "getLineIntersect",
+   "args": [
+    0,
+    0,
+    0,
+    10,
+    5,
+    0,
+    5,
+    10
+   ],
+   "expected": []
+  },
+  {
+   "fn": "getLineIntersect",
+   "args": [
+    -3,
+    -3,
+    4,
+    2,
+    -2,
+    4,
+    5,
+    -4
+   ],
+   "expected": [
+    1.3846153846153846,
+    0.13186813186813187
+   ]
+  },
+  {
+   "fn": "getSegmentIntersect",
+   "args": [
+    0,
+    0,
+    10,
+    0,
+    5,
+    -5,
+    5,
+    5
+   ],
+   "expected": [
+    5,
+    0
+   ]
+  },
+  {
+   "fn": "getSegmentIntersect",
+   "args": [
+    0,
+    0,
+    1,
+    0,
+    5,
+    -5,
+    5,
+    5
+   ],
+   "expected": []
+  },
+  {
+   "fn": "getSegmentIntersect",
+   "args": [
+    0,
+    0,
+    10,
+    0,
+    5,
+    0,
+    5,
+    10
+   ],
+   "expected": [
+    5,
+    0
+   ]
+  },
+  {
+   "fn": "getSegmentIntersect",
+   "args": [
+    0,
+    0,
+    10,
+    10,
+    10,
+    0,
+    20,
+    10
+   ],
+   "expected": []
+  },
+  {
+   "fn": "isParallel",
+   "args": [
+    0,
+    0,
+    1,
+    0,
+    0,
+    1,
+    1,
+    1
+   ],
+   "expected": [
+    1
+   ]
+  },
+  {
+   "fn": "isParallel",
+   "args": [
+    0,
+    0,
+    1,
+    0,
+    0,
+    1,
+    0,
+    2
+   ],
+   "expected": [
+    0
+   ]
+  },
+  {
+   "fn": "isCollinear",
+   "args": [
+    0,
+    0,
+    1,
+    1,
+    2,
+    2,
+    3,
+    3
+   ],
+   "expected": [
+    1
+   ]
+  },
+  {
+   "fn": "isCollinear",
+   "args": [
+    0,
+    0,
+    1,
+    1,
+    2,
+    2,
+    4,
+    3
+   ],
+   "expected": [
+    0
+   ]
+  },
+  {
+   "fn": "getDistanceBetweenParallel",
+   "args": [
+    0,
+    0,
+    1,
+    0,
+    0,
+    3,
+    1,
+    3
+   ],
+   "expected": [
+    3
+   ]
+  },
+  {
+   "fn": "getPerpendicularDistance",
+   "args": [
+    0,
+    0,
+    10,
+    0,
+    5,
+    4
+   ],
+   "expected": [
+    4
+   ]
+  },
+  {
+   "fn": "getPerpendicularDistance",
+   "args": [
+    0,
+    0,
+    0,
+    10,
+    4,
+    5
+   ],
+   "expected": [
+    4
+   ]
+  },
+  {
+   "fn": "getPerpendicularIntersect",
+   "args": [
+    0,
+    0,
+    10,
+    0,
+    3,
+    7
+   ],
+   "expected": [
+    3,
+    0
+   ]
+  },
+  {
+   "fn": "getPerpendicularIntersect",
+   "args": [
+    0,
+    0,
+    0,
+    10,
+    3,
+    7
+   ],
+   "expected": [
+    0,
+    7
+   ]
+  },
+  {
+   "fn": "isInRange",
+   "args": [
+    0,
+    10,
+    5
+   ],
+   "expected": [
+    1
+   ]
+  },
+  {
+   "fn": "isInRange",
+   "args": [
+    0,
+    10,
+    11
+   ],
+   "expected": [
+    0
+   ]
+  },
+  {
+   "fn": "isInRange",
+   "args": [
+    10,
+    0,
+    -0.0004
+   ],
+   "expected": [
+    1
+   ]
+  },
+  {
+   "fn": "isInRangePoint",
+   "args": [
+    0,
+    0,
+    10,
+    10,
+    5,
+    5
+   ],
+   "expected": [
+    1
+   ]
+  },
+  {
+   "fn": "isInRangePoint",
+   "args": [
+    0,
+    0,
+    10,
+    10,
+    5,
+    12
+   ],
+   "expected": [
+    0
+   ]
+  },
+  {
+   "fn": "isInRangeInt",
+   "args": [
+    0,
+    10,
+    10
+   ],
+   "expected": [
+    1
+   ]
+  },
+  {
+   "fn": "isInRangeInt",
+   "args": [
+    0,
+    10,
+    11
+   ],
+   "expected": [
+    0
+   ]
+  },
+  {
+   "fn": "clamp",
+   "args": [
+    -1,
+    4
+   ],
+   "expected": [
+    3
+   ]
+  },
+  {
+   "fn": "clamp",
+   "args": [
+    4,
+    4
+   ],
+   "expected": [
+    0
+   ]
+  },
+  {
+   "fn": "clamp",
+   "args": [
+    6,
+    4
+   ],
+   "expected": [
+    2
+   ]
+  },
+  {
+   "fn": "clamp",
+   "args": [
+    0,
+    4
+   ],
+   "expected": [
+    0
+   ]
+  },
+  {
+   "fn": "constrain",
+   "args": [
+    11,
+    0,
+    10
+   ],
+   "expected": [
+    10
+   ]
+  },
+  {
+   "fn": "constrain",
+   "args": [
+    -1,
+    0,
+    10
+   ],
+   "expected": [
+    0
+   ]
+  },
+  {
+   "fn": "constrain",
+   "args": [
+    5,
+    0,
+    10
+   ],
+   "expected": [
+    5
+   ]
+  },
+  {
+   "fn": "getDeterminant3x3",
+   "args": [
+    1,
+    0,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0,
+    1
+   ],
+   "expected": [
+    1
+   ]
+  },
+  {
+   "fn": "getDeterminant3x3",
+   "args": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+   ],
+   "expected": [
+    0
+   ]
+  },
+  {
+   "fn": "isCCW",
+   "args": [
+    0,
+    0,
+    1,
+    0,
+    0,
+    1
+   ],
+   "expected": [
+    1
+   ]
+  },
+  {
+   "fn": "isCCW",
+   "args": [
+    0,
+    0,
+    0,
+    1,
+    1,
+    0
+   ],
+   "expected": [
+    0
+   ]
+  },
+  {
+   "fn": "getIncenter",
+   "args": [
+    0,
+    0,
+    6,
+    0,
+    3,
+    4
+   ],
+   "expected": [
+    3,
+    1.5
+   ]
+  },
+  {
+   "fn": "getIncenter",
+   "args": [
+    0,
+    0,
+    10,
+    0,
+    0,
+    10
+   ],
+   "expected": [
+    2.928932188134525,
+    2.928932188134525
+   ]
+  },
+  {
+   "fn": "getPolygonArea",
+   "args": [
+    0,
+    0,
+    10,
+    0,
+    10,
+    10,
+    0,
+    10
+   ],
+   "expected": [
+    100
+   ]
+  },
+  {
+   "fn": "getPolygonArea",
+   "args": [
+    0,
+    0,
+    3,
+    0,
+    0,
+    4
+   ],
+   "expected": [
+    6
+   ]
+  },
+  {
+   "fn": "isPointInOriginSquare",
+   "args": [
+    0,
+    0,
+    100,
+    0
+   ],
+   "expected": [
+    1
+   ]
+  },
+  {
+   "fn": "isPointInOriginSquare",
+   "args": [
+    200,
+    0,
+    100,
+    0
+   ],
+   "expected": [
+    0
+   ]
+  },
+  {
+   "fn": "isPointInOriginRectangle",
+   "args": [
+    50,
+    40,
+    100,
+    50,
+    0
+   ],
+   "expected": [
+    1
+   ]
+  },
+  {
+   "fn": "isPointInOriginRectangle",
+   "args": [
+    50,
+    70,
+    100,
+    50,
+    0
+   ],
+   "expected": [
+    0
+   ]
+  },
+  {
+   "fn": "isPointOutsideOriginSquare",
+   "args": [
+    150,
+    0,
+    100,
+    0
+   ],
+   "expected": [
+    1
+   ]
+  },
+  {
+   "fn": "isPointOutsideOriginSquare",
+   "args": [
+    50,
+    0,
+    100,
+    0
+   ],
+   "expected": [
+    0
+   ]
+  },
+  {
+   "fn": "isPointOutsideOriginRectangle",
+   "args": [
+    50,
+    70,
+    100,
+    50,
+    0
+   ],
+   "expected": [
+    1
+   ]
+  },
+  {
+   "fn": "isPointInOriginHexagon",
+   "args": [
+    0,
+    0,
+    100,
+    0
+   ],
+   "expected": [
+    1
+   ]
+  },
+  {
+   "fn": "isPointInOriginHexagon",
+   "args": [
+    150,
+    0,
+    100,
+    0
+   ],
+   "expected": [
+    0
+   ]
+  },
+  {
+   "fn": "isPointInOriginHexagon",
+   "args": [
+    0,
+    120,
+    100,
+    0
+   ],
+   "expected": [
+    0
+   ]
+  },
+  {
+   "fn": "getDefaultIntKey",
+   "args": [
+    0.5
+   ],
+   "expected": [
+    500
+   ]
+  },
+  {
+   "fn": "getDefaultIntKey",
+   "args": [
+    -1.234567
+   ],
+   "expected": [
+    -1235
+   ]
+  },
+  {
+   "fn": "getIntKey",
+   "args": [
+    10,
+    0.55
+   ],
+   "expected": [
+    6
+   ]
+  },
+  {
+   "fn": "isPointInConvexPolygon",
+   "args": [
+    100000,
+    0,
+    5,
+    5,
+    100,
+    5
+   ],
+   "expected": [
+    1
+   ]
+  },
+  {
+   "fn": "isPointInConvexPolygon",
+   "args": [
+    100000,
+    0,
+    5,
+    5,
+    3,
+    3
+   ],
+   "expected": [
+    0
+   ]
+  }
+ ],
+ "polygonCalls": [
+  {
+   "z": 0,
+   "poly1": [
+    [
+     0,
+     0
+    ],
+    [
+     10,
+     0
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     0,
+     10
+    ]
+   ],
+   "poly2": [
+    [
+     -5,
+     5
+    ],
+    [
+     5,
+     5
+    ],
+    [
+     5,
+     15
+    ],
+    [
+     -5,
+     15
+    ]
+   ],
+   "expected": 1
+  },
+  {
+   "z": 1,
+   "poly1": [
+    [
+     0,
+     0
+    ],
+    [
+     10,
+     0
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     0,
+     10
+    ]
+   ],
+   "poly2": [
+    [
+     -5,
+     5
+    ],
+    [
+     5,
+     5
+    ],
+    [
+     5,
+     15
+    ],
+    [
+     -5,
+     15
+    ]
+   ],
+   "expected": 1
+  },
+  {
+   "z": 0,
+   "poly1": [
+    [
+     0,
+     0
+    ],
+    [
+     10,
+     0
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     0,
+     10
+    ]
+   ],
+   "poly2": [
+    [
+     20,
+     20
+    ],
+    [
+     30,
+     20
+    ],
+    [
+     30,
+     30
+    ],
+    [
+     20,
+     30
+    ]
+   ],
+   "expected": 0
+  }
+ ],
+ "glutil": {
+  "MAX_FACE_SETS": 6,
+  "MAX_LINE_SETS": 6,
+  "MAX_LINES_PER_SET": 10922,
+  "identity": [
+   1,
+   0,
+   0,
+   0,
+   0,
+   1,
+   0,
+   0,
+   0,
+   0,
+   1,
+   0,
+   0,
+   0,
+   0,
+   1
+  ],
+  "translated": [
+   1,
+   0,
+   0,
+   0,
+   0,
+   1,
+   0,
+   0,
+   0,
+   0,
+   1,
+   0,
+   10,
+   20,
+   0,
+   1
+  ],
+  "translatedPoint": [
+   13,
+   24
+  ],
+  "objectPoint": [
+   3,
+   4
+  ],
+  "objectPointFloat": [
+   3,
+   4
+  ],
+  "rotate90": [
+   6.123233995736766e-17,
+   1,
+   0,
+   0,
+   -1,
+   6.123233995736766e-17,
+   0,
+   0,
+   0,
+   0,
+   1,
+   0,
+   0,
+   0,
+   0,
+   1
+  ],
+  "rotatedPoint": [
+   6.123233995736766e-17,
+   1
+  ],
+  "inverseRotate90": [
+   6.123233995736766e-17,
+   -1,
+   0,
+   0,
+   1,
+   6.123233995736766e-17,
+   0,
+   0,
+   0,
+   0,
+   1,
+   0,
+   0,
+   0,
+   0,
+   1
+  ],
+  "rotateTimesInverse": [
+   1,
+   0,
+   0,
+   0,
+   0,
+   1,
+   0,
+   0,
+   0,
+   0,
+   1,
+   0,
+   0,
+   0,
+   0,
+   1
+  ],
+  "scaled": [
+   2,
+   0,
+   0,
+   0,
+   0,
+   3,
+   0,
+   0,
+   0,
+   0,
+   1,
+   0,
+   0,
+   0,
+   0,
+   1
+  ],
+  "scaledPoint": [
+   2,
+   3
+  ],
+  "floatMatrixRotate90": [
+   6.123234262925839e-17,
+   1,
+   0,
+   0,
+   -1,
+   6.123234262925839e-17,
+   0,
+   0,
+   0,
+   0,
+   1,
+   0,
+   0,
+   0,
+   0,
+   1
+  ],
+  "floatMatrixPoint": [
+   6.123234262925839e-17,
+   1
+  ],
+  "mirrorMatrix": [
+   1,
+   1.2246467991473532e-16,
+   0,
+   0,
+   1.2246467991473532e-16,
+   -1,
+   0,
+   0,
+   0,
+   0,
+   1,
+   0,
+   0,
+   0,
+   0,
+   1
+  ],
+  "mirrorLine": [
+   10.000000000000002,
+   -20,
+   -30,
+   -5.0000000000000036
+  ],
+  "mirrorBack": [
+   9.999999999999998,
+   20,
+   -30,
+   4.9999999999999964
+  ],
+  "mirrorFixed": [
+   0,
+   0
+  ]
+ },
+ "pointDouble": {
+  "length": 5,
+  "staticLength": 5,
+  "hashCode": 17301504,
+  "hashCodes": [
+   0,
+   -32505856,
+   -2121203712
+  ],
+  "equalsSame": 1,
+  "equalsDifferent": 0,
+  "minDistance": 5,
+  "toString": "PointDouble(3, 4)"
+ },
+ "segment": {
+  "hashCode": -1000603648,
+  "equalsSame": 1,
+  "equalsReversed": 0,
+  "minDistancePerpendicular": 3,
+  "minDistanceEndpoint": 2,
+  "minDistances": [
+   3,
+   2,
+   2,
+   7
+  ]
+ },
+ "minMaxDouble": {
+  "empty": [
+   1.7976931348623157e+308,
+   1.7976931348623157e+308,
+   -1.7976931348623157e+308,
+   -1.7976931348623157e+308
+  ],
+  "custom": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "readArray": [
+   -1,
+   -2,
+   5,
+   6
+  ],
+  "centers": [
+   5,
+   10,
+   5,
+   10,
+   10
+  ]
+ },
+ "minMaxFloat": {
+  "empty": [
+   3.4028234663852886e+38,
+   3.4028234663852886e+38,
+   -3.4028234663852886e+38,
+   -3.4028234663852886e+38
+  ],
+  "readArray": [
+   -1.5,
+   -2.5,
+   5.5,
+   6.5
+  ],
+  "centers": [
+   0,
+   0,
+   -3.4028234663852886e+38,
+   -3.4028234663852886e+38
+  ]
+ },
+ "colorUtil": {
+  "rainbow": [
+   -65536,
+   -65281,
+   -16776961,
+   -16711681,
+   -16711936,
+   -256,
+   -65536
+  ],
+  "intToStringRgb": [
+   "#FF0000",
+   "#123456",
+   "#000000",
+   "#FFFFFF",
+   "#ABCDEF"
+  ],
+  "intToStringRgbNoHash": [
+   "123456",
+   "FF0000"
+  ],
+  "rgbFloat": [
+   1,
+   0.501960813999176,
+   0
+  ],
+  "hueAngleDeg": [
+   0,
+   120,
+   240,
+   0,
+   0
+  ],
+  "saturatedHue": [
+   -65536,
+   -16711936,
+   -16776961,
+   -256,
+   -65281
+  ]
+ },
+ "displayUtil": {
+  "pixelFromDp": [
+   16,
+   32,
+   15
+  ],
+  "gridColumnCount": [
+   3,
+   4,
+   1
+  ]
+ },
+ "jsRound": [
+  {
+   "value": 1.2344,
+   "round": 1,
+   "roundTimes1000": 1234
+  },
+  {
+   "value": 1.2345,
+   "round": 1,
+   "roundTimes1000": 1235
+  },
+  {
+   "value": 1.2346,
+   "round": 1,
+   "roundTimes1000": 1235
+  },
+  {
+   "value": -1.2345,
+   "round": -1,
+   "roundTimes1000": -1234
+  },
+  {
+   "value": -2.5,
+   "round": -2,
+   "roundTimes1000": -2500
+  },
+  {
+   "value": -0.5,
+   "round": 0,
+   "roundTimes1000": -500
+  },
+  {
+   "value": 0.5,
+   "round": 1,
+   "roundTimes1000": 500
+  },
+  {
+   "value": 2.5,
+   "round": 3,
+   "roundTimes1000": 2500
+  },
+  {
+   "value": 1234.5678,
+   "round": 1235,
+   "roundTimes1000": 1234568
+  }
+ ]
+}

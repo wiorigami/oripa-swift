@@ -1,0 +1,7077 @@
+{
+  "meta": {
+    "source": "oripa-port/src/js/core/model/{statemachine,tool}",
+    "generator": "tools/fixtures/tools/gen_tools.js",
+    "referenceSuite": "oripa-port/tools/tests/test_core_statemachine.js",
+    "transitionResults": {
+      "CHANGED_POINTS": 0,
+      "CHANGED_LINES": 1,
+      "NO_CHANGE": 2,
+      "FINISHED": 3
+    }
+  },
+  "constants": {
+    "toolType": {
+      "ADD_ANGLE_BISECTOR": 3,
+      "ADD_LINE": 1,
+      "ADD_LINE_EXTENSION": 7,
+      "ADD_MIRRORED_LINES": 8,
+      "ADD_PERPENDICULAR_BISECTOR": 2,
+      "ADD_PERPENDICULAR_SEGMENT": 5,
+      "ADD_SEGMENT": 0,
+      "ADD_SEGMENT_BY_VALUE": 9,
+      "ADD_SYMMETRICAL_SEGMENT": 6,
+      "ADD_TRIANGLE_INCENTER": 4,
+      "CHANGE_LINE": 10,
+      "DELETE_LINE": 12,
+      "DELETE_VERTEX": 13,
+      "SELECT_LINE": 11
+    },
+    "transitionResult": {
+      "CHANGED_LINES": 1,
+      "CHANGED_POINTS": 0,
+      "FINISHED": 3,
+      "NO_CHANGE": 2
+    },
+    "event": {
+      "CONFIRM_LINE": 3,
+      "CONFIRM_POINT": 1,
+      "FINISH": 4,
+      "SET_TEMP_LINE": 2,
+      "SET_TEMP_POINT": 0
+    },
+    "changeLineRID": {
+      "FROM_ANY": 2131296425,
+      "FROM_BOUNDARY": 2131296426,
+      "FROM_FLAT": 2131296427,
+      "FROM_MOUNTAIN": 2131296428,
+      "FROM_VALLEY": 2131296429,
+      "TO_BOUNDARY": 2131296430,
+      "TO_FLAT": 2131296431,
+      "TO_FLIP": 2131296432,
+      "TO_MOUNTAIN": 2131296433,
+      "TO_VALLEY": 2131296434
+    },
+    "deleteLineRID": {
+      "ANY": 2131296436,
+      "BOUNDARY": 2131296437,
+      "FLAT": 2131296438,
+      "MOUNTAIN": 2131296439,
+      "VALLEY": 2131296440
+    },
+    "changeLinePrefKeys": {
+      "FROM": "PaintCpFragment.changeLineTypeFrom",
+      "TO": "PaintCpFragment.changeLineTypeTo"
+    },
+    "deleteLinePrefKey": "PaintCpFragment.deleteLineType"
+  },
+  "scenarios": [
+    {
+      "name": "AddSegmentSM.direct",
+      "machine": "AddSegmentSM",
+      "manager": false,
+      "directSelection": true,
+      "setup": {
+        "defaultSquare": false,
+        "lines": [
+          [
+            0,
+            0,
+            100,
+            0,
+            2
+          ],
+          [
+            0,
+            100,
+            100,
+            100,
+            2
+          ]
+        ]
+      },
+      "ops": [
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            1,
+            1
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 0,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 2,
+              "pointCount": 4,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  0,
+                  100,
+                  100,
+                  100,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            1,
+            101
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 3,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  100
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 2,
+              "pointCount": 4,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  0,
+                  100,
+                  100,
+                  100,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "getNew",
+          "expect": {
+            "toolType": 0,
+            "directSelectionEnabled": true,
+            "hasBatchLineOperation": false,
+            "hasBatchPointOperation": false
+          }
+        },
+        {
+          "op": "finish",
+          "context": null,
+          "expect": {
+            "group": {
+              "isEmpty": false,
+              "historyItems": 1
+            },
+            "context": null,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  100
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 3,
+              "pointCount": 4,
+              "lines": [
+                [
+                  0,
+                  0,
+                  0,
+                  100,
+                  2
+                ],
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  0,
+                  100,
+                  100,
+                  100,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "longTransition",
+          "z": true,
+          "point": [
+            0,
+            0
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 2,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  100
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 3,
+              "pointCount": 4,
+              "lines": [
+                [
+                  0,
+                  0,
+                  0,
+                  100,
+                  2
+                ],
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  0,
+                  100,
+                  100,
+                  100,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "toolType",
+          "expect": {
+            "toolType": 0
+          }
+        }
+      ],
+      "initial": {
+        "toolType": 0,
+        "directSelectionEnabled": true,
+        "hasBatchLineOperation": false,
+        "hasBatchPointOperation": false
+      },
+      "final": {
+        "lineCount": 3,
+        "pointCount": 4,
+        "lines": [
+          [
+            0,
+            0,
+            0,
+            100,
+            2
+          ],
+          [
+            0,
+            0,
+            100,
+            0,
+            2
+          ],
+          [
+            0,
+            100,
+            100,
+            100,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "AddSegmentSM.indirect",
+      "machine": "AddSegmentSM",
+      "manager": false,
+      "directSelection": false,
+      "setup": {
+        "defaultSquare": false,
+        "lines": [
+          [
+            0,
+            0,
+            100,
+            0,
+            2
+          ],
+          [
+            0,
+            100,
+            100,
+            100,
+            2
+          ]
+        ]
+      },
+      "ops": [
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            1,
+            1
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 0,
+            "state": {
+              "pointsPicked": [],
+              "linesPicked": [],
+              "tempPointPicked": [
+                0,
+                0
+              ],
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 2,
+              "pointCount": 4,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  0,
+                  100,
+                  100,
+                  100,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            1,
+            1
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 0,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 2,
+              "pointCount": 4,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  0,
+                  100,
+                  100,
+                  100,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            500,
+            500
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 2,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 2,
+              "pointCount": 4,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  0,
+                  100,
+                  100,
+                  100,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            99,
+            99
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 0,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": [
+                100,
+                100
+              ],
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 2,
+              "pointCount": 4,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  0,
+                  100,
+                  100,
+                  100,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            99,
+            99
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 3,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  100,
+                  100
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 2,
+              "pointCount": 4,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  0,
+                  100,
+                  100,
+                  100,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "finish",
+          "context": null,
+          "expect": {
+            "group": {
+              "isEmpty": false,
+              "historyItems": 1
+            },
+            "context": null,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  100,
+                  100
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 3,
+              "pointCount": 4,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  0,
+                  0,
+                  100,
+                  100,
+                  2
+                ],
+                [
+                  0,
+                  100,
+                  100,
+                  100,
+                  2
+                ]
+              ]
+            }
+          }
+        }
+      ],
+      "initial": {
+        "toolType": 0,
+        "directSelectionEnabled": false,
+        "hasBatchLineOperation": false,
+        "hasBatchPointOperation": false
+      },
+      "final": {
+        "lineCount": 3,
+        "pointCount": 4,
+        "lines": [
+          [
+            0,
+            0,
+            100,
+            0,
+            2
+          ],
+          [
+            0,
+            0,
+            100,
+            100,
+            2
+          ],
+          [
+            0,
+            100,
+            100,
+            100,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "AddTriangleIncenterSM.direct",
+      "machine": "AddTriangleIncenterSM",
+      "manager": false,
+      "directSelection": true,
+      "setup": {
+        "defaultSquare": false,
+        "lines": [
+          [
+            0,
+            0,
+            100,
+            0,
+            2
+          ],
+          [
+            0,
+            0,
+            0,
+            100,
+            2
+          ]
+        ]
+      },
+      "ops": [
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            1,
+            1
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 0,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 2,
+              "pointCount": 3,
+              "lines": [
+                [
+                  0,
+                  0,
+                  0,
+                  100,
+                  2
+                ],
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            99,
+            1
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 0,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  100,
+                  0
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 2,
+              "pointCount": 3,
+              "lines": [
+                [
+                  0,
+                  0,
+                  0,
+                  100,
+                  2
+                ],
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            1,
+            99
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 3,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  100,
+                  0
+                ],
+                [
+                  0,
+                  100
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 2,
+              "pointCount": 3,
+              "lines": [
+                [
+                  0,
+                  0,
+                  0,
+                  100,
+                  2
+                ],
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "finish",
+          "context": null,
+          "expect": {
+            "group": {
+              "isEmpty": false,
+              "historyItems": 3
+            },
+            "context": null,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  100,
+                  0
+                ],
+                [
+                  0,
+                  100
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 5,
+              "pointCount": 4,
+              "lines": [
+                [
+                  0,
+                  0,
+                  0,
+                  100,
+                  2
+                ],
+                [
+                  0,
+                  0,
+                  29.28932188134525,
+                  29.28932188134525,
+                  2
+                ],
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  0,
+                  100,
+                  29.28932188134525,
+                  29.28932188134525,
+                  2
+                ],
+                [
+                  29.28932188134525,
+                  29.28932188134525,
+                  100,
+                  0,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "getNew",
+          "expect": {
+            "toolType": 4,
+            "directSelectionEnabled": true,
+            "hasBatchLineOperation": false,
+            "hasBatchPointOperation": false
+          }
+        }
+      ],
+      "initial": {
+        "toolType": 4,
+        "directSelectionEnabled": true,
+        "hasBatchLineOperation": false,
+        "hasBatchPointOperation": false
+      },
+      "final": {
+        "lineCount": 5,
+        "pointCount": 4,
+        "lines": [
+          [
+            0,
+            0,
+            0,
+            100,
+            2
+          ],
+          [
+            0,
+            0,
+            29.28932188134525,
+            29.28932188134525,
+            2
+          ],
+          [
+            0,
+            0,
+            100,
+            0,
+            2
+          ],
+          [
+            0,
+            100,
+            29.28932188134525,
+            29.28932188134525,
+            2
+          ],
+          [
+            29.28932188134525,
+            29.28932188134525,
+            100,
+            0,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "DeleteVertexSM.direct",
+      "machine": "DeleteVertexSM",
+      "manager": false,
+      "directSelection": true,
+      "setup": {
+        "defaultSquare": false,
+        "lines": [
+          [
+            0,
+            0,
+            50,
+            0,
+            2
+          ],
+          [
+            50,
+            0,
+            100,
+            0,
+            2
+          ]
+        ]
+      },
+      "ops": [
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            51,
+            1
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 3,
+            "state": {
+              "pointsPicked": [
+                [
+                  50,
+                  0
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 2,
+              "pointCount": 3,
+              "lines": [
+                [
+                  0,
+                  0,
+                  50,
+                  0,
+                  2
+                ],
+                [
+                  50,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "finish",
+          "context": null,
+          "expect": {
+            "group": {
+              "isEmpty": false,
+              "historyItems": 1
+            },
+            "context": null,
+            "state": {
+              "pointsPicked": [
+                [
+                  50,
+                  0
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 1,
+              "pointCount": 2,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ]
+            }
+          }
+        }
+      ],
+      "initial": {
+        "toolType": 13,
+        "directSelectionEnabled": true,
+        "hasBatchLineOperation": false,
+        "hasBatchPointOperation": true
+      },
+      "final": {
+        "lineCount": 1,
+        "pointCount": 2,
+        "lines": [
+          [
+            0,
+            0,
+            100,
+            0,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "DeleteVertexSM.batch",
+      "machine": "DeleteVertexSM",
+      "manager": false,
+      "directSelection": true,
+      "setup": {
+        "defaultSquare": false,
+        "lines": [
+          [
+            0,
+            0,
+            50,
+            0,
+            2
+          ],
+          [
+            50,
+            0,
+            100,
+            0,
+            2
+          ]
+        ]
+      },
+      "ops": [
+        {
+          "op": "batchPoint",
+          "context": null,
+          "start": [
+            -1,
+            -1
+          ],
+          "end": [
+            51,
+            1
+          ],
+          "expect": {
+            "group": {
+              "isEmpty": false,
+              "historyItems": 1
+            },
+            "state": {
+              "pointsPicked": [],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 1,
+              "pointCount": 2,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ]
+            }
+          }
+        }
+      ],
+      "initial": {
+        "toolType": 13,
+        "directSelectionEnabled": true,
+        "hasBatchLineOperation": false,
+        "hasBatchPointOperation": true
+      },
+      "final": {
+        "lineCount": 1,
+        "pointCount": 2,
+        "lines": [
+          [
+            0,
+            0,
+            100,
+            0,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "AddSegmentByValueGetAngleSM.direct",
+      "machine": "AddSegmentByValueGetAngleSM",
+      "manager": false,
+      "directSelection": true,
+      "setup": {
+        "defaultSquare": false,
+        "lines": [
+          [
+            0,
+            0,
+            100,
+            100,
+            2
+          ]
+        ]
+      },
+      "ops": [
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            1,
+            1
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 0,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 1,
+              "pointCount": 2,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  100,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            99,
+            99
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 3,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  100,
+                  100
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 1,
+              "pointCount": 2,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  100,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "finish",
+          "context": {
+            "angle": 123,
+            "length": 456
+          },
+          "expect": {
+            "group": {
+              "isEmpty": true,
+              "historyItems": 0
+            },
+            "context": {
+              "angle": -45,
+              "length": 456
+            },
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  100,
+                  100
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 1,
+              "pointCount": 2,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  100,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "getNew",
+          "expect": {
+            "toolType": 9,
+            "directSelectionEnabled": true,
+            "hasBatchLineOperation": false,
+            "hasBatchPointOperation": false
+          }
+        }
+      ],
+      "initial": {
+        "toolType": 9,
+        "directSelectionEnabled": true,
+        "hasBatchLineOperation": false,
+        "hasBatchPointOperation": false
+      },
+      "final": {
+        "lineCount": 1,
+        "pointCount": 2,
+        "lines": [
+          [
+            0,
+            0,
+            100,
+            100,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "AddSegmentByValueGetLengthSM.direct",
+      "machine": "AddSegmentByValueGetLengthSM",
+      "manager": false,
+      "directSelection": true,
+      "setup": {
+        "defaultSquare": false,
+        "lines": [
+          [
+            0,
+            0,
+            100,
+            0,
+            2
+          ]
+        ]
+      },
+      "ops": [
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            1,
+            1
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 0,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 1,
+              "pointCount": 2,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            99,
+            1
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 3,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  100,
+                  0
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 1,
+              "pointCount": 2,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "finish",
+          "context": {
+            "angle": 42,
+            "length": 999
+          },
+          "expect": {
+            "group": {
+              "isEmpty": true,
+              "historyItems": 0
+            },
+            "context": {
+              "angle": 42,
+              "length": 100
+            },
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  100,
+                  0
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 1,
+              "pointCount": 2,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ]
+            }
+          }
+        }
+      ],
+      "initial": {
+        "toolType": 9,
+        "directSelectionEnabled": true,
+        "hasBatchLineOperation": false,
+        "hasBatchPointOperation": false
+      },
+      "final": {
+        "lineCount": 1,
+        "pointCount": 2,
+        "lines": [
+          [
+            0,
+            0,
+            100,
+            0,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "AddSegmentByValueDrawLineSM.direct",
+      "machine": "AddSegmentByValueDrawLineSM",
+      "manager": false,
+      "directSelection": true,
+      "setup": {
+        "defaultSquare": false,
+        "lines": [
+          [
+            0,
+            0,
+            100,
+            0,
+            2
+          ]
+        ]
+      },
+      "ops": [
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            1,
+            1
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 3,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 1,
+              "pointCount": 2,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "finish",
+          "context": {
+            "angle": 0,
+            "length": 10
+          },
+          "expect": {
+            "group": {
+              "isEmpty": false,
+              "historyItems": 1
+            },
+            "context": {
+              "angle": 0,
+              "length": 10
+            },
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 2,
+              "pointCount": 3,
+              "lines": [
+                [
+                  0,
+                  0,
+                  10,
+                  0,
+                  2
+                ],
+                [
+                  10,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ]
+            }
+          }
+        }
+      ],
+      "initial": {
+        "toolType": 9,
+        "directSelectionEnabled": true,
+        "hasBatchLineOperation": false,
+        "hasBatchPointOperation": false
+      },
+      "final": {
+        "lineCount": 2,
+        "pointCount": 3,
+        "lines": [
+          [
+            0,
+            0,
+            10,
+            0,
+            2
+          ],
+          [
+            10,
+            0,
+            100,
+            0,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "AddSegmentByValueDrawLineSM.angle",
+      "machine": "AddSegmentByValueDrawLineSM",
+      "manager": false,
+      "directSelection": true,
+      "setup": {
+        "defaultSquare": false,
+        "lines": [
+          [
+            0,
+            0,
+            100,
+            0,
+            2
+          ]
+        ]
+      },
+      "ops": [
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            1,
+            1
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 3,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 1,
+              "pointCount": 2,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "finish",
+          "context": {
+            "angle": 90,
+            "length": 10
+          },
+          "expect": {
+            "group": {
+              "isEmpty": false,
+              "historyItems": 1
+            },
+            "context": {
+              "angle": 90,
+              "length": 10
+            },
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 2,
+              "pointCount": 3,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  6.123233995736766e-16,
+                  -10,
+                  0,
+                  0,
+                  2
+                ]
+              ]
+            }
+          }
+        }
+      ],
+      "initial": {
+        "toolType": 9,
+        "directSelectionEnabled": true,
+        "hasBatchLineOperation": false,
+        "hasBatchPointOperation": false
+      },
+      "final": {
+        "lineCount": 2,
+        "pointCount": 3,
+        "lines": [
+          [
+            0,
+            0,
+            100,
+            0,
+            2
+          ],
+          [
+            6.123233995736766e-16,
+            -10,
+            0,
+            0,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "AddSegmentByValueDrawLineSM.noContext",
+      "machine": "AddSegmentByValueDrawLineSM",
+      "manager": false,
+      "directSelection": true,
+      "setup": {
+        "defaultSquare": false,
+        "lines": [
+          [
+            0,
+            0,
+            100,
+            0,
+            2
+          ]
+        ]
+      },
+      "ops": [
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            1,
+            1
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 3,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 1,
+              "pointCount": 2,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "finish",
+          "context": null,
+          "expect": {
+            "group": {
+              "isEmpty": true,
+              "historyItems": 0
+            },
+            "context": null,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 1,
+              "pointCount": 2,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ]
+            }
+          }
+        }
+      ],
+      "initial": {
+        "toolType": 9,
+        "directSelectionEnabled": true,
+        "hasBatchLineOperation": false,
+        "hasBatchPointOperation": false
+      },
+      "final": {
+        "lineCount": 1,
+        "pointCount": 2,
+        "lines": [
+          [
+            0,
+            0,
+            100,
+            0,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "AddLineSM.direct",
+      "machine": "AddLineSM",
+      "manager": false,
+      "directSelection": true,
+      "setup": {
+        "defaultSquare": true,
+        "lines": []
+      },
+      "ops": [
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            200,
+            200
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 0,
+            "state": {
+              "pointsPicked": [
+                [
+                  200,
+                  200
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 4,
+              "pointCount": 4,
+              "lines": [
+                [
+                  -200,
+                  -200,
+                  -200,
+                  200,
+                  1
+                ],
+                [
+                  -200,
+                  -200,
+                  200,
+                  -200,
+                  1
+                ],
+                [
+                  -200,
+                  200,
+                  200,
+                  200,
+                  1
+                ],
+                [
+                  200,
+                  -200,
+                  200,
+                  200,
+                  1
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            -200,
+            -200
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 0,
+            "state": {
+              "pointsPicked": [
+                [
+                  200,
+                  200
+                ],
+                [
+                  -200,
+                  -200
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 4,
+              "pointCount": 4,
+              "lines": [
+                [
+                  -200,
+                  -200,
+                  -200,
+                  200,
+                  1
+                ],
+                [
+                  -200,
+                  -200,
+                  200,
+                  -200,
+                  1
+                ],
+                [
+                  -200,
+                  200,
+                  200,
+                  200,
+                  1
+                ],
+                [
+                  200,
+                  -200,
+                  200,
+                  200,
+                  1
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            0,
+            200
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 1,
+            "state": {
+              "pointsPicked": [
+                [
+                  200,
+                  200
+                ],
+                [
+                  -200,
+                  -200
+                ]
+              ],
+              "linesPicked": [
+                [
+                  -200,
+                  200,
+                  200,
+                  200,
+                  1
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 4,
+              "pointCount": 4,
+              "lines": [
+                [
+                  -200,
+                  -200,
+                  -200,
+                  200,
+                  1
+                ],
+                [
+                  -200,
+                  -200,
+                  200,
+                  -200,
+                  1
+                ],
+                [
+                  -200,
+                  200,
+                  200,
+                  200,
+                  1
+                ],
+                [
+                  200,
+                  -200,
+                  200,
+                  200,
+                  1
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            0,
+            -200
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 3,
+            "state": {
+              "pointsPicked": [
+                [
+                  200,
+                  200
+                ],
+                [
+                  -200,
+                  -200
+                ]
+              ],
+              "linesPicked": [
+                [
+                  -200,
+                  -200,
+                  200,
+                  -200,
+                  1
+                ],
+                [
+                  -200,
+                  200,
+                  200,
+                  200,
+                  1
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 4,
+              "pointCount": 4,
+              "lines": [
+                [
+                  -200,
+                  -200,
+                  -200,
+                  200,
+                  1
+                ],
+                [
+                  -200,
+                  -200,
+                  200,
+                  -200,
+                  1
+                ],
+                [
+                  -200,
+                  200,
+                  200,
+                  200,
+                  1
+                ],
+                [
+                  200,
+                  -200,
+                  200,
+                  200,
+                  1
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "finish",
+          "context": null,
+          "expect": {
+            "group": {
+              "isEmpty": false,
+              "historyItems": 1
+            },
+            "context": null,
+            "state": {
+              "pointsPicked": [
+                [
+                  200,
+                  200
+                ],
+                [
+                  -200,
+                  -200
+                ]
+              ],
+              "linesPicked": [
+                [
+                  -200,
+                  -200,
+                  200,
+                  -200,
+                  1
+                ],
+                [
+                  -200,
+                  200,
+                  200,
+                  200,
+                  1
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 5,
+              "pointCount": 4,
+              "lines": [
+                [
+                  -200,
+                  -200,
+                  -200,
+                  200,
+                  1
+                ],
+                [
+                  -200,
+                  -200,
+                  200,
+                  -200,
+                  1
+                ],
+                [
+                  -200,
+                  -200,
+                  200,
+                  200,
+                  2
+                ],
+                [
+                  -200,
+                  200,
+                  200,
+                  200,
+                  1
+                ],
+                [
+                  200,
+                  -200,
+                  200,
+                  200,
+                  1
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "getNew",
+          "expect": {
+            "toolType": 1,
+            "directSelectionEnabled": true,
+            "hasBatchLineOperation": false,
+            "hasBatchPointOperation": false
+          }
+        }
+      ],
+      "initial": {
+        "toolType": 1,
+        "directSelectionEnabled": true,
+        "hasBatchLineOperation": false,
+        "hasBatchPointOperation": false
+      },
+      "final": {
+        "lineCount": 5,
+        "pointCount": 4,
+        "lines": [
+          [
+            -200,
+            -200,
+            -200,
+            200,
+            1
+          ],
+          [
+            -200,
+            -200,
+            200,
+            -200,
+            1
+          ],
+          [
+            -200,
+            -200,
+            200,
+            200,
+            2
+          ],
+          [
+            -200,
+            200,
+            200,
+            200,
+            1
+          ],
+          [
+            200,
+            -200,
+            200,
+            200,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "name": "AddLineSM.indirect",
+      "machine": "AddLineSM",
+      "manager": false,
+      "directSelection": false,
+      "setup": {
+        "defaultSquare": true,
+        "lines": []
+      },
+      "ops": [
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            200,
+            200
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 0,
+            "state": {
+              "pointsPicked": [],
+              "linesPicked": [],
+              "tempPointPicked": [
+                200,
+                200
+              ],
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 4,
+              "pointCount": 4,
+              "lines": [
+                [
+                  -200,
+                  -200,
+                  -200,
+                  200,
+                  1
+                ],
+                [
+                  -200,
+                  -200,
+                  200,
+                  -200,
+                  1
+                ],
+                [
+                  -200,
+                  200,
+                  200,
+                  200,
+                  1
+                ],
+                [
+                  200,
+                  -200,
+                  200,
+                  200,
+                  1
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            200,
+            200
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 0,
+            "state": {
+              "pointsPicked": [
+                [
+                  200,
+                  200
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 4,
+              "pointCount": 4,
+              "lines": [
+                [
+                  -200,
+                  -200,
+                  -200,
+                  200,
+                  1
+                ],
+                [
+                  -200,
+                  -200,
+                  200,
+                  -200,
+                  1
+                ],
+                [
+                  -200,
+                  200,
+                  200,
+                  200,
+                  1
+                ],
+                [
+                  200,
+                  -200,
+                  200,
+                  200,
+                  1
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            -200,
+            -200
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 0,
+            "state": {
+              "pointsPicked": [
+                [
+                  200,
+                  200
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": [
+                -200,
+                -200
+              ],
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 4,
+              "pointCount": 4,
+              "lines": [
+                [
+                  -200,
+                  -200,
+                  -200,
+                  200,
+                  1
+                ],
+                [
+                  -200,
+                  -200,
+                  200,
+                  -200,
+                  1
+                ],
+                [
+                  -200,
+                  200,
+                  200,
+                  200,
+                  1
+                ],
+                [
+                  200,
+                  -200,
+                  200,
+                  200,
+                  1
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            -200,
+            -200
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 0,
+            "state": {
+              "pointsPicked": [
+                [
+                  200,
+                  200
+                ],
+                [
+                  -200,
+                  -200
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 4,
+              "pointCount": 4,
+              "lines": [
+                [
+                  -200,
+                  -200,
+                  -200,
+                  200,
+                  1
+                ],
+                [
+                  -200,
+                  -200,
+                  200,
+                  -200,
+                  1
+                ],
+                [
+                  -200,
+                  200,
+                  200,
+                  200,
+                  1
+                ],
+                [
+                  200,
+                  -200,
+                  200,
+                  200,
+                  1
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            0,
+            200
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 1,
+            "state": {
+              "pointsPicked": [
+                [
+                  200,
+                  200
+                ],
+                [
+                  -200,
+                  -200
+                ]
+              ],
+              "linesPicked": [
+                [
+                  -200,
+                  200,
+                  200,
+                  200,
+                  1
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 4,
+              "pointCount": 4,
+              "lines": [
+                [
+                  -200,
+                  -200,
+                  -200,
+                  200,
+                  1
+                ],
+                [
+                  -200,
+                  -200,
+                  200,
+                  -200,
+                  1
+                ],
+                [
+                  -200,
+                  200,
+                  200,
+                  200,
+                  1
+                ],
+                [
+                  200,
+                  -200,
+                  200,
+                  200,
+                  1
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            0,
+            -200
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 3,
+            "state": {
+              "pointsPicked": [
+                [
+                  200,
+                  200
+                ],
+                [
+                  -200,
+                  -200
+                ]
+              ],
+              "linesPicked": [
+                [
+                  -200,
+                  -200,
+                  200,
+                  -200,
+                  1
+                ],
+                [
+                  -200,
+                  200,
+                  200,
+                  200,
+                  1
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 4,
+              "pointCount": 4,
+              "lines": [
+                [
+                  -200,
+                  -200,
+                  -200,
+                  200,
+                  1
+                ],
+                [
+                  -200,
+                  -200,
+                  200,
+                  -200,
+                  1
+                ],
+                [
+                  -200,
+                  200,
+                  200,
+                  200,
+                  1
+                ],
+                [
+                  200,
+                  -200,
+                  200,
+                  200,
+                  1
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "finish",
+          "context": null,
+          "expect": {
+            "group": {
+              "isEmpty": false,
+              "historyItems": 1
+            },
+            "context": null,
+            "state": {
+              "pointsPicked": [
+                [
+                  200,
+                  200
+                ],
+                [
+                  -200,
+                  -200
+                ]
+              ],
+              "linesPicked": [
+                [
+                  -200,
+                  -200,
+                  200,
+                  -200,
+                  1
+                ],
+                [
+                  -200,
+                  200,
+                  200,
+                  200,
+                  1
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 5,
+              "pointCount": 4,
+              "lines": [
+                [
+                  -200,
+                  -200,
+                  -200,
+                  200,
+                  1
+                ],
+                [
+                  -200,
+                  -200,
+                  200,
+                  -200,
+                  1
+                ],
+                [
+                  -200,
+                  -200,
+                  200,
+                  200,
+                  2
+                ],
+                [
+                  -200,
+                  200,
+                  200,
+                  200,
+                  1
+                ],
+                [
+                  200,
+                  -200,
+                  200,
+                  200,
+                  1
+                ]
+              ]
+            }
+          }
+        }
+      ],
+      "initial": {
+        "toolType": 1,
+        "directSelectionEnabled": false,
+        "hasBatchLineOperation": false,
+        "hasBatchPointOperation": false
+      },
+      "final": {
+        "lineCount": 5,
+        "pointCount": 4,
+        "lines": [
+          [
+            -200,
+            -200,
+            -200,
+            200,
+            1
+          ],
+          [
+            -200,
+            -200,
+            200,
+            -200,
+            1
+          ],
+          [
+            -200,
+            -200,
+            200,
+            200,
+            2
+          ],
+          [
+            -200,
+            200,
+            200,
+            200,
+            1
+          ],
+          [
+            200,
+            -200,
+            200,
+            200,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "name": "AddPerpendicularBisectorSM.direct",
+      "machine": "AddPerpendicularBisectorSM",
+      "manager": false,
+      "directSelection": true,
+      "setup": {
+        "defaultSquare": false,
+        "lines": [
+          [
+            0,
+            0,
+            100,
+            0,
+            2
+          ],
+          [
+            0,
+            50,
+            100,
+            50,
+            2
+          ],
+          [
+            0,
+            -100,
+            100,
+            -100,
+            2
+          ]
+        ]
+      },
+      "ops": [
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            1,
+            1
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 0,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 3,
+              "pointCount": 6,
+              "lines": [
+                [
+                  0,
+                  -100,
+                  100,
+                  -100,
+                  2
+                ],
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  0,
+                  50,
+                  100,
+                  50,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            99,
+            1
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 0,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  100,
+                  0
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 3,
+              "pointCount": 6,
+              "lines": [
+                [
+                  0,
+                  -100,
+                  100,
+                  -100,
+                  2
+                ],
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  0,
+                  50,
+                  100,
+                  50,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            50,
+            50
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 1,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  100,
+                  0
+                ]
+              ],
+              "linesPicked": [
+                [
+                  0,
+                  50,
+                  100,
+                  50,
+                  2
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 3,
+              "pointCount": 6,
+              "lines": [
+                [
+                  0,
+                  -100,
+                  100,
+                  -100,
+                  2
+                ],
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  0,
+                  50,
+                  100,
+                  50,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            50,
+            -100
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 3,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  100,
+                  0
+                ]
+              ],
+              "linesPicked": [
+                [
+                  0,
+                  -100,
+                  100,
+                  -100,
+                  2
+                ],
+                [
+                  0,
+                  50,
+                  100,
+                  50,
+                  2
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 3,
+              "pointCount": 6,
+              "lines": [
+                [
+                  0,
+                  -100,
+                  100,
+                  -100,
+                  2
+                ],
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  0,
+                  50,
+                  100,
+                  50,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "finish",
+          "context": null,
+          "expect": {
+            "group": {
+              "isEmpty": false,
+              "historyItems": 1
+            },
+            "context": null,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  100,
+                  0
+                ]
+              ],
+              "linesPicked": [
+                [
+                  0,
+                  -100,
+                  100,
+                  -100,
+                  2
+                ],
+                [
+                  0,
+                  50,
+                  100,
+                  50,
+                  2
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 8,
+              "pointCount": 9,
+              "lines": [
+                [
+                  0,
+                  -100,
+                  50,
+                  -100,
+                  2
+                ],
+                [
+                  0,
+                  0,
+                  50,
+                  0,
+                  2
+                ],
+                [
+                  0,
+                  50,
+                  50,
+                  50,
+                  2
+                ],
+                [
+                  50,
+                  -100,
+                  50,
+                  0,
+                  2
+                ],
+                [
+                  50,
+                  -100,
+                  100,
+                  -100,
+                  2
+                ],
+                [
+                  50,
+                  0,
+                  50,
+                  50,
+                  2
+                ],
+                [
+                  50,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  50,
+                  50,
+                  100,
+                  50,
+                  2
+                ]
+              ]
+            }
+          }
+        }
+      ],
+      "initial": {
+        "toolType": 2,
+        "directSelectionEnabled": true,
+        "hasBatchLineOperation": false,
+        "hasBatchPointOperation": false
+      },
+      "final": {
+        "lineCount": 8,
+        "pointCount": 9,
+        "lines": [
+          [
+            0,
+            -100,
+            50,
+            -100,
+            2
+          ],
+          [
+            0,
+            0,
+            50,
+            0,
+            2
+          ],
+          [
+            0,
+            50,
+            50,
+            50,
+            2
+          ],
+          [
+            50,
+            -100,
+            50,
+            0,
+            2
+          ],
+          [
+            50,
+            -100,
+            100,
+            -100,
+            2
+          ],
+          [
+            50,
+            0,
+            50,
+            50,
+            2
+          ],
+          [
+            50,
+            0,
+            100,
+            0,
+            2
+          ],
+          [
+            50,
+            50,
+            100,
+            50,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "AddPerpendicularSegmentSM.direct",
+      "machine": "AddPerpendicularSegmentSM",
+      "manager": false,
+      "directSelection": true,
+      "setup": {
+        "defaultSquare": false,
+        "lines": [
+          [
+            0,
+            0,
+            100,
+            0,
+            2
+          ],
+          [
+            50,
+            10,
+            60,
+            10,
+            2
+          ]
+        ]
+      },
+      "ops": [
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            50,
+            10
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 0,
+            "state": {
+              "pointsPicked": [
+                [
+                  50,
+                  10
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 2,
+              "pointCount": 4,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  50,
+                  10,
+                  60,
+                  10,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            20,
+            1
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 3,
+            "state": {
+              "pointsPicked": [
+                [
+                  50,
+                  10
+                ]
+              ],
+              "linesPicked": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 2,
+              "pointCount": 4,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  50,
+                  10,
+                  60,
+                  10,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "finish",
+          "context": null,
+          "expect": {
+            "group": {
+              "isEmpty": false,
+              "historyItems": 1
+            },
+            "context": null,
+            "state": {
+              "pointsPicked": [
+                [
+                  50,
+                  10
+                ]
+              ],
+              "linesPicked": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 4,
+              "pointCount": 5,
+              "lines": [
+                [
+                  0,
+                  0,
+                  50,
+                  0,
+                  2
+                ],
+                [
+                  50,
+                  0,
+                  50,
+                  10,
+                  2
+                ],
+                [
+                  50,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  50,
+                  10,
+                  60,
+                  10,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "getNew",
+          "expect": {
+            "toolType": 5,
+            "directSelectionEnabled": true,
+            "hasBatchLineOperation": false,
+            "hasBatchPointOperation": false
+          }
+        }
+      ],
+      "initial": {
+        "toolType": 5,
+        "directSelectionEnabled": true,
+        "hasBatchLineOperation": false,
+        "hasBatchPointOperation": false
+      },
+      "final": {
+        "lineCount": 4,
+        "pointCount": 5,
+        "lines": [
+          [
+            0,
+            0,
+            50,
+            0,
+            2
+          ],
+          [
+            50,
+            0,
+            50,
+            10,
+            2
+          ],
+          [
+            50,
+            0,
+            100,
+            0,
+            2
+          ],
+          [
+            50,
+            10,
+            60,
+            10,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "AddPerpendicularSegmentSM.indirect",
+      "machine": "AddPerpendicularSegmentSM",
+      "manager": false,
+      "directSelection": false,
+      "setup": {
+        "defaultSquare": false,
+        "lines": [
+          [
+            0,
+            0,
+            100,
+            0,
+            2
+          ],
+          [
+            50,
+            10,
+            60,
+            10,
+            2
+          ]
+        ]
+      },
+      "ops": [
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            50,
+            10
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 0,
+            "state": {
+              "pointsPicked": [],
+              "linesPicked": [],
+              "tempPointPicked": [
+                50,
+                10
+              ],
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 2,
+              "pointCount": 4,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  50,
+                  10,
+                  60,
+                  10,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            50,
+            10
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 0,
+            "state": {
+              "pointsPicked": [
+                [
+                  50,
+                  10
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 2,
+              "pointCount": 4,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  50,
+                  10,
+                  60,
+                  10,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            20,
+            1
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 1,
+            "state": {
+              "pointsPicked": [
+                [
+                  50,
+                  10
+                ]
+              ],
+              "linesPicked": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 2,
+              "pointCount": 4,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  50,
+                  10,
+                  60,
+                  10,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            20,
+            1
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 3,
+            "state": {
+              "pointsPicked": [
+                [
+                  50,
+                  10
+                ]
+              ],
+              "linesPicked": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 2,
+              "pointCount": 4,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  50,
+                  10,
+                  60,
+                  10,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "finish",
+          "context": null,
+          "expect": {
+            "group": {
+              "isEmpty": false,
+              "historyItems": 1
+            },
+            "context": null,
+            "state": {
+              "pointsPicked": [
+                [
+                  50,
+                  10
+                ]
+              ],
+              "linesPicked": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 4,
+              "pointCount": 5,
+              "lines": [
+                [
+                  0,
+                  0,
+                  50,
+                  0,
+                  2
+                ],
+                [
+                  50,
+                  0,
+                  50,
+                  10,
+                  2
+                ],
+                [
+                  50,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  50,
+                  10,
+                  60,
+                  10,
+                  2
+                ]
+              ]
+            }
+          }
+        }
+      ],
+      "initial": {
+        "toolType": 5,
+        "directSelectionEnabled": false,
+        "hasBatchLineOperation": false,
+        "hasBatchPointOperation": false
+      },
+      "final": {
+        "lineCount": 4,
+        "pointCount": 5,
+        "lines": [
+          [
+            0,
+            0,
+            50,
+            0,
+            2
+          ],
+          [
+            50,
+            0,
+            50,
+            10,
+            2
+          ],
+          [
+            50,
+            0,
+            100,
+            0,
+            2
+          ],
+          [
+            50,
+            10,
+            60,
+            10,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "AddAngleBisectorSM.direct",
+      "machine": "AddAngleBisectorSM",
+      "manager": false,
+      "directSelection": true,
+      "setup": {
+        "defaultSquare": false,
+        "lines": [
+          [
+            0,
+            0,
+            100,
+            0,
+            2
+          ],
+          [
+            0,
+            0,
+            0,
+            100,
+            2
+          ],
+          [
+            50,
+            50,
+            100,
+            50,
+            2
+          ]
+        ]
+      },
+      "ops": [
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            1,
+            1
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 0,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 3,
+              "pointCount": 5,
+              "lines": [
+                [
+                  0,
+                  0,
+                  0,
+                  100,
+                  2
+                ],
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  50,
+                  50,
+                  100,
+                  50,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            99,
+            1
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 0,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  100,
+                  0
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 3,
+              "pointCount": 5,
+              "lines": [
+                [
+                  0,
+                  0,
+                  0,
+                  100,
+                  2
+                ],
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  50,
+                  50,
+                  100,
+                  50,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            1,
+            99
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 0,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  100,
+                  0
+                ],
+                [
+                  0,
+                  100
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 3,
+              "pointCount": 5,
+              "lines": [
+                [
+                  0,
+                  0,
+                  0,
+                  100,
+                  2
+                ],
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  50,
+                  50,
+                  100,
+                  50,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            75,
+            50
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 3,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  100,
+                  0
+                ],
+                [
+                  0,
+                  100
+                ]
+              ],
+              "linesPicked": [
+                [
+                  50,
+                  50,
+                  100,
+                  50,
+                  2
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 3,
+              "pointCount": 5,
+              "lines": [
+                [
+                  0,
+                  0,
+                  0,
+                  100,
+                  2
+                ],
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  50,
+                  50,
+                  100,
+                  50,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "finish",
+          "context": null,
+          "expect": {
+            "group": {
+              "isEmpty": false,
+              "historyItems": 1
+            },
+            "context": null,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  100,
+                  0
+                ],
+                [
+                  0,
+                  100
+                ]
+              ],
+              "linesPicked": [
+                [
+                  50,
+                  50,
+                  100,
+                  50,
+                  2
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 6,
+              "pointCount": 7,
+              "lines": [
+                [
+                  -20.71067811865554,
+                  50,
+                  0,
+                  41.42135623730923,
+                  2
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  41.42135623730923,
+                  2
+                ],
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  0,
+                  41.42135623730923,
+                  0,
+                  100,
+                  2
+                ],
+                [
+                  0,
+                  41.42135623730923,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  50,
+                  50,
+                  100,
+                  50,
+                  2
+                ]
+              ]
+            }
+          }
+        }
+      ],
+      "initial": {
+        "toolType": 3,
+        "directSelectionEnabled": true,
+        "hasBatchLineOperation": false,
+        "hasBatchPointOperation": false
+      },
+      "final": {
+        "lineCount": 6,
+        "pointCount": 7,
+        "lines": [
+          [
+            -20.71067811865554,
+            50,
+            0,
+            41.42135623730923,
+            2
+          ],
+          [
+            0,
+            0,
+            0,
+            41.42135623730923,
+            2
+          ],
+          [
+            0,
+            0,
+            100,
+            0,
+            2
+          ],
+          [
+            0,
+            41.42135623730923,
+            0,
+            100,
+            2
+          ],
+          [
+            0,
+            41.42135623730923,
+            100,
+            0,
+            2
+          ],
+          [
+            50,
+            50,
+            100,
+            50,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "AddLineExtensionSM.direct",
+      "machine": "AddLineExtensionSM",
+      "manager": false,
+      "directSelection": true,
+      "setup": {
+        "defaultSquare": false,
+        "lines": [
+          [
+            0,
+            0,
+            0,
+            10,
+            2
+          ],
+          [
+            100,
+            0,
+            100,
+            10,
+            2
+          ],
+          [
+            150,
+            -10,
+            150,
+            10,
+            2
+          ]
+        ]
+      },
+      "ops": [
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            1,
+            1
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 0,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 3,
+              "pointCount": 6,
+              "lines": [
+                [
+                  0,
+                  0,
+                  0,
+                  10,
+                  2
+                ],
+                [
+                  100,
+                  0,
+                  100,
+                  10,
+                  2
+                ],
+                [
+                  150,
+                  -10,
+                  150,
+                  10,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            99,
+            1
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 0,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  100,
+                  0
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 3,
+              "pointCount": 6,
+              "lines": [
+                [
+                  0,
+                  0,
+                  0,
+                  10,
+                  2
+                ],
+                [
+                  100,
+                  0,
+                  100,
+                  10,
+                  2
+                ],
+                [
+                  150,
+                  -10,
+                  150,
+                  10,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            150,
+            1
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 3,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  100,
+                  0
+                ]
+              ],
+              "linesPicked": [
+                [
+                  150,
+                  -10,
+                  150,
+                  10,
+                  2
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 3,
+              "pointCount": 6,
+              "lines": [
+                [
+                  0,
+                  0,
+                  0,
+                  10,
+                  2
+                ],
+                [
+                  100,
+                  0,
+                  100,
+                  10,
+                  2
+                ],
+                [
+                  150,
+                  -10,
+                  150,
+                  10,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "finish",
+          "context": null,
+          "expect": {
+            "group": {
+              "isEmpty": false,
+              "historyItems": 1
+            },
+            "context": null,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  100,
+                  0
+                ]
+              ],
+              "linesPicked": [
+                [
+                  150,
+                  -10,
+                  150,
+                  10,
+                  2
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 5,
+              "pointCount": 7,
+              "lines": [
+                [
+                  0,
+                  0,
+                  0,
+                  10,
+                  2
+                ],
+                [
+                  100,
+                  0,
+                  100,
+                  10,
+                  2
+                ],
+                [
+                  100,
+                  0,
+                  150,
+                  0,
+                  2
+                ],
+                [
+                  150,
+                  -10,
+                  150,
+                  0,
+                  2
+                ],
+                [
+                  150,
+                  0,
+                  150,
+                  10,
+                  2
+                ]
+              ]
+            }
+          }
+        }
+      ],
+      "initial": {
+        "toolType": 7,
+        "directSelectionEnabled": true,
+        "hasBatchLineOperation": false,
+        "hasBatchPointOperation": false
+      },
+      "final": {
+        "lineCount": 5,
+        "pointCount": 7,
+        "lines": [
+          [
+            0,
+            0,
+            0,
+            10,
+            2
+          ],
+          [
+            100,
+            0,
+            100,
+            10,
+            2
+          ],
+          [
+            100,
+            0,
+            150,
+            0,
+            2
+          ],
+          [
+            150,
+            -10,
+            150,
+            0,
+            2
+          ],
+          [
+            150,
+            0,
+            150,
+            10,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "AddLineExtensionSM.rejectParallel",
+      "machine": "AddLineExtensionSM",
+      "manager": false,
+      "directSelection": true,
+      "setup": {
+        "defaultSquare": false,
+        "lines": [
+          [
+            0,
+            0,
+            0,
+            10,
+            2
+          ],
+          [
+            100,
+            0,
+            100,
+            10,
+            2
+          ],
+          [
+            0,
+            10,
+            200,
+            10,
+            2
+          ]
+        ]
+      },
+      "ops": [
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            1,
+            1
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 0,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 3,
+              "pointCount": 5,
+              "lines": [
+                [
+                  0,
+                  0,
+                  0,
+                  10,
+                  2
+                ],
+                [
+                  0,
+                  10,
+                  200,
+                  10,
+                  2
+                ],
+                [
+                  100,
+                  0,
+                  100,
+                  10,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            99,
+            1
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 0,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  100,
+                  0
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 3,
+              "pointCount": 5,
+              "lines": [
+                [
+                  0,
+                  0,
+                  0,
+                  10,
+                  2
+                ],
+                [
+                  0,
+                  10,
+                  200,
+                  10,
+                  2
+                ],
+                [
+                  100,
+                  0,
+                  100,
+                  10,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            150,
+            10
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 3,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  100,
+                  0
+                ]
+              ],
+              "linesPicked": [
+                [
+                  0,
+                  10,
+                  200,
+                  10,
+                  2
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 3,
+              "pointCount": 5,
+              "lines": [
+                [
+                  0,
+                  0,
+                  0,
+                  10,
+                  2
+                ],
+                [
+                  0,
+                  10,
+                  200,
+                  10,
+                  2
+                ],
+                [
+                  100,
+                  0,
+                  100,
+                  10,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "finish",
+          "context": null,
+          "expect": {
+            "group": {
+              "isEmpty": true,
+              "historyItems": 0
+            },
+            "context": null,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  100,
+                  0
+                ]
+              ],
+              "linesPicked": [
+                [
+                  0,
+                  10,
+                  200,
+                  10,
+                  2
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 3,
+              "pointCount": 5,
+              "lines": [
+                [
+                  0,
+                  0,
+                  0,
+                  10,
+                  2
+                ],
+                [
+                  0,
+                  10,
+                  200,
+                  10,
+                  2
+                ],
+                [
+                  100,
+                  0,
+                  100,
+                  10,
+                  2
+                ]
+              ]
+            }
+          }
+        }
+      ],
+      "initial": {
+        "toolType": 7,
+        "directSelectionEnabled": true,
+        "hasBatchLineOperation": false,
+        "hasBatchPointOperation": false
+      },
+      "final": {
+        "lineCount": 3,
+        "pointCount": 5,
+        "lines": [
+          [
+            0,
+            0,
+            0,
+            10,
+            2
+          ],
+          [
+            0,
+            10,
+            200,
+            10,
+            2
+          ],
+          [
+            100,
+            0,
+            100,
+            10,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "AddSymmetricalSegmentSM.direct",
+      "machine": "AddSymmetricalSegmentSM",
+      "manager": false,
+      "directSelection": true,
+      "setup": {
+        "defaultSquare": false,
+        "lines": [
+          [
+            50,
+            0,
+            50,
+            50,
+            2
+          ],
+          [
+            0,
+            0,
+            0,
+            100,
+            2
+          ],
+          [
+            -25,
+            -100,
+            -25,
+            100,
+            2
+          ]
+        ]
+      },
+      "ops": [
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            50,
+            1
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 0,
+            "state": {
+              "pointsPicked": [
+                [
+                  50,
+                  0
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 3,
+              "pointCount": 6,
+              "lines": [
+                [
+                  -25,
+                  -100,
+                  -25,
+                  100,
+                  2
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  100,
+                  2
+                ],
+                [
+                  50,
+                  0,
+                  50,
+                  50,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            1,
+            1
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 0,
+            "state": {
+              "pointsPicked": [
+                [
+                  50,
+                  0
+                ],
+                [
+                  0,
+                  0
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 3,
+              "pointCount": 6,
+              "lines": [
+                [
+                  -25,
+                  -100,
+                  -25,
+                  100,
+                  2
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  100,
+                  2
+                ],
+                [
+                  50,
+                  0,
+                  50,
+                  50,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            1,
+            99
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 0,
+            "state": {
+              "pointsPicked": [
+                [
+                  50,
+                  0
+                ],
+                [
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  100
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 3,
+              "pointCount": 6,
+              "lines": [
+                [
+                  -25,
+                  -100,
+                  -25,
+                  100,
+                  2
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  100,
+                  2
+                ],
+                [
+                  50,
+                  0,
+                  50,
+                  50,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            -25,
+            1
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 3,
+            "state": {
+              "pointsPicked": [
+                [
+                  50,
+                  0
+                ],
+                [
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  100
+                ]
+              ],
+              "linesPicked": [
+                [
+                  -25,
+                  -100,
+                  -25,
+                  100,
+                  2
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 3,
+              "pointCount": 6,
+              "lines": [
+                [
+                  -25,
+                  -100,
+                  -25,
+                  100,
+                  2
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  100,
+                  2
+                ],
+                [
+                  50,
+                  0,
+                  50,
+                  50,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "finish",
+          "context": null,
+          "expect": {
+            "group": {
+              "isEmpty": false,
+              "historyItems": 1
+            },
+            "context": null,
+            "state": {
+              "pointsPicked": [
+                [
+                  50,
+                  0
+                ],
+                [
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  100
+                ]
+              ],
+              "linesPicked": [
+                [
+                  -25,
+                  -100,
+                  -25,
+                  100,
+                  2
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 5,
+              "pointCount": 7,
+              "lines": [
+                [
+                  -25,
+                  -100,
+                  -25,
+                  0,
+                  2
+                ],
+                [
+                  -25,
+                  0,
+                  -25,
+                  100,
+                  2
+                ],
+                [
+                  -25,
+                  0,
+                  0,
+                  0,
+                  2
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  100,
+                  2
+                ],
+                [
+                  50,
+                  0,
+                  50,
+                  50,
+                  2
+                ]
+              ]
+            }
+          }
+        }
+      ],
+      "initial": {
+        "toolType": 6,
+        "directSelectionEnabled": true,
+        "hasBatchLineOperation": false,
+        "hasBatchPointOperation": false
+      },
+      "final": {
+        "lineCount": 5,
+        "pointCount": 7,
+        "lines": [
+          [
+            -25,
+            -100,
+            -25,
+            0,
+            2
+          ],
+          [
+            -25,
+            0,
+            -25,
+            100,
+            2
+          ],
+          [
+            -25,
+            0,
+            0,
+            0,
+            2
+          ],
+          [
+            0,
+            0,
+            0,
+            100,
+            2
+          ],
+          [
+            50,
+            0,
+            50,
+            50,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "DeleteLineSM.direct",
+      "machine": "DeleteLineSM",
+      "manager": false,
+      "directSelection": true,
+      "setup": {
+        "defaultSquare": false,
+        "lines": [
+          [
+            0,
+            0,
+            100,
+            0,
+            2
+          ]
+        ]
+      },
+      "ops": [
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            50,
+            1
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 3,
+            "state": {
+              "pointsPicked": [],
+              "linesPicked": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 1,
+              "pointCount": 2,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "finish",
+          "context": null,
+          "expect": {
+            "group": {
+              "isEmpty": false,
+              "historyItems": 1
+            },
+            "context": null,
+            "state": {
+              "pointsPicked": [],
+              "linesPicked": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 0,
+              "pointCount": 0,
+              "lines": []
+            }
+          }
+        }
+      ],
+      "initial": {
+        "toolType": 12,
+        "directSelectionEnabled": true,
+        "hasBatchLineOperation": true,
+        "hasBatchPointOperation": false
+      },
+      "final": {
+        "lineCount": 0,
+        "pointCount": 0,
+        "lines": []
+      }
+    },
+    {
+      "name": "DeleteLineSM.indirect",
+      "machine": "DeleteLineSM",
+      "manager": false,
+      "directSelection": false,
+      "setup": {
+        "defaultSquare": false,
+        "lines": [
+          [
+            0,
+            0,
+            100,
+            0,
+            2
+          ]
+        ]
+      },
+      "ops": [
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            50,
+            1
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 1,
+            "state": {
+              "pointsPicked": [],
+              "linesPicked": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 1,
+              "pointCount": 2,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            50,
+            1
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 3,
+            "state": {
+              "pointsPicked": [],
+              "linesPicked": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 1,
+              "pointCount": 2,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "finish",
+          "context": null,
+          "expect": {
+            "group": {
+              "isEmpty": false,
+              "historyItems": 1
+            },
+            "context": null,
+            "state": {
+              "pointsPicked": [],
+              "linesPicked": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 0,
+              "pointCount": 0,
+              "lines": []
+            }
+          }
+        }
+      ],
+      "initial": {
+        "toolType": 12,
+        "directSelectionEnabled": false,
+        "hasBatchLineOperation": true,
+        "hasBatchPointOperation": false
+      },
+      "final": {
+        "lineCount": 0,
+        "pointCount": 0,
+        "lines": []
+      }
+    },
+    {
+      "name": "DeleteLineSM.filterFlat",
+      "machine": "DeleteLineSM",
+      "manager": false,
+      "directSelection": true,
+      "setup": {
+        "defaultSquare": false,
+        "lines": [
+          [
+            0,
+            0,
+            100,
+            0,
+            2
+          ]
+        ]
+      },
+      "ops": [
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            50,
+            1
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 3,
+            "state": {
+              "pointsPicked": [],
+              "linesPicked": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 1,
+              "pointCount": 2,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "finish",
+          "context": {
+            "pref": {
+              "PaintCpFragment.deleteLineType": 2131296438
+            }
+          },
+          "expect": {
+            "group": {
+              "isEmpty": true,
+              "historyItems": 0
+            },
+            "context": {
+              "angle": 0,
+              "length": 0
+            },
+            "state": {
+              "pointsPicked": [],
+              "linesPicked": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 1,
+              "pointCount": 2,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ]
+            }
+          }
+        }
+      ],
+      "initial": {
+        "toolType": 12,
+        "directSelectionEnabled": true,
+        "hasBatchLineOperation": true,
+        "hasBatchPointOperation": false
+      },
+      "final": {
+        "lineCount": 1,
+        "pointCount": 2,
+        "lines": [
+          [
+            0,
+            0,
+            100,
+            0,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "DeleteLineSM.batchAny",
+      "machine": "DeleteLineSM",
+      "manager": false,
+      "directSelection": true,
+      "setup": {
+        "defaultSquare": false,
+        "lines": [
+          [
+            0,
+            0,
+            100,
+            0,
+            2
+          ],
+          [
+            0,
+            100,
+            100,
+            100,
+            2
+          ]
+        ]
+      },
+      "ops": [
+        {
+          "op": "batchLine",
+          "context": null,
+          "start": [
+            -1,
+            -1
+          ],
+          "end": [
+            101,
+            101
+          ],
+          "expect": {
+            "group": {
+              "isEmpty": false,
+              "historyItems": 2
+            },
+            "state": {
+              "pointsPicked": [],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 0,
+              "pointCount": 0,
+              "lines": []
+            }
+          }
+        }
+      ],
+      "initial": {
+        "toolType": 12,
+        "directSelectionEnabled": true,
+        "hasBatchLineOperation": true,
+        "hasBatchPointOperation": false
+      },
+      "final": {
+        "lineCount": 0,
+        "pointCount": 0,
+        "lines": []
+      }
+    },
+    {
+      "name": "ChangeLineSM.flipToValley",
+      "machine": "ChangeLineSM",
+      "manager": false,
+      "directSelection": true,
+      "setup": {
+        "defaultSquare": false,
+        "lines": [
+          [
+            0,
+            0,
+            100,
+            0,
+            2
+          ]
+        ]
+      },
+      "ops": [
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            50,
+            1
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 3,
+            "state": {
+              "pointsPicked": [],
+              "linesPicked": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 1,
+              "pointCount": 2,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "finish",
+          "context": {
+            "pref": {
+              "PaintCpFragment.changeLineTypeTo": 2131296432
+            }
+          },
+          "expect": {
+            "group": {
+              "isEmpty": false,
+              "historyItems": 1
+            },
+            "context": {
+              "angle": 0,
+              "length": 0
+            },
+            "state": {
+              "pointsPicked": [],
+              "linesPicked": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  3
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 1,
+              "pointCount": 2,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  3
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "getNew",
+          "expect": {
+            "toolType": 10,
+            "directSelectionEnabled": true,
+            "hasBatchLineOperation": true,
+            "hasBatchPointOperation": false
+          }
+        }
+      ],
+      "initial": {
+        "toolType": 10,
+        "directSelectionEnabled": true,
+        "hasBatchLineOperation": true,
+        "hasBatchPointOperation": false
+      },
+      "final": {
+        "lineCount": 1,
+        "pointCount": 2,
+        "lines": [
+          [
+            0,
+            0,
+            100,
+            0,
+            3
+          ]
+        ]
+      }
+    },
+    {
+      "name": "ChangeLineSM.batchToMountain",
+      "machine": "ChangeLineSM",
+      "manager": false,
+      "directSelection": true,
+      "setup": {
+        "defaultSquare": false,
+        "lines": [
+          [
+            0,
+            0,
+            100,
+            0,
+            3
+          ]
+        ]
+      },
+      "ops": [
+        {
+          "op": "batchLine",
+          "context": null,
+          "start": [
+            -1,
+            -1
+          ],
+          "end": [
+            101,
+            1
+          ],
+          "expect": {
+            "group": {
+              "isEmpty": false,
+              "historyItems": 1
+            },
+            "state": {
+              "pointsPicked": [],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 1,
+              "pointCount": 2,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ]
+            }
+          }
+        }
+      ],
+      "initial": {
+        "toolType": 10,
+        "directSelectionEnabled": true,
+        "hasBatchLineOperation": true,
+        "hasBatchPointOperation": false
+      },
+      "final": {
+        "lineCount": 1,
+        "pointCount": 2,
+        "lines": [
+          [
+            0,
+            0,
+            100,
+            0,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "ChangeLineSM.fromBoundaryNoChange",
+      "machine": "ChangeLineSM",
+      "manager": false,
+      "directSelection": true,
+      "setup": {
+        "defaultSquare": false,
+        "lines": [
+          [
+            0,
+            0,
+            100,
+            0,
+            2
+          ]
+        ]
+      },
+      "ops": [
+        {
+          "op": "batchLine",
+          "context": {
+            "pref": {
+              "PaintCpFragment.changeLineTypeFrom": 2131296426
+            }
+          },
+          "start": [
+            -1,
+            -1
+          ],
+          "end": [
+            101,
+            1
+          ],
+          "expect": {
+            "group": {
+              "isEmpty": true,
+              "historyItems": 0
+            },
+            "state": {
+              "pointsPicked": [],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 1,
+              "pointCount": 2,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ]
+            }
+          }
+        }
+      ],
+      "initial": {
+        "toolType": 10,
+        "directSelectionEnabled": true,
+        "hasBatchLineOperation": true,
+        "hasBatchPointOperation": false
+      },
+      "final": {
+        "lineCount": 1,
+        "pointCount": 2,
+        "lines": [
+          [
+            0,
+            0,
+            100,
+            0,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "ChangeLineSM.toSameTypeNoChange",
+      "machine": "ChangeLineSM",
+      "manager": false,
+      "directSelection": true,
+      "setup": {
+        "defaultSquare": false,
+        "lines": [
+          [
+            0,
+            0,
+            100,
+            0,
+            2
+          ]
+        ]
+      },
+      "ops": [
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            50,
+            1
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 3,
+            "state": {
+              "pointsPicked": [],
+              "linesPicked": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 1,
+              "pointCount": 2,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "finish",
+          "context": {
+            "pref": {
+              "PaintCpFragment.changeLineTypeTo": 2131296433
+            }
+          },
+          "expect": {
+            "group": {
+              "isEmpty": true,
+              "historyItems": 0
+            },
+            "context": {
+              "angle": 0,
+              "length": 0
+            },
+            "state": {
+              "pointsPicked": [],
+              "linesPicked": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 1,
+              "pointCount": 2,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ]
+            }
+          }
+        }
+      ],
+      "initial": {
+        "toolType": 10,
+        "directSelectionEnabled": true,
+        "hasBatchLineOperation": true,
+        "hasBatchPointOperation": false
+      },
+      "final": {
+        "lineCount": 1,
+        "pointCount": 2,
+        "lines": [
+          [
+            0,
+            0,
+            100,
+            0,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "SelectLineSM.toggleSelectDelete",
+      "machine": "SelectLineSM",
+      "manager": false,
+      "directSelection": true,
+      "setup": {
+        "defaultSquare": false,
+        "lines": [
+          [
+            0,
+            0,
+            100,
+            0,
+            2
+          ],
+          [
+            0,
+            100,
+            100,
+            100,
+            2
+          ]
+        ]
+      },
+      "ops": [
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            50,
+            1
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 1,
+            "state": {
+              "pointsPicked": [],
+              "linesPicked": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 2,
+              "pointCount": 4,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  0,
+                  100,
+                  100,
+                  100,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            50,
+            1
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 1,
+            "state": {
+              "pointsPicked": [],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 2,
+              "pointCount": 4,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  0,
+                  100,
+                  100,
+                  100,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "selectAll",
+          "expect": {
+            "state": {
+              "pointsPicked": [],
+              "linesPicked": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  0,
+                  100,
+                  100,
+                  100,
+                  2
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            }
+          }
+        },
+        {
+          "op": "deleteSelected",
+          "expect": {
+            "group": {
+              "isEmpty": false,
+              "historyItems": 2
+            },
+            "state": {
+              "pointsPicked": [],
+              "linesPicked": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  0,
+                  100,
+                  100,
+                  100,
+                  2
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 0,
+              "pointCount": 0,
+              "lines": []
+            }
+          }
+        },
+        {
+          "op": "deselectAll",
+          "expect": {
+            "state": {
+              "pointsPicked": [],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            }
+          }
+        },
+        {
+          "op": "finish",
+          "context": null,
+          "expect": {
+            "group": {
+              "isEmpty": true,
+              "historyItems": 0
+            },
+            "context": null,
+            "state": {
+              "pointsPicked": [],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 0,
+              "pointCount": 0,
+              "lines": []
+            }
+          }
+        },
+        {
+          "op": "getNew",
+          "expect": {
+            "toolType": 11,
+            "directSelectionEnabled": true,
+            "hasBatchLineOperation": true,
+            "hasBatchPointOperation": false
+          }
+        }
+      ],
+      "initial": {
+        "toolType": 11,
+        "directSelectionEnabled": true,
+        "hasBatchLineOperation": true,
+        "hasBatchPointOperation": false
+      },
+      "final": {
+        "lineCount": 0,
+        "pointCount": 0,
+        "lines": []
+      }
+    },
+    {
+      "name": "SelectLineSM.batch",
+      "machine": "SelectLineSM",
+      "manager": false,
+      "directSelection": true,
+      "setup": {
+        "defaultSquare": false,
+        "lines": [
+          [
+            0,
+            0,
+            100,
+            0,
+            2
+          ],
+          [
+            0,
+            100,
+            100,
+            100,
+            2
+          ]
+        ]
+      },
+      "ops": [
+        {
+          "op": "batchLine",
+          "context": null,
+          "start": [
+            -1,
+            -1
+          ],
+          "end": [
+            101,
+            101
+          ],
+          "expect": {
+            "group": {
+              "isEmpty": true,
+              "historyItems": 0
+            },
+            "state": {
+              "pointsPicked": [],
+              "linesPicked": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  0,
+                  100,
+                  100,
+                  100,
+                  2
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 2,
+              "pointCount": 4,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  0,
+                  100,
+                  100,
+                  100,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "finish",
+          "context": null,
+          "expect": {
+            "group": {
+              "isEmpty": true,
+              "historyItems": 0
+            },
+            "context": null,
+            "state": {
+              "pointsPicked": [],
+              "linesPicked": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  0,
+                  100,
+                  100,
+                  100,
+                  2
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 2,
+              "pointCount": 4,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  0,
+                  100,
+                  100,
+                  100,
+                  2
+                ]
+              ]
+            }
+          }
+        }
+      ],
+      "initial": {
+        "toolType": 11,
+        "directSelectionEnabled": true,
+        "hasBatchLineOperation": true,
+        "hasBatchPointOperation": false
+      },
+      "final": {
+        "lineCount": 2,
+        "pointCount": 4,
+        "lines": [
+          [
+            0,
+            0,
+            100,
+            0,
+            2
+          ],
+          [
+            0,
+            100,
+            100,
+            100,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "AddMirroredLinesSM.direct",
+      "machine": "AddMirroredLinesSM",
+      "manager": false,
+      "directSelection": true,
+      "setup": {
+        "defaultSquare": false,
+        "lines": [
+          [
+            0,
+            10,
+            50,
+            10,
+            2
+          ],
+          [
+            0,
+            0,
+            0,
+            100,
+            1
+          ]
+        ]
+      },
+      "ops": [
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            25,
+            10
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 1,
+            "state": {
+              "pointsPicked": [],
+              "linesPicked": [
+                [
+                  0,
+                  10,
+                  50,
+                  10,
+                  2
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 2,
+              "pointCount": 4,
+              "lines": [
+                [
+                  0,
+                  0,
+                  0,
+                  100,
+                  1
+                ],
+                [
+                  0,
+                  10,
+                  50,
+                  10,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "longTransition",
+          "z": true,
+          "point": [
+            0.5,
+            50
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 3,
+            "state": {
+              "pointsPicked": [],
+              "linesPicked": [
+                [
+                  0,
+                  10,
+                  50,
+                  10,
+                  2
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": [
+                0,
+                0,
+                0,
+                100,
+                1
+              ]
+            },
+            "cp": {
+              "lineCount": 2,
+              "pointCount": 4,
+              "lines": [
+                [
+                  0,
+                  0,
+                  0,
+                  100,
+                  1
+                ],
+                [
+                  0,
+                  10,
+                  50,
+                  10,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "finish",
+          "context": null,
+          "expect": {
+            "group": {
+              "isEmpty": false,
+              "historyItems": 1
+            },
+            "context": null,
+            "state": {
+              "pointsPicked": [],
+              "linesPicked": [
+                [
+                  0,
+                  10,
+                  50,
+                  10,
+                  2
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": [
+                0,
+                0,
+                0,
+                100,
+                1
+              ]
+            },
+            "cp": {
+              "lineCount": 4,
+              "pointCount": 5,
+              "lines": [
+                [
+                  -50,
+                  10,
+                  0,
+                  10,
+                  2
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  10,
+                  1
+                ],
+                [
+                  0,
+                  10,
+                  0,
+                  100,
+                  1
+                ],
+                [
+                  0,
+                  10,
+                  50,
+                  10,
+                  2
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "op": "getNew",
+          "expect": {
+            "toolType": 8,
+            "directSelectionEnabled": true,
+            "hasBatchLineOperation": true,
+            "hasBatchPointOperation": false
+          }
+        }
+      ],
+      "initial": {
+        "toolType": 8,
+        "directSelectionEnabled": true,
+        "hasBatchLineOperation": true,
+        "hasBatchPointOperation": false
+      },
+      "final": {
+        "lineCount": 4,
+        "pointCount": 5,
+        "lines": [
+          [
+            -50,
+            10,
+            0,
+            10,
+            2
+          ],
+          [
+            0,
+            0,
+            0,
+            10,
+            1
+          ],
+          [
+            0,
+            10,
+            0,
+            100,
+            1
+          ],
+          [
+            0,
+            10,
+            50,
+            10,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "AddMirroredLinesSM.batch",
+      "machine": "AddMirroredLinesSM",
+      "manager": false,
+      "directSelection": true,
+      "setup": {
+        "defaultSquare": false,
+        "lines": [
+          [
+            0,
+            10,
+            50,
+            10,
+            2
+          ]
+        ]
+      },
+      "ops": [
+        {
+          "op": "batchLine",
+          "context": null,
+          "start": [
+            -1,
+            9
+          ],
+          "end": [
+            51,
+            11
+          ],
+          "expect": {
+            "group": {
+              "isEmpty": true,
+              "historyItems": 0
+            },
+            "state": {
+              "pointsPicked": [],
+              "linesPicked": [
+                [
+                  0,
+                  10,
+                  50,
+                  10,
+                  2
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 1,
+              "pointCount": 2,
+              "lines": [
+                [
+                  0,
+                  10,
+                  50,
+                  10,
+                  2
+                ]
+              ]
+            }
+          }
+        }
+      ],
+      "initial": {
+        "toolType": 8,
+        "directSelectionEnabled": true,
+        "hasBatchLineOperation": true,
+        "hasBatchPointOperation": false
+      },
+      "final": {
+        "lineCount": 1,
+        "pointCount": 2,
+        "lines": [
+          [
+            0,
+            10,
+            50,
+            10,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "StateMachineManager.delegation",
+      "machine": "StateMachineManager",
+      "manager": true,
+      "directSelection": false,
+      "setup": {
+        "defaultSquare": false,
+        "lines": [
+          [
+            0,
+            0,
+            100,
+            0,
+            2
+          ],
+          [
+            0,
+            100,
+            100,
+            100,
+            2
+          ]
+        ]
+      },
+      "ops": [
+        {
+          "op": "newMachine",
+          "machine": "AddSegmentSM",
+          "directSelection": true,
+          "expect": {
+            "toolType": 0,
+            "directSelectionEnabled": true,
+            "hasBatchLineOperation": false,
+            "hasBatchPointOperation": false
+          },
+          "manager": true
+        },
+        {
+          "op": "transition",
+          "z": true,
+          "point": [
+            1,
+            1
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 0,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 2,
+              "pointCount": 4,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  0,
+                  100,
+                  100,
+                  100,
+                  2
+                ]
+              ]
+            }
+          },
+          "manager": true
+        },
+        {
+          "op": "longTransition",
+          "z": true,
+          "point": [
+            1,
+            1
+          ],
+          "radius": 5,
+          "expect": {
+            "result": 2,
+            "state": {
+              "pointsPicked": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 2,
+              "pointCount": 4,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  0,
+                  100,
+                  100,
+                  100,
+                  2
+                ]
+              ]
+            }
+          },
+          "manager": true
+        },
+        {
+          "op": "toolType",
+          "expect": {
+            "toolType": 0
+          },
+          "manager": true
+        },
+        {
+          "op": "resetMachine",
+          "expect": {
+            "toolType": 0,
+            "directSelectionEnabled": true,
+            "hasBatchLineOperation": false,
+            "hasBatchPointOperation": false
+          },
+          "manager": true
+        },
+        {
+          "op": "newMachine",
+          "machine": "SelectLineSM",
+          "directSelection": true,
+          "expect": {
+            "toolType": 11,
+            "directSelectionEnabled": true,
+            "hasBatchLineOperation": true,
+            "hasBatchPointOperation": false
+          },
+          "manager": true
+        },
+        {
+          "op": "batchLine",
+          "context": null,
+          "start": [
+            -1,
+            -1
+          ],
+          "end": [
+            101,
+            101
+          ],
+          "expect": {
+            "group": {
+              "isEmpty": true,
+              "historyItems": 0
+            },
+            "state": {
+              "pointsPicked": [],
+              "linesPicked": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  0,
+                  100,
+                  100,
+                  100,
+                  2
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 2,
+              "pointCount": 4,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  0,
+                  100,
+                  100,
+                  100,
+                  2
+                ]
+              ]
+            }
+          },
+          "manager": true
+        },
+        {
+          "op": "finish",
+          "context": null,
+          "expect": {
+            "group": {
+              "isEmpty": true,
+              "historyItems": 0
+            },
+            "context": null,
+            "state": {
+              "pointsPicked": [],
+              "linesPicked": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  0,
+                  100,
+                  100,
+                  100,
+                  2
+                ]
+              ],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 2,
+              "pointCount": 4,
+              "lines": [
+                [
+                  0,
+                  0,
+                  100,
+                  0,
+                  2
+                ],
+                [
+                  0,
+                  100,
+                  100,
+                  100,
+                  2
+                ]
+              ]
+            }
+          },
+          "manager": true
+        },
+        {
+          "op": "newMachine",
+          "machine": "DeleteLineSM",
+          "directSelection": true,
+          "expect": {
+            "toolType": 12,
+            "directSelectionEnabled": true,
+            "hasBatchLineOperation": true,
+            "hasBatchPointOperation": false
+          },
+          "manager": true
+        },
+        {
+          "op": "batchLine",
+          "context": {
+            "pref": {
+              "PaintCpFragment.deleteLineType": 2131296439
+            }
+          },
+          "start": [
+            -1,
+            -1
+          ],
+          "end": [
+            101,
+            101
+          ],
+          "expect": {
+            "group": {
+              "isEmpty": false,
+              "historyItems": 2
+            },
+            "state": {
+              "pointsPicked": [],
+              "linesPicked": [],
+              "tempPointPicked": null,
+              "tempLinePicked": null
+            },
+            "cp": {
+              "lineCount": 0,
+              "pointCount": 0,
+              "lines": []
+            }
+          },
+          "manager": true
+        }
+      ],
+      "final": {
+        "lineCount": 0,
+        "pointCount": 0,
+        "lines": []
+      }
+    }
+  ]
+}
