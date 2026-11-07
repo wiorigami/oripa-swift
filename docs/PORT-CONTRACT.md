@@ -56,7 +56,7 @@ sheet, Files.app document storage, multi-touch, pointer support, dark mode, keyb
 ```
 Package.swift                  # Lead — SwiftPM: ORIPACore, ORIPAUI, ORIPAMac, ORIPASnapshots, tests
 Sources/
-  ORIPACore/                   # pure Foundation logic, no SwiftUI/UIKit — testable with `swift test`
+  ORIPACore/                   # pure Foundation logic, no SwiftUI/UIKit — testable with `swift run ORIPATests`
     Resources/ Geometry/ Collections/ Tree/ Model/{CreasePattern,History,StateMachine,Tool}
     Model/FoldedModel/ IO/ RenderData/ Version.swift
   ORIPAUI/                     # SwiftUI, cross-platform (iOS 16 / macOS 13)
@@ -64,7 +64,7 @@ Sources/
     Dialogs/ Canvas/ Resources/{Icons,Logos}
   ORIPAMac/                    # macOS @main wrapper (SwiftPM executable)
   ORIPASnapshots/              # headless ImageRenderer QA tool
-Tests/ORIPACoreTests/          # XCTest: Support/ (Lead), CoreModel/, FoldIO/
+Tests/ORIPATests/              # hermetic test runner (no XCTest): Support/ (Lead), CoreModel/, FoldIO/
 Fixtures/                      # committed golden JSON + real .opx/.opxc/.cp case files
 tools/                         # Node fixture generators, asset conversion, packaging scripts
 iOSApp/                        # iOS app entry, Info.plist, Assets.xcassets (AppIcon/Launch)
@@ -78,9 +78,9 @@ docs/                          # this contract, build/install/token guides
 
 | Workstream | Owns |
 |---|---|
-| **Lead** | `Package.swift`, `README.md`, `docs/PORT-CONTRACT.md`, `docs/DECISIONS.md`, `.gitignore`, `Tests/ORIPACoreTests/Support/**`, `tools/fixtures/load_oripa.js`, git/GitHub, final integration |
-| **core-model** | `Sources/ORIPACore/{Resources,Geometry,Collections,Tree}/**`, `Sources/ORIPACore/Model/{CreasePattern,History,StateMachine,Tool}/**`, `Tests/ORIPACoreTests/CoreModel/**`, `tools/fixtures/core/**`, `Fixtures/core/**` |
-| **fold-io** | `Sources/ORIPACore/Model/FoldedModel/**`, `Sources/ORIPACore/IO/**`, `Sources/ORIPACore/RenderData/**`, `Tests/ORIPACoreTests/FoldIO/**`, `tools/fixtures/foldio/**`, `Fixtures/foldio/**`, `Fixtures/cases/**` |
+| **Lead** | `Package.swift`, `README.md`, `docs/PORT-CONTRACT.md`, `docs/DECISIONS.md`, `.gitignore`, `Tests/ORIPATests/Support/**`, `tools/fixtures/load_oripa.js`, git/GitHub, final integration |
+| **core-model** | `Sources/ORIPACore/{Resources,Geometry,Collections,Tree}/**`, `Sources/ORIPACore/Model/{CreasePattern,History,StateMachine,Tool}/**`, `Tests/ORIPATests/CoreModel/**`, `tools/fixtures/core/**`, `Fixtures/core/**` |
+| **fold-io** | `Sources/ORIPACore/Model/FoldedModel/**`, `Sources/ORIPACore/IO/**`, `Sources/ORIPACore/RenderData/**`, `Tests/ORIPATests/FoldIO/**`, `tools/fixtures/foldio/**`, `Fixtures/foldio/**`, `Fixtures/cases/**` |
 | **ui-shell** | `Sources/ORIPAUI/{App,DesignSystem,Platform}/**`, `Sources/ORIPAUI/Screens/{Splash,Projects,Preview,Settings}/**`, `Sources/ORIPAUI/Dialogs/{ProjectDialogs,AboutDialog,CommonDialogs}.swift`, `Sources/ORIPAUI/SnapshotScenarios/**` |
 | **ui-canvas** | `Sources/ORIPAUI/Screens/Editor/**`, `Sources/ORIPAUI/Canvas/{ViewTransform,Camera,PaintRenderer,CheckRenderer,PreviewRenderer,CPPNGExport}.swift`, `Sources/ORIPAUI/Canvas/Gestures.swift`, `Sources/ORIPAUI/Dialogs/{ExportCPDialog,SaveDialog,HelpDialog,NumberDialog}.swift` |
 | **ui-fold** | `Sources/ORIPAUI/Screens/Fold/**`, `Sources/ORIPAUI/Canvas/{FoldRenderer,FoldPNGExport}.swift`, `Sources/ORIPAUI/Dialogs/{FoldSettingsDialogs,ColorPicker}.swift` |
@@ -241,9 +241,12 @@ The JS reference is executable in Node. **Prove the Swift port against it**, do 
    - fold-io: load/export round-trips (byte equality where deterministic), folding results for
      `oripa-port/tools/fold_oracle/cases/**` (face/vertex/edge counts, per-vertex folded positions,
      face transform matrices, error points, consistency), SVG outputs.
-3. Swift tests decode the committed JSON with `Tests/ORIPACoreTests/Support/Fixtures.swift`
-   (`Fixtures.decode`, `Fixtures.assertClose`) and assert equality (1e-9 tolerance).
-4. CI only runs `swift test`; it never needs Node. Regeneration is documented in `tools/fixtures/README.md`.
+3. Swift tests decode the committed JSON with `Tests/ORIPATests/Support/Fixtures.swift`
+   (`Fixtures.decode`) and assert with the shared harness `TestHarness` from
+   `Tests/ORIPATests/Support/TestHarness.swift` (`expect`, `expectEqual`, `expectClose` —
+   1e-9 tolerance for doubles). Each workstream appends its suites to `CoreModelTests.all`
+   / `FoldIOTests.all`; `main.swift` runs them and exits non-zero on failure.
+4. CI only runs `swift run ORIPATests`; it never needs Node. Regeneration is documented in `tools/fixtures/README.md`.
 5. Copy the real case files (`oripa-port/tools/fold_oracle/cases/**`) into `Fixtures/cases/` via the
    generator (fold-io owns).
 
@@ -253,8 +256,8 @@ The JS reference is executable in Node. **Prove the Swift port against it**, do 
 cd /Users/william/Desktop/hns/apps/oripa-swift
 
 swift build                              # MUST pass (macOS 13 typecheck of all shared code)
-swift test                               # core + fold-io golden tests
-swift test --filter CoreModelTests       # per workstream
+swift run ORIPATests                     # core + fold-io golden tests (single entry point)
+swift run ORIPATests CoreModel           # filter by suite-name substring (same for FoldIO)
 swift run ORIPASnapshots build-snapshots # headless UI screenshots (PNG) for visual QA
 xcodegen generate                        # regenerate ORIPA.xcodeproj from project.yml (ci-release)
 ```
@@ -269,7 +272,7 @@ xcodegen generate                        # regenerate ORIPA.xcodeproj from proje
 ## 8. Definition of done
 
 - Your files compile in `swift build` (no errors; warnings minimised).
-- Logic workstreams: golden tests pass (`swift test`), fixtures committed, no skipped tests.
+- Logic workstreams: golden tests pass (`swift run ORIPATests`), fixtures committed, no skipped suites.
 - UI workstreams: screens render through `swift run ORIPASnapshots` in scenarios covering your
   screens; visuals compared with the reference screenshots; behaviours from the JS port reproduced
   (menus, dialogs, gestures, enabled/disabled states, exact texts).

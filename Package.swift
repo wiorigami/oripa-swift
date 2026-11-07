@@ -3,9 +3,14 @@
 // ORIPA — native Apple (iOS/iPadOS + macOS) port of ORIPA for Android 0.2.3.3.
 //
 // Build systems:
-//   * SwiftPM (this file)  — ORIPACore logic + ORIPAUI SwiftUI + macOS app + snapshot tool.
-//                            Buildable locally with Command Line Tools only (`swift build`,
-//                            `swift test`, `swift run ORIPASnapshots`).
+//   * SwiftPM (this file)  — ORIPACore logic + ORIPAUI SwiftUI + macOS app + snapshot tool
+//                            + hermetic test runner. Buildable locally with Command Line
+//                            Tools only (`swift build`, `swift run ORIPATests`,
+//                            `swift run ORIPASnapshots`). NOTE: this Mac's Command Line
+//                            Tools toolchain has no XCTest module, therefore tests are a
+//                            plain executable (Tests/ORIPATests) instead of a testTarget;
+//                            `swift run ORIPATests` is the single test entry point locally
+//                            and in CI.
 //   * XcodeGen (project.yml) — iOS/iPadOS app bundle, generated with `xcodegen generate`
 //                            and built in GitHub Actions with a full Xcode.
 //
@@ -25,6 +30,7 @@ let package = Package(
         .library(name: "ORIPAUI", targets: ["ORIPAUI"]),
         .executable(name: "ORIPAMac", targets: ["ORIPAMac"]),
         .executable(name: "ORIPASnapshots", targets: ["ORIPASnapshots"]),
+        .executable(name: "ORIPATests", targets: ["ORIPATests"]),
     ],
     targets: [
         .target(
@@ -47,10 +53,10 @@ let package = Package(
             dependencies: ["ORIPAUI"],
             path: "Sources/ORIPASnapshots"
         ),
-        .testTarget(
-            name: "ORIPACoreTests",
+        .executableTarget(
+            name: "ORIPATests",
             dependencies: ["ORIPACore"],
-            path: "Tests/ORIPACoreTests"
+            path: "Tests/ORIPATests"
         ),
     ]
 )
