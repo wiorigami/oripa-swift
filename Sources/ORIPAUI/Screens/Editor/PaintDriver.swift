@@ -31,6 +31,8 @@ public final class PaintDriver: ObservableObject {
     @Published public private(set) var canUndo = false
     @Published public private(set) var canRedo = false
     @Published public private(set) var toolType: Int = 0
+    /// True once `initialize()` created the tool machine (`getToolType() >= 0`).
+    public private(set) var isInitialized = false
 
     /// Result codes (CpTransitionResult).
     private enum TransitionResult {
@@ -65,6 +67,7 @@ public final class PaintDriver: ObservableObject {
         syncToolType()
         refreshRenderData()
         clearPicked()
+        isInitialized = true
     }
 
     /// `setCurrentStateMachineAllActions()`.

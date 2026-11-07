@@ -18,6 +18,9 @@ swift build
 echo "==> swift run ORIPATests"
 swift run ORIPATests
 
+echo "==> swift run ORIPAIntegration"
+swift run ORIPAIntegration
+
 if [ "${SKIP_SNAPSHOTS:-0}" = "1" ]; then
   echo "==> snapshots skipped (SKIP_SNAPSHOTS=1)"
 else

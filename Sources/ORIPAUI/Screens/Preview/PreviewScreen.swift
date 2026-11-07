@@ -13,6 +13,7 @@ public struct PreviewScreen: View {
 
     @EnvironmentObject private var app: AppModel
     @Environment(\.oripaNavID) private var navID
+    @Environment(\.oripaSnapshotMode) private var snapshotMode
 
     @State private var projectData: Data?
     @State private var thumbnail: Image?
@@ -52,17 +53,31 @@ public struct PreviewScreen: View {
 
     // MARK: - Preview content
 
+    /// Headless snapshots never run `onAppear`; read the store eagerly in that mode only
+    /// (runtime behaviour is unchanged: data is loaded in `onAppear`/`load()`).
+    private var effectiveProjectData: Data? {
+        snapshotMode ? app.store.readProject(name: name) : projectData
+    }
+
+    private var effectiveThumbnail: Image? {
+        guard snapshotMode else { return thumbnail }
+        if let data = app.store.readThumb(name: name) ?? app.store.regenerateThumb(name: name) {
+            return OripaImage.image(data: data)
+        }
+        return nil
+    }
+
     @ViewBuilder
     private var previewArea: some View {
-        if let data = projectData,
+        if let data = effectiveProjectData,
            let factory = OrScreenRegistry.creasePatternPreviewFactory,
            let preview = factory(data) {
             preview
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(OrTheme.surface)
-        } else if let thumbnail {
+        } else if let effectiveThumbnail {
             // Fallback of the JS port (`renderWithThumbnail`): scaled stored thumbnail.
-            thumbnail
+            effectiveThumbnail
                 .resizable()
                 .scaledToFit()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)

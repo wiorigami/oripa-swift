@@ -44,13 +44,15 @@ public struct CanvasPreviewView: View {
 
     public init(creasePattern: CreasePattern) {
         self.creasePattern = creasePattern
+        // Configure eagerly: `onAppear` never runs for headless ImageRenderer snapshots,
+        // and there is no downside to configuring once at construction.
+        let renderer = PreviewRenderer()
+        CoreRenderBridge.configurePreview(renderer, cp: creasePattern)
+        _renderer = StateObject(wrappedValue: renderer)
     }
 
     public var body: some View {
         PreviewCanvasView(renderer: renderer)
             .background(Color.white)
-            .onAppear {
-                CoreRenderBridge.configurePreview(renderer, cp: creasePattern)
-            }
     }
 }

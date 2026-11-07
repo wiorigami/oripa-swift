@@ -53,7 +53,13 @@ final class PaintCoordinator {
         scaleFactor = CGFloat(renderer.viewTransform.getScaleFactor())
         renderer.setCurrentScaleFactor(scaleFactor)
         applyLineWidthScale()
-        driver.initialize()
+        // Idempotent: a retained fragment re-entering (or a snapshot restoring a picked
+        // state) keeps the current tool machine and picked objects.
+        if driver.isInitialized {
+            driver.refreshRenderData()
+        } else {
+            driver.initialize()
+        }
     }
 
     /// `resume()` after returning from Settings.
@@ -227,6 +233,9 @@ public struct PaintScreen: View {
 
     @State private var loadingText: String?
     @State private var didAppear = false
+    /// True while `ORIPASnapshots` renders headlessly: the platform input surface
+    /// (UIView/NSView) is not rasterisable by ImageRenderer.
+    @Environment(\.oripaSnapshotMode) private var snapshotMode
     /// Snapshot/QA rendering has no window: `ImageRenderer` cannot rasterise the platform
     /// input surface (NSView/UIView), so snapshots build the screen without it.
     private let interactionEnabled: Bool
@@ -251,7 +260,7 @@ public struct PaintScreen: View {
                     .contentShape(Rectangle())
                 // Transparent input surface above the drawing canvas (the recogniser turns
                 // raw touches into tap / long-press / drag / pinch / two-finger pan).
-                if interactionEnabled {
+                if interactionEnabled && !snapshotMode {
                     CanvasGestureOverlay(recognizer: coordinator.recognizer)
                         .ignoresSafeArea()
                 }

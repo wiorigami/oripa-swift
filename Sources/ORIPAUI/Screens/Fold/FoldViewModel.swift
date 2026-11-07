@@ -71,7 +71,6 @@ final class FoldViewModel: ObservableObject {
     private var cameraOverlap = Camera()
     private var crossCameras: FoldCameraPair?
     private var pendingViewReset = false
-    private var didEnter = false
 
     // MARK: - Gesture state
 
@@ -198,7 +197,6 @@ final class FoldViewModel: ObservableObject {
     func enter(size: CGSize) {
         canvasSize = CGSize(width: max(1, size.width), height: max(1, size.height))
         ensureFoldedModel()
-        didEnter = true
         wireframe = prefs.bool(FoldPref.xrayStyleWire, default: false)
         crossOneFingerMove = prefs.bool(FoldPref.crossOneFingerMove, default: true)
         if pendingViewReset || !hasEnteredOnce {
@@ -223,7 +221,6 @@ final class FoldViewModel: ObservableObject {
     /// Fragment `leave()`: Java drops the GL views + fold model references on destroy.
     func leave() {
         pendingViewReset = true
-        didEnter = false
         endCrossLineDrag()
         renderers = [nil, nil, nil]
         activeRenderer = nil

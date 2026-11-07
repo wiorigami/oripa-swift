@@ -199,17 +199,58 @@ public final class ProjectStore: ObservableObject {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         self.decoder = decoder
+        if rootURL == nil {
+            ProjectStore.migrateLegacyDocumentsIfNeeded(into: self.rootURL, fileManager: fileManager)
+        }
         createDirectories()
         reload()
     }
 
-    /// The app's Documents directory — the same container the previous WKWebView port used.
+    /// macOS only: copy the old WKWebView-port `Documents/{project_data,project_thumbs}` over
+    /// when Application Support is still empty (best effort, never overwrites).
+    private static func migrateLegacyDocumentsIfNeeded(into destination: URL, fileManager: FileManager) {
+        #if os(macOS)
+        guard let documents = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
+        let legacyProjectData = documents.appendingPathComponent(AppInfo.projectDataDirectory, isDirectory: true)
+        let newProjectData = destination.appendingPathComponent(AppInfo.projectDataDirectory, isDirectory: true)
+        let newContents = (try? fileManager.contentsOfDirectory(atPath: newProjectData.path)) ?? []
+        guard newContents.isEmpty,
+              let legacyContents = try? fileManager.contentsOfDirectory(atPath: legacyProjectData.path),
+              !legacyContents.isEmpty else {
+            return
+        }
+        try? fileManager.createDirectory(at: destination, withIntermediateDirectories: true)
+        for directory in [AppInfo.projectDataDirectory, AppInfo.projectThumbDirectory] {
+            let from = documents.appendingPathComponent(directory, isDirectory: true)
+            let to = destination.appendingPathComponent(directory, isDirectory: true)
+            guard fileManager.fileExists(atPath: from.path),
+                  !fileManager.fileExists(atPath: to.path) else { continue }
+            try? fileManager.copyItem(at: from, to: to)
+        }
+        #endif
+    }
+
+    /// Default application data root.
+    ///
+    /// * iOS/iPadOS: the app's `Documents` directory — the same container the previous
+    ///   WKWebView port used, so existing user projects survive the upgrade and are visible
+    ///   in Files.app (`UIFileSharingEnabled`).
+    /// * macOS: `~/Library/Application Support/ORIPA` so running the development app does
+    ///   not write into the user's Documents folder. A one-time migration copies the old
+    ///   WKWebView-port `Documents` layout over when it is the only existing data.
     nonisolated public static func defaultRootURL(fileManager: FileManager = .default) -> URL {
+        #if os(macOS)
+        let base = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
+            ?? fileManager.urls(for: .documentDirectory, in: .userDomainMask).first
+            ?? URL(fileURLWithPath: fileManager.currentDirectoryPath, isDirectory: true)
+        return base.appendingPathComponent(AppInfo.displayName, isDirectory: true)
+        #else
         if let documents = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first {
             return documents
         }
         // Fallback for exotic hosts (headless snapshot runs): current directory.
         return URL(fileURLWithPath: fileManager.currentDirectoryPath, isDirectory: true)
+        #endif
     }
 
     private func createDirectories() {
@@ -314,14 +355,29 @@ public final class ProjectStore: ObservableObject {
         }
     }
 
-    /// `FileUtil.getLastModifiedText`: `toLocaleString()` (JS) / `DateFormat.getDateTimeInstance()`.
+    /// `FileUtil.getLastModifiedText`: date + time with seconds, locale-aware.
+    ///
+    /// The JS port used `Date.toLocaleString()` (`dateStyle: "short"`, `timeStyle: "medium"`),
+    /// which renders e.g. "2026/10/31 18:22:42" (24 h) on the reference machine. A localized
+    /// template is used instead of `dateStyle/timeStyle` so the 24-hour clock matches that
+    /// reference output (Foundation's `.medium` time style uses AM/PM in some locales).
     nonisolated public static func lastModifiedText(_ date: Date) -> String {
-        DateFormatter.localizedString(from: date, dateStyle: .short, timeStyle: .medium)
+        format(date, template: "yMdHms")
     }
 
-    /// `FileUtil.getLastModifiedTextShort`: SHORT date + SHORT time.
+    /// `FileUtil.getLastModifiedTextShort`: SHORT date + SHORT time (grid captions).
     nonisolated public static func lastModifiedTextShort(_ date: Date) -> String {
-        DateFormatter.localizedString(from: date, dateStyle: .short, timeStyle: .short)
+        format(date, template: "yMdHm")
+    }
+
+    /// Locale-aware `DateFormatter` template formatting (`yMdHms` / `yMdHm`).
+    nonisolated private static func format(_ date: Date, template: String) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale.current
+        formatter.dateFormat = DateFormatter.dateFormat(fromTemplate: template,
+                                                       options: 0,
+                                                       locale: Locale.current)
+        return formatter.string(from: date)
     }
 
     /// `ProjectAdapter` list-mode date: "Modified: %s" (`project_list_item_text_modified`).

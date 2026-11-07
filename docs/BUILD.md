@@ -8,7 +8,8 @@ by three products:
 |---|---|---|
 | `ORIPAMac` | native macOS app (SwiftPM executable, bundled by `scripts/build_mac.sh`) | macOS 13+ |
 | `ORIPASnapshots` | headless screenshot/QA tool (SwiftUI `ImageRenderer`) | macOS 13+ |
-| `ORIPATests` | hermetic test runner (no XCTest, see below) | macOS 13+ |
+| `ORIPATests` | hermetic unit/golden-test runner (no XCTest, see below) | macOS 13+ |
+| `ORIPAIntegration` | headless end-to-end checks over the real app layer (storage, editor, autosave, imports, folding, exports) | macOS 13+ |
 | iOS app `ORIPA` | thin `@main` wrapper around `ORIPAUI` (`iOSApp/`), built from `ORIPA.xcodeproj` | iPhone/iPad, iOS 16+ |
 
 ---
@@ -26,9 +27,10 @@ by three products:
 | Xcode 16+ (full Xcode) | building the **iOS** app / IPA locally | App Store; not installed on this Mac |
 
 > **No XCTest locally.** The Command Line Tools toolchain ships no `XCTest` module, so
-> `swift test` does **not** work here. Tests are a plain executable target,
-> `swift run ORIPATests` (non-zero exit on failure). CI uses the same command, so the
-> suite is identical locally and on GitHub Actions.
+> `swift test` does **not** work here. Tests are plain executable targets:
+> `swift run ORIPATests` (unit/golden tests) and `swift run ORIPAIntegration` (headless
+> end-to-end checks over the real app layer). Both exit non-zero on failure and CI runs
+> the same commands, so local and CI verification are identical.
 >
 > **iOS builds are CI-only on this machine.** `xcodebuild` requires a full Xcode
 > installation; the IPA is produced by GitHub Actions (`macos-15` runners have Xcode).
@@ -53,6 +55,9 @@ swift build
 # Run the hermetic test suite (replaces `swift test` on this toolchain).
 swift run ORIPATests
 
+# Headless end-to-end integration checks (real app layer).
+swift run ORIPAIntegration
+
 # Render the SwiftUI screens headlessly to PNG for visual QA.
 swift run ORIPASnapshots build-snapshots
 #   -> build-snapshots/*.png + build-snapshots/manifest.json
@@ -67,6 +72,25 @@ bash scripts/run_tests.sh
 
 `swift run ORIPASnapshots --help` lists the options (`-l/--list`, `-s/--scenario`,
 `-o/--out`, `--scale 1...4`).
+
+### Optional: local iOS typecheck (no Xcode needed)
+
+CI is the authoritative iOS build, but the shared Swift/SwiftUI code can also be
+type-checked for `arm64-apple-ios16.0` on this Mac, using the Command Line Tools
+toolchain plus an iPhoneOS SDK that matches that toolchain's Swift version:
+
+```bash
+# with a full Xcode installation:
+IOS_SDK="$(xcrun --sdk iphoneos --show-sdk-path)" bash tools/ios_typecheck.sh
+# or point IOS_SDK at any locally available iPhoneOS SDK:
+IOS_SDK=/path/to/iPhoneOS.sdk bash tools/ios_typecheck.sh
+```
+
+It emits the `ORIPACore`/`ORIPAUI` modules for the iOS triple, typechecks every
+`#if canImport(UIKit)` branch (e.g. the raw-touch gesture adapter), and typechecks
+`iOSApp/ORIPAApp.swift`. This catches iOS-only compile errors that the macOS build cannot
+see. A full Xcode is still required to actually build/package the IPA
+(`scripts/build_ipa.sh`).
 
 ---
 
@@ -197,7 +221,7 @@ Triggers: push to `main`, pull requests, manual **Run workflow**.
 
 | Job | Runner | Steps | Artifact (14 days) |
 |---|---|---|---|
-| `test` | `macos-15` | `swift build`, `swift run ORIPATests`, `swift run ORIPASnapshots build-snapshots` | `oripa-ui-snapshots` (PNG + manifest) |
+| `test` | `macos-15` | `swift build`, `swift run ORIPATests`, `swift run ORIPAIntegration`, `swift run ORIPASnapshots build-snapshots` | `oripa-ui-snapshots` (PNG + manifest) |
 | `ios` | `macos-15` | `xcodegen generate`, `scripts/build_ipa.sh` | `ORIPA-unsigned.ipa`; `ios-build-log` on failure |
 | `macos` | `macos-15` | `scripts/build_mac.sh` | `ORIPA-macOS` (zip) |
 
@@ -230,7 +254,7 @@ WKWebView port.
 |---|---|
 | `xcodebuild: error: tool 'xcodebuild' requires Xcode` | Full Xcode not installed (CLT only). Build the iOS app on CI, or install Xcode and `sudo xcode-select -s /Applications/Xcode.app`. |
 | `xcodegen: command not found` | `brew install xcodegen` (XcodeGen 2.46+; `/opt/homebrew/bin/xcodegen`). |
-| `swift test` fails: no such module 'XCTest' | Expected on the CLT-only toolchain. Use `swift run ORIPATests`. |
+| `swift test` fails: no such module 'XCTest' | Expected on the CLT-only toolchain. Use `swift run ORIPATests` / `swift run ORIPAIntegration`. |
 | `error: could not load resource bundle: ... ORIPA_ORIPAUI.bundle` | The SwiftPM resource bundle was not copied next to the executable (macOS) / into the app. `scripts/build_mac.sh` handles this; for a bare `.app` copy `ORIPA_ORIPAUI.bundle` to both the app root and `Contents/Resources`. |
 | Blank/missing Material icons | Re-run `bash tools/assets/convert_icons.sh` (needs the `oripa-port` checkout + ImageMagick) and check its non-blank-alpha validation. |
 | `swift build` errors in files you did not change | Another workstream is mid-edit (shared working tree). Pull/refresh, or wait; never edit files outside your scope. |

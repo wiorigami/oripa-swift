@@ -132,7 +132,7 @@ public enum FoldSnapshot {
     /// A fold screen whose view model is already entered, for `ImageRenderer`.
     static func screen(app: AppModel,
                               modeIndex: Int,
-                              size: CGSize = SnapshotScenarios.portrait,
+                              size: CGSize = CGSize(width: 820, height: 1180),
                               sessionSetup: ((any EditorSessionProtocol) -> Void)? = nil,
                               modelSetup: ((FoldViewModel) -> Void)? = nil) -> AnyView? {
         resetFoldPreferences(app.prefs)
@@ -192,24 +192,29 @@ public enum FoldSnapshot {
             })
         add("45-fold-cross-portrait", "Fold — Cut Line (portrait)", portrait, modeIndex: 2)
         add("46-fold-cross-landscape", "Fold — Cut Line (landscape)", landscape, modeIndex: 2)
-        add("47-fold-dlg-xray", "Fold — X-Ray settings", portrait, modeIndex: 0) { model in
-            model.settingsSheet = .xray(initialWireframe: false)
-        }
-        add("48-fold-dlg-overlap", "Fold — Overlap settings", portrait, modeIndex: 1) { model in
-            model.settingsSheet = .overlap(flip: false,
-                                           front: FoldOverlapDefaults.frontColor,
-                                           back: FoldOverlapDefaults.backColor,
-                                           line: FoldOverlapDefaults.lineColor)
-        }
-        add("49-fold-dlg-cross", "Fold — Cut Line settings", portrait, modeIndex: 2) { model in
-            model.openSettings()
-        }
-        add("50-fold-dlg-export", "Fold — Export Model dialog", portrait, modeIndex: 0) { model in
-            model.openExport()
-        }
-        add("51-fold-dlg-png", "Fold — PNG Options dialog", portrait, modeIndex: 0) { model in
-            model.exportSheet = .pngOptions(defaultSize: 1000)
-        }
+        add("47-fold-dlg-xray", "Fold — X-Ray settings", portrait, modeIndex: 0,
+            modelSetup: { model in
+                model.settingsSheet = .xray(initialWireframe: false)
+            })
+        add("48-fold-dlg-overlap", "Fold — Overlap settings", portrait, modeIndex: 1,
+            modelSetup: { model in
+                model.settingsSheet = .overlap(flip: false,
+                                               front: FoldOverlapDefaults.frontColor,
+                                               back: FoldOverlapDefaults.backColor,
+                                               line: FoldOverlapDefaults.lineColor)
+            })
+        add("49-fold-dlg-cross", "Fold — Cut Line settings", portrait, modeIndex: 2,
+            modelSetup: { model in
+                model.openSettings()
+            })
+        add("50-fold-dlg-export", "Fold — Export Model dialog", portrait, modeIndex: 0,
+            modelSetup: { model in
+                model.openExport()
+            })
+        add("51-fold-dlg-png", "Fold — PNG Options dialog", portrait, modeIndex: 0,
+            modelSetup: { model in
+                model.exportSheet = .pngOptions(defaultSize: 1000)
+            })
         if let base = screen(app: app, modeIndex: 1, size: portrait) {
             list.append(SnapshotScenario(name: "52-fold-dlg-color",
                                          size: portrait,
@@ -223,9 +228,10 @@ public enum FoldSnapshot {
                                                  onOK: { _ in })
                                          })))
         }
-        add("53-fold-mode-menu", "Fold — mode spinner menu", portrait, modeIndex: 0) { model in
-            model.showsModeMenu = true
-        }
+        add("53-fold-mode-menu", "Fold — mode spinner menu", portrait, modeIndex: 0,
+            modelSetup: { model in
+                model.showsModeMenu = true
+            })
         return list
     }
 

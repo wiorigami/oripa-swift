@@ -8,6 +8,7 @@
 // `ImageRenderer` never runs `.onAppear`/`.task`, so every renderer is configured eagerly
 // here (and the session seeded) before the view is returned.
 import Foundation
+import ImageIO
 import SwiftUI
 import ORIPACore
 
@@ -42,25 +43,6 @@ public enum EditorSnapshotSupport {
             .frame(maxWidth: .infinity, maxHeight: .infinity))
     }
 
-    /// Paint screen with a dialog overlay (Export CP / PNG options / help / save / number).
-    public static func paintDialog(app: AppModel, dialog: Dialog) -> AnyView {
-        let runtime = makeRuntime(app: app)
-        seedDemoPattern(runtime.session.cp)
-        runtime.paintCoordinator.configureRenderer()
-        runtime.menu.topToolbarShown = true
-        present(dialog, app: app, session: runtime.session)
-        return AnyView(ZStack {
-            PaintScreen(session: runtime.session,
-                        menu: runtime.menu,
-                        driver: runtime.paintDriver,
-                        renderer: runtime.paintRenderer,
-                        app: app,
-                        coordinator: runtime.paintCoordinator,
-                        interactionEnabled: false)
-            OrDialogHost(center: app.dialogs)
-        })
-    }
-
     /// Check screen with the flat-foldability data filled in.
     public static func check(app: AppModel, foldable: Bool = true) -> AnyView {
         let runtime = makeRuntime(app: app)
@@ -84,9 +66,14 @@ public enum EditorSnapshotSupport {
         runtime.paintDriver.rebuildMachineForCurrentAction()
         let half = CGFloat(runtime.session.cp.creasePatternHalfSize)
         runtime.paintRenderer.setSelectionRect(x0: -half, y0: -half, x1: half * 0.6, y1: half * 0.4)
+        // Picked lines render in COLOR_PICKED (green) above the typed CP lines.
         runtime.paintRenderer.setPickedLines([
-            PaintLine(x0: -half, y0: -half, x1: half, y1: -half, typeCode: 1),
-            PaintLine(x0: -half, y0: -half, x1: half, y1: half, typeCode: 2),
+            PaintLine(x0: -half * 0.5, y0: 0, x1: 0, y1: 0, typeCode: 2),
+            PaintLine(x0: 0, y0: 0, x1: 0, y1: half * 0.5, typeCode: 3),
+        ])
+        runtime.paintRenderer.setPickedMVFBPoints([
+            PaintPoint(x: -half * 0.5, y: 0),
+            PaintPoint(x: 0, y: 0),
         ])
         runtime.paintRenderer.requestDraw()
         return AnyView(PaintScreen(session: runtime.session,
@@ -107,7 +94,7 @@ public enum EditorSnapshotSupport {
     public static func scenarios() -> [SnapshotScenario] {
         var out: [SnapshotScenario] = []
         func host(_ app: AppModel, _ content: AnyView) -> AnyView {
-            AnyView(SnapshotScreenHost(app: app, content: content))
+            AnyView(SnapshotScreenHost(app: app, content: content).oripaSnapshotMode())
         }
 
         // 19 — paint screen, both toolbars, seeded pattern (grid + typed lines + vertices).
@@ -176,60 +163,73 @@ public enum EditorSnapshotSupport {
 
         // 27 — export CP dialog.
         app = DemoProjects.makeApp(projectNames: [], route: [.projects])
-        out.append(dialogScenario(
-            app: app,
-            name: "27-dialog-export-cp",
-            title: "Export Crease Pattern (svg / png / opx / cp)",
-            dialogTitle: PaintStrings.exportTitle,
-            icon: "ic_file_download_dark_24dp",
-            content: ExportCPDialog.snapshotContent(),
-            buttons: [("Cancel", false), ("Export", true)]))
+        out.append(dialogScenario(app: app,
+                                  name: "27-dialog-export-cp",
+                                  title: "Export Crease Pattern (svg / png / opx / cp)") { app in
+            let session = EditorSession(params: EditorParams(), app: app)
+            ExportCPDialog.show(app.dialogs, fileExchange: app.fileExchange,
+                                toast: app.toast, host: session)
+        })
 
         // 28 — PNG options dialog (200…1600 step 40, default 1000).
         app = DemoProjects.makeApp(projectNames: [], route: [.projects])
-        out.append(dialogScenario(
-            app: app,
-            name: "28-dialog-export-png",
-            title: "PNG Options (image size, default 1000 px)",
-            dialogTitle: PaintStrings.pngOptionsTitle,
-            icon: "ic_image_dark_24dp",
-            content: ExportCPDialog.snapshotPNGOptionsContent(),
-            buttons: [("Cancel", false), ("OK", true)]))
+        out.append(dialogScenario(app: app,
+                                  name: "28-dialog-export-png",
+                                  title: "PNG Options (image size, default 1000 px)") { app in
+            let session = EditorSession(params: EditorParams(), app: app)
+            ExportCPDialog.showPngOptions(app.dialogs, fileExchange: app.fileExchange,
+                                          toast: app.toast, host: session)
+        })
 
         // 29 — per-tool help dialog with the 160 dp illustration.
         app = DemoProjects.makeApp(projectNames: [], route: [.projects])
-        out.append(dialogScenario(
-            app: app,
-            name: "29-dialog-help-segment",
-            title: "Paint help — Segment (160 dp illustration)",
-            dialogTitle: HelpDialog.entry(forTool: 0).title,
-            icon: "ic_help_outline_dark_24dp",
-            content: HelpDialog.snapshotContent(toolType: 0),
-            buttons: [("Close", true)],
-            width: 320))
+        out.append(dialogScenario(app: app,
+                                  name: "29-dialog-help-segment",
+                                  title: "Paint help — Segment (160 dp illustration)") { app in
+            HelpDialog.showForTool(app.dialogs, toolType: 0)
+        })
 
         // 30 — save-changes dialog (SaveNew path).
         app = DemoProjects.makeApp(projectNames: [], route: [.projects])
-        out.append(dialogScenario(
-            app: app,
-            name: "30-dialog-save-changes",
-            title: "Save changes? (Save / Discard / Cancel)",
-            dialogTitle: PaintStrings.saveChangesTitle,
-            icon: "ic_save_dark_24dp",
-            content: AnyView(EmptyView()),
-            buttons: [("Cancel", false), ("Discard", false), ("Save", true)]))
+        out.append(dialogScenario(app: app,
+                                  name: "30-dialog-save-changes",
+                                  title: "Save changes? (Save / Discard / Cancel)") { app in
+            let session = EditorSession(params: EditorParams(), app: app)
+            SaveDialog.showNew(app.dialogs, host: session)
+        })
 
         // 31 — by-value angle dialog.
         app = DemoProjects.makeApp(projectNames: [], route: [.projects])
-        out.append(dialogScenario(
-            app: app,
-            name: "31-dialog-number-angle",
-            title: "Set Angle (Degrees)",
-            dialogTitle: PaintStrings.angleDialogTitle,
-            icon: "ic_angle_dark_v2_24px",
-            content: NumberDialog.snapshotContent(hint: PaintStrings.angleDialogHint, value: "45"),
-            buttons: [("Cancel", false), ("OK", true)],
-            width: 320))
+        out.append(dialogScenario(app: app,
+                                  name: "31-dialog-number-angle",
+                                  title: "Set Angle (Degrees)") { app in
+            NumberDialog.showAngle(app.dialogs, initialValue: 45) { _ in }
+        })
+
+        // 32 — read-only CP preview renderer (used by PreviewScreen / project previews).
+        let previewCP = CreasePattern()
+        seedDemoPattern(previewCP)
+        if let preview = ORIPACanvasIntegration.previewView(opxcData: OripaIO.exportOpxc(previewCP)) {
+            out.append(SnapshotScenario(
+                name: "33-canvas-preview",
+                size: SnapshotScenarios.portrait,
+                title: "Canvas — read-only CP preview renderer (fit + typed lines)",
+                view: AnyView(ZStack {
+                    Color.white
+                    preview
+                }.oripaSnapshotMode())))
+        }
+
+        // 34 — full route integration: ORIPARootView → NavigationHost → editor factory →
+        // EditorScreen → PaintScreen (validates ui-shell's registry wiring end to end).
+        ORIPACanvasIntegration.install()
+        let routedApp = DemoProjects.makeApp(projectNames: [],
+                                             route: [.projects, .editor(EditorParams())])
+        out.append(SnapshotScenario(
+            name: "34-editor-route",
+            size: SnapshotScenarios.portrait,
+            title: "Editor route integration (ORIPARootView → editorScreenFactory)",
+            view: AnyView(ORIPARootView(app: routedApp).oripaSnapshotMode())))
 
         return out
     }
@@ -250,11 +250,14 @@ public enum EditorSnapshotSupport {
         seedDemoPattern(runtime.session.cp)
         let before = runtime.session.cp.lines.count
         runtime.paintCoordinator.configureRenderer()
-        // Two taps of the AddSegment tool at (-100,-100) and (100,100) in object space.
+        // The canvas viewport must be known before feeding touch coordinates (the real
+        // Canvas sets it on first layout; headless there is no layout pass).
+        runtime.paintRenderer.prepareForSize(SnapshotScenarios.portrait)
+        // Two taps of the AddSegment tool on grid points that are not yet connected.
         let center = CGPoint(x: 410, y: 590)   // 820×1180 portrait canvas centre
         let scale = CGFloat(1180) / (2.0 * CGFloat(runtime.session.cp.creasePatternHalfSize))
-        let a = CGPoint(x: center.x + (-100) * scale * 0.5, y: center.y + (-100) * scale * 0.5)
-        let b = CGPoint(x: center.x + (100) * scale * 0.5, y: center.y + (100) * scale * 0.5)
+        let a = CGPoint(x: center.x + (-100) * scale * 0.5, y: center.y + (-200) * scale * 0.5)
+        let b = CGPoint(x: center.x + (200) * scale * 0.5, y: center.y + (100) * scale * 0.5)
         runtime.paintDriver.tap(x: a.x, y: a.y)
         runtime.paintDriver.tap(x: b.x, y: b.y)
         let after = runtime.session.cp.lines.count
@@ -273,57 +276,18 @@ public enum EditorSnapshotSupport {
 
     // MARK: - Generic snapshot dialog card
 
-    /// Material dialog card for snapshots (the real `OrDialogHost` uses a `ScrollView`,
-    /// which ImageRenderer renders empty headlessly).
+    /// Shows a real Material dialog (u i-shell's `DialogCenter`/`OrDialogHost`, rendered
+    /// eagerly in snapshot mode) over the paint screen.
     public static func dialogScenario(app: AppModel,
                                       name: String,
                                       title: String,
-                                      dialogTitle: String,
-                                      icon: String?,
-                                      content: AnyView,
-                                      buttons: [(String, Bool)],
-                                      width: CGFloat = 320) -> SnapshotScenario {
-        let background = ZStack {
-            paint(app: app)
-            OrTheme.scrim
-            SnapshotDialogCard(title: dialogTitle, icon: icon, content: content,
-                               buttons: buttons, width: width)
-        }
+                                      prepare: (AppModel) -> Void) -> SnapshotScenario {
+        prepare(app)
         return SnapshotScenario(
             name: name,
             size: SnapshotScenarios.portrait,
             title: title,
-            view: AnyView(SnapshotScreenHost(app: app, content: background)))
-    }
-
-    // MARK: - Dialogs
-
-    public enum Dialog {
-        case exportCP
-        case exportPNG
-        case help(toolType: Int)
-        case saveNew
-        case saveExisting
-        case numberAngle
-    }
-
-    private static func present(_ dialog: Dialog, app: AppModel, session: EditorSession) {
-        switch dialog {
-        case .exportCP:
-            ExportCPDialog.show(app.dialogs, fileExchange: app.fileExchange,
-                                toast: app.toast, host: session)
-        case .exportPNG:
-            ExportCPDialog.showPngOptions(app.dialogs, fileExchange: app.fileExchange,
-                                          toast: app.toast, host: session)
-        case .help(let toolType):
-            HelpDialog.showForTool(app.dialogs, toolType: toolType)
-        case .saveNew:
-            SaveDialog.showNew(app.dialogs, host: session)
-        case .saveExisting:
-            SaveDialog.showExisting(app.dialogs, host: session)
-        case .numberAngle:
-            NumberDialog.showAngle(app.dialogs, initialValue: 45) { _ in }
-        }
+            view: AnyView(SnapshotScreenHost(app: app, content: paint(app: app)).oripaSnapshotMode()))
     }
 
     // MARK: - Runtime construction
@@ -380,51 +344,5 @@ public enum EditorSnapshotSupport {
     public static func seedCheckPattern(_ cp: CreasePattern) {
         seedDemoPattern(cp)
         cp.modified = false
-    }
-}
-
-// MARK: - Snapshot dialog card
-
-/// Material dialog chrome without a `ScrollView` (see `dialogScenario`).
-private struct SnapshotDialogCard: View {
-    let title: String
-    let icon: String?
-    let content: AnyView
-    let buttons: [(String, Bool)]
-    let width: CGFloat
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 16) {
-                if let icon {
-                    MaterialIcon(icon, size: 24, tint: OrTheme.iconActive)
-                }
-                Text(title)
-                    .font(OrTheme.dialogTitle())
-                    .foregroundColor(OrTheme.textPrimary)
-                Spacer(minLength: 0)
-            }
-            .padding(.horizontal, 24)
-            .padding(.top, 20)
-
-            content
-                .padding(.horizontal, 24)
-                .padding(.top, 16)
-                .padding(.bottom, 8)
-
-            HStack(spacing: 8) {
-                Spacer(minLength: 0)
-                ForEach(Array(buttons.enumerated()), id: \.offset) { _, button in
-                    OrTextButton(button.0, isPrimary: button.1) {}
-                }
-            }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 8)
-            .frame(minHeight: OrTheme.dialogActionsHeight)
-        }
-        .frame(width: width, alignment: .leading)
-        .background(OrTheme.dialogBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 2))
-        .orElevation(24)
     }
 }

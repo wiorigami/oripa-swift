@@ -235,6 +235,12 @@ public enum SnapshotScenarios {
             view: rootView(numberApp, size: portrait)
         ))
 
+        // MARK: Editor — paint / check / export dialogs (ui-canvas, 19…31)
+        scenarios.append(contentsOf: EditorSnapshotSupport.scenarios())
+
+        // MARK: Fold — xray / overlap / cut line + fold dialogs (ui-fold, 40…53)
+        scenarios.append(contentsOf: FoldSnapshot.scenarios())
+
         return scenarios
     }
 
@@ -255,6 +261,7 @@ public enum SnapshotScenarios {
         AnyView(
             ORIPARootView(app: app)
                 .frame(width: size.width, height: size.height)
+                .oripaSnapshotMode()
         )
     }
 
@@ -264,6 +271,7 @@ public enum SnapshotScenarios {
         AnyView(
             SnapshotScreenHost(app: app, content: content())
                 .frame(width: size.width, height: size.height)
+                .oripaSnapshotMode()
         )
     }
 }

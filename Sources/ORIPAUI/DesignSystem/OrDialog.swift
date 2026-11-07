@@ -155,6 +155,11 @@ public final class DialogCenter: ObservableObject {
                            negativeText: String = "Cancel",
                            onResult: @escaping (String?) -> Void) -> OrTextInputModel {
         let model = OrTextInputModel(text: initialValue, hint: hint, sanitize: sanitize)
+        model.onSubmit = { [weak self] in
+            guard let self else { return }
+            onResult(model.text)
+            self.closeTop()
+        }
         let spec = OrDialogSpec(
             title: title,
             icon: icon,
@@ -258,6 +263,7 @@ private struct OrDialogScrim: View {
     @ObservedObject var center: DialogCenter
     var containerSize: CGSize
 
+    @Environment(\.oripaSnapshotMode) private var snapshotMode
     @State private var appeared = false
 
     var body: some View {
@@ -269,8 +275,8 @@ private struct OrDialogScrim: View {
                     if spec.cancelable { center.closeTop() }
                 }
             OrDialogCard(spec: spec, center: center, containerSize: containerSize)
-                .scaleEffect(appeared ? 1 : 0.92)
-                .opacity(appeared ? 1 : 0.4)
+                .scaleEffect((appeared || snapshotMode) ? 1 : 0.92)
+                .opacity((appeared || snapshotMode) ? 1 : 0.4)
         }
         .onAppear {
             withAnimation(.easeOut(duration: 0.14)) { appeared = true }
@@ -283,6 +289,8 @@ private struct OrDialogCard: View {
     @ObservedObject var center: DialogCenter
     var containerSize: CGSize
 
+    @Environment(\.oripaSnapshotMode) private var snapshotMode
+
     private var computedWidth: CGFloat {
         let available = max(280, containerSize.width - OrTheme.dialogPadding * 2)
         let preferred = spec.width ?? 560
@@ -290,8 +298,12 @@ private struct OrDialogCard: View {
     }
 
     private var maxContentHeight: CGFloat {
-        max(80, containerSize.height * 0.5)
+        max(80, containerSize.height * 0.6)
     }
+
+    /// Natural height of the dialog body, measured so the card hugs short content instead of
+    /// always filling half the screen (the JS dialog sizes to content and scrolls beyond).
+    @State private var measuredContentHeight: CGFloat = 0
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -312,13 +324,28 @@ private struct OrDialogCard: View {
                 .padding(.top, 20)
             }
             if let content = spec.content {
-                ScrollView(.vertical, showsIndicators: true) {
+                if snapshotMode {
+                    // ImageRenderer cannot rasterise ScrollView content; render eagerly.
                     content
                         .padding(.horizontal, 24)
                         .padding(.top, 16)
                         .padding(.bottom, 8)
+                } else {
+                    ScrollView(.vertical, showsIndicators: measuredContentHeight > maxContentHeight) {
+                        content
+                            .padding(.horizontal, 24)
+                            .padding(.top, 16)
+                            .padding(.bottom, 8)
+                            .background(
+                                GeometryReader { proxy in
+                                    Color.clear.preference(key: OrDialogContentHeightKey.self,
+                                                           value: proxy.size.height)
+                                }
+                            )
+                    }
+                    .frame(height: min(max(measuredContentHeight, 1), maxContentHeight))
+                    .onPreferenceChange(OrDialogContentHeightKey.self) { measuredContentHeight = $0 }
                 }
-                .frame(maxHeight: maxContentHeight)
             }
             if !spec.buttons.isEmpty {
                 HStack(spacing: 8) {
@@ -347,7 +374,6 @@ private struct OrDialogCard: View {
         .background(OrTheme.dialogBackground)
         .clipShape(RoundedRectangle(cornerRadius: 2))
         .orElevation(24)
-        .frame(maxHeight: containerSize.height * 0.9)
     }
 }
 
@@ -372,6 +398,8 @@ public final class OrTextInputModel: ObservableObject {
     @Published public var text: String
     public var hint: String?
     public var sanitize: ((String) -> String)?
+    /// Invoked when the user presses Return (`input.addEventListener("keydown", …Enter…)`).
+    public var onSubmit: (() -> Void)?
 
     public init(text: String = "", hint: String? = nil, sanitize: ((String) -> String)? = nil) {
         self.text = text
@@ -384,12 +412,33 @@ public final class OrTextInputModel: ObservableObject {
 public struct OrTextInputField: View {
     @ObservedObject var model: OrTextInputModel
     @FocusState private var focused: Bool
+    @Environment(\.oripaSnapshotMode) private var snapshotMode
 
     public init(model: OrTextInputModel) {
         self.model = model
     }
 
     public var body: some View {
+        if snapshotMode {
+            // ImageRenderer cannot rasterise the AppKit/UIKit-backed TextField; draw the
+            // editable line statically for visual QA (runtime always uses the TextField).
+            VStack(alignment: .leading, spacing: 0) {
+                Text(model.text.isEmpty ? (model.hint ?? "") : model.text)
+                    .font(.system(size: 16))
+                    .foregroundColor(model.text.isEmpty ? OrTheme.textDisabled : OrTheme.textPrimary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 8)
+                Rectangle()
+                    .fill(OrTheme.accent)
+                    .frame(height: 2)
+            }
+            .frame(maxWidth: .infinity)
+        } else {
+            textField
+        }
+    }
+
+    private var textField: some View {
         TextField(model.hint ?? "", text: Binding(
             get: { model.text },
             set: { newValue in
@@ -414,6 +463,7 @@ public struct OrTextInputField: View {
                 .frame(height: 2)
         }
         .focused($focused)
+        .onSubmit { model.onSubmit?() }
         .onAppear {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.06) { focused = true }
         }
@@ -484,4 +534,13 @@ public enum CommonDialogStrings {
     public static let ok = "OK"
     /// android.R.string.cancel.
     public static let cancel = "Cancel"
+}
+
+// MARK: - Content height measurement
+
+private struct OrDialogContentHeightKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
 }

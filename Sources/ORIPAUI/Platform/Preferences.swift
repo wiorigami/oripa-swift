@@ -19,7 +19,7 @@ import Combine
 public final class Preferences: ObservableObject {
 
     /// UserDefaults key prefix used by the WKWebView port (keep for data compatibility).
-    public static let keyPrefix = "oripa.pref."
+    nonisolated public static let keyPrefix = "oripa.pref."
 
     private let defaults: UserDefaults
     private let prefix: String

@@ -38,9 +38,9 @@ public enum FoldPNGExport {
 
         public init(wireframe: Bool = false,
                     flip: Bool = false,
-                    frontColor: UInt32 = FoldRenderer.DEFAULT_FRONT_COLOR,
-                    backColor: UInt32 = FoldRenderer.DEFAULT_BACK_COLOR,
-                    lineColor: UInt32 = FoldRenderer.DEFAULT_LINE_COLOR,
+                    frontColor: UInt32 = FoldRenderDefaults.frontColor,
+                    backColor: UInt32 = FoldRenderDefaults.backColor,
+                    lineColor: UInt32 = FoldRenderDefaults.lineColor,
                     overlapShadow: Bool = false,
                     overlapEnabled: Bool = true,
                     cp: CreasePattern? = nil,

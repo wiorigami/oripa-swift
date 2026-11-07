@@ -68,6 +68,7 @@ final class IntegrationChecks {
         app = AppModel(navigation: [.projects], prefs: prefs, store: store)
 
         checkProjectStoreBasics()
+        checkProjectStoreSelfTest()
         checkDrawUndoSaveReload()
         checkProjectCrud()
         checkTempAutosaveRecovery()
@@ -93,6 +94,13 @@ final class IntegrationChecks {
         expect(fileManager.fileExists(atPath: store.projectThumbURL.path), "project_thumbs directory exists")
         expect(fileManager.fileExists(atPath: store.importDataURL.path), "import_data directory exists")
         expectEqual(store.uniqueName(base: "untitled"), "untitled", "first free internal name")
+    }
+
+    /// ui-shell's own persistence self-test (write → relaunch re-read → CRUD → staging →
+    /// crash-safe autosave recovery), embedded here so CI runs it through the same gate.
+    private func checkProjectStoreSelfTest() {
+        let result = ProjectStore.runSelfTest()
+        expect(result.passed, "ProjectStore.runSelfTest passes (\n\(result.report))")
     }
 
     // MARK: - 2. Paint → save → reload across a fresh store

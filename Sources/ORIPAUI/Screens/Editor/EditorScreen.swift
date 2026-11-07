@@ -117,7 +117,7 @@ public struct EditorScreen: View {
     }
 
     /// Port of `EditorScreen.onBack` from editor.js.
-    private static func handleBack(runtime: EditorRuntime, app: AppModel) -> Bool {
+    static func handleBack(runtime: EditorRuntime, app: AppModel) -> Bool {
         let session = runtime.session
         if session.closed { return false }   // already cleaned up: let the router pop
         runtime.inBackHandler = true

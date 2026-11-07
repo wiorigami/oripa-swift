@@ -281,6 +281,7 @@ public struct OrNumberPicker: View {
 
     @State private var text: String = ""
     @FocusState private var isFocused: Bool
+    @Environment(\.oripaSnapshotMode) private var snapshotMode
 
     public init(model: OrNumberPickerModel, onChanged: ((Int) -> Void)? = nil) {
         self.model = model
@@ -290,28 +291,41 @@ public struct OrNumberPicker: View {
     public var body: some View {
         HStack(spacing: 8) {
             stepperButton("\u{2212}") { change(model.value - 1) }
-            TextField("", text: Binding(
-                get: { text },
-                set: { newText in
-                    let digits = newText.filter { $0.isNumber }
-                    text = String(digits.prefix(4))
+            Group {
+                if snapshotMode {
+                    Text(String(model.value))
+                        .font(.system(size: 18))
+                        .foregroundColor(OrTheme.textPrimary)
+                        .multilineTextAlignment(.center)
+                        .frame(width: 84, height: 40)
+                        .overlay(alignment: .bottom) {
+                            Rectangle().fill(OrTheme.divider).frame(height: 2)
+                        }
+                } else {
+                    TextField("", text: Binding(
+                        get: { text },
+                        set: { newText in
+                            let digits = newText.filter { $0.isNumber }
+                            text = String(digits.prefix(4))
+                        }
+                    ))
+                    .textFieldStyle(.plain)
+                    .multilineTextAlignment(.center)
+                    .font(.system(size: 18))
+                    .foregroundColor(OrTheme.textPrimary)
+                    .frame(width: 84, height: 40)
+                    .overlay(alignment: .bottom) {
+                        Rectangle().fill(OrTheme.divider).frame(height: 2)
+                    }
+                    #if os(iOS)
+                    .keyboardType(.numberPad)
+                    #endif
+                    .focused($isFocused)
+                    .onSubmit { commitText() }
+                    .onChange(of: isFocused) { focused in
+                        if !focused { commitText() }
+                    }
                 }
-            ))
-            .textFieldStyle(.plain)
-            .multilineTextAlignment(.center)
-            .font(.system(size: 18))
-            .foregroundColor(OrTheme.textPrimary)
-            .frame(width: 84, height: 40)
-            .overlay(alignment: .bottom) {
-                Rectangle().fill(OrTheme.divider).frame(height: 2)
-            }
-            #if os(iOS)
-            .keyboardType(.numberPad)
-            #endif
-            .focused($isFocused)
-            .onSubmit { commitText() }
-            .onChange(of: isFocused) { focused in
-                if !focused { commitText() }
             }
             stepperButton("+") { change(model.value + 1) }
         }

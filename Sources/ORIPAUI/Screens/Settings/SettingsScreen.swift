@@ -13,6 +13,7 @@ import SwiftUI
 public struct SettingsScreen: View {
     @EnvironmentObject private var app: AppModel
     @Environment(\.oripaNavID) private var navID
+    @Environment(\.oripaSnapshotMode) private var snapshotMode
 
     // Preference values, loaded on appear (the screen is rebuilt on resume like Android).
     @State private var showGrid = true
@@ -31,21 +32,30 @@ public struct SettingsScreen: View {
     public var body: some View {
         VStack(spacing: 0) {
             OrToolbar(title: SettingsStrings.title)
-            ScrollView(.vertical, showsIndicators: true) {
-                VStack(spacing: 0) {
-                    drawingSection
-                    foldedModelSection
-                    Color.clear.frame(height: 24)
+            if snapshotMode {
+                // ImageRenderer cannot rasterise ScrollView content; render eagerly for QA.
+                settingsContent
+            } else {
+                ScrollView(.vertical, showsIndicators: true) {
+                    settingsContent
                 }
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(OrTheme.background)
         .onAppear { load() }
         .onChange(of: app.navigation.last?.id) { topID in
             // `resume()`: rebuild after being uncovered (settings could be covered by a
             // future sub-screen; Android rebuilds the preference list as well).
             if topID == navID { load() }
+        }
+    }
+
+    private var settingsContent: some View {
+        VStack(spacing: 0) {
+            drawingSection
+            foldedModelSection
+            Color.clear.frame(height: 24)
         }
     }
 

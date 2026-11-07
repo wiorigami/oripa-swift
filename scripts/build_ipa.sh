@@ -58,8 +58,6 @@ set +e
     -derivedDataPath "$DERIVED" \
     CODE_SIGNING_ALLOWED=NO \
     CODE_SIGNING_REQUIRED=NO \
-    CODE_SIGN_STYLE=Manual \
-    DEVELOPMENT_TEAM="" \
     build
 } 2>&1 | tee "$LOG"
 status=${PIPESTATUS[0]}
@@ -99,13 +97,50 @@ if [ "$BUNDLE_ID" != "com.origamitoolbox.oripa" ]; then
   exit 1
 fi
 
+# project.yml is the source of truth for version/build settings; the built Info.plist
+# must agree (it expands $(MARKETING_VERSION) / $(CURRENT_PROJECT_VERSION)).
+EXPECTED_VERSION="$(sed -n 's/^ *MARKETING_VERSION: "\([^"]*\)"/\1/p' project.yml | head -n 1)"
+EXPECTED_BUILD="$(sed -n 's/^ *CURRENT_PROJECT_VERSION: "\([^"]*\)"/\1/p' project.yml | head -n 1)"
+if [ -n "$EXPECTED_VERSION" ] && [ "$MARKETING_VERSION" != "$EXPECTED_VERSION" ]; then
+  echo "error: CFBundleShortVersionString '$MARKETING_VERSION' != project.yml '$EXPECTED_VERSION'" >&2
+  exit 1
+fi
+if [ -n "$EXPECTED_BUILD" ] && [ "$BUILD_VERSION" != "$EXPECTED_BUILD" ]; then
+  echo "error: CFBundleVersion '$BUILD_VERSION' != project.yml '$EXPECTED_BUILD'" >&2
+  exit 1
+fi
+
+# Hard user requirements that only the packaged bundle can prove: Files.app access and
+# iPad upside-down orientation.
+for key in UIFileSharingEnabled LSSupportsOpeningDocumentsInPlace; do
+  value="$(/usr/libexec/PlistBuddy -c "Print :$key" "$APP/Info.plist" 2>/dev/null || true)"
+  if [ "$value" != "true" ]; then
+    echo "error: Info.plist $key must be true (got '$value')" >&2
+    exit 1
+  fi
+done
+if ! /usr/libexec/PlistBuddy -c 'Print :UISupportedInterfaceOrientations~ipad' \
+      "$APP/Info.plist" 2>/dev/null | grep -q 'UIInterfaceOrientationPortraitUpsideDown'; then
+  echo "error: iPad orientations must include UIInterfaceOrientationPortraitUpsideDown" >&2
+  exit 1
+fi
+echo "    Files.app access + iPad upside-down orientation: OK"
+
 echo "==> architecture / platform"
 lipo -info "$EXECUTABLE"
-echo "    LC_BUILD_VERSION:"
-otool -l "$EXECUTABLE" | grep -A4 -m1 'LC_BUILD_VERSION' | sed 's/^/    /' || true
 if ! lipo -info "$EXECUTABLE" 2>/dev/null | grep -q 'arm64'; then
   echo "error: device build does not contain arm64 (got: $(lipo -info "$EXECUTABLE"))" >&2
   exit 1
+fi
+BUILD_VERSION_INFO="$(otool -l "$EXECUTABLE" | grep -A4 -m1 'LC_BUILD_VERSION' || true)"
+echo "    LC_BUILD_VERSION:"
+printf '%s\n' "$BUILD_VERSION_INFO" | sed 's/^/    /'
+# LC_BUILD_VERSION.platform: 1 = macOS, 2 = iOS (/ newer otool prints "IOS"/"iOS").
+if [ "${SKIP_LC_PLATFORM_CHECK:-0}" != "1" ]; then
+  if ! printf '%s\n' "$BUILD_VERSION_INFO" | grep -qE 'platform (2|IOS|iOS)\b'; then
+    echo "error: executable was not built for iOS (expected LC_BUILD_VERSION platform 2/IOS)" >&2
+    exit 1
+  fi
 fi
 
 if [ "${ADHOC_SIGN:-0}" = "1" ]; then
@@ -122,6 +157,16 @@ cp -R "$APP" "$PAYLOAD/$APP_NAME.app"
   rm -f "$IPA"
   zip -qry "$IPA" Payload
 )
+# Validate the staged payload and the archive itself (zip -T verifies integrity).
+if [ ! -f "$PAYLOAD/$APP_NAME.app/$APP_NAME" ]; then
+  echo "error: staged payload is missing $PAYLOAD/$APP_NAME.app/$APP_NAME" >&2
+  exit 1
+fi
+if ! zip -T "$IPA" >/dev/null 2>&1; then
+  echo "error: $IPA failed the zip integrity test" >&2
+  exit 1
+fi
+echo "    IPA payload: Payload/$APP_NAME.app ($(du -sh "$PAYLOAD/$APP_NAME.app" | awk '{print $1}'))"
 
 echo "==> done"
 du -sh "$APP"

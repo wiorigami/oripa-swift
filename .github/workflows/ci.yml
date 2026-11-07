@@ -58,6 +58,11 @@ jobs:
           set -x
           swift run ORIPATests 2>&1 | tee tests.log
 
+      - name: swift run ORIPAIntegration (headless end-to-end checks)
+        run: |
+          set -x
+          swift run ORIPAIntegration 2>&1 | tee integration.log
+
       - name: Render UI snapshots (ImageRenderer, headless)
         run: |
           set -x

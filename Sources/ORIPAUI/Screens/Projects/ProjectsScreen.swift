@@ -56,6 +56,7 @@ private final class ProjectsSelectionModel: ObservableObject {
 public struct ProjectsScreen: View {
     @EnvironmentObject private var app: AppModel
     @Environment(\.oripaNavID) private var navID
+    @Environment(\.oripaSnapshotMode) private var snapshotMode
 
     @StateObject private var selection = ProjectsSelectionModel()
 
@@ -193,23 +194,33 @@ public struct ProjectsScreen: View {
                     emptyState
                         .frame(width: width, height: height)
                 } else if doShowList {
-                    ScrollViewReader { proxy in
-                        ScrollView(.vertical, showsIndicators: true) {
-                            Color.clear.frame(height: 0).id("projects-top")
-                            projectList
-                        }
-                        .onChange(of: scrollResetToken) { _ in
-                            proxy.scrollTo("projects-top", anchor: .top)
+                    if snapshotMode {
+                        // ImageRenderer cannot rasterise ScrollView/Lazy* content; lay the
+                        // list out eagerly for visual QA (runtime always uses the scroll view).
+                        snapshotList
+                    } else {
+                        ScrollViewReader { scrollProxy in
+                            ScrollView(.vertical, showsIndicators: true) {
+                                Color.clear.frame(height: 0).id("projects-top")
+                                projectList
+                            }
+                            .onChange(of: scrollResetToken) { _ in
+                                scrollProxy.scrollTo("projects-top", anchor: .top)
+                            }
                         }
                     }
                 } else {
-                    ScrollViewReader { proxy in
-                        ScrollView(.vertical, showsIndicators: true) {
-                            Color.clear.frame(height: 0).id("projects-top")
-                            projectGrid(columns: columns)
-                        }
-                        .onChange(of: scrollResetToken) { _ in
-                            proxy.scrollTo("projects-top", anchor: .top)
+                    if snapshotMode {
+                        snapshotGrid(width: width, columns: columns)
+                    } else {
+                        ScrollViewReader { scrollProxy in
+                            ScrollView(.vertical, showsIndicators: true) {
+                                Color.clear.frame(height: 0).id("projects-top")
+                                projectGrid(columns: columns)
+                            }
+                            .onChange(of: scrollResetToken) { _ in
+                                scrollProxy.scrollTo("projects-top", anchor: .top)
+                            }
                         }
                     }
                 }
@@ -237,14 +248,7 @@ public struct ProjectsScreen: View {
                                  count: max(1, columns)),
                   spacing: OrTheme.projectGridGap) {
             ForEach(items) { item in
-                ProjectGridItem(
-                    item: item,
-                    thumbnail: thumbnails[item.name],
-                    isSelected: selection.selected.contains(item.name),
-                    overflowItems: itemMenuItems(name: item.name),
-                    onTap: { handleTap(item.name) },
-                    onLongPress: { startActionMode(item.name) }
-                )
+                gridItemView(item)
             }
         }
         .padding(.horizontal, 2)
@@ -252,35 +256,105 @@ public struct ProjectsScreen: View {
         .padding(.bottom, 72)
     }
 
+    /// Eager grid for headless snapshots (no LazyVGrid/ScrollView in the ImageRenderer path).
+    private func snapshotGrid(width: CGFloat, columns: Int) -> some View {
+        let columnCount = max(1, columns)
+        let totalGap = OrTheme.projectGridGap * CGFloat(columnCount - 1)
+        let itemWidth = max(1, (width - 4 - totalGap) / CGFloat(columnCount))
+        let rows = chunked(items, size: columnCount)
+        return VStack(alignment: .leading, spacing: OrTheme.projectGridGap) {
+            ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
+                HStack(alignment: .top, spacing: OrTheme.projectGridGap) {
+                    ForEach(row) { item in
+                        gridItemView(item)
+                            .frame(width: itemWidth)
+                    }
+                    if row.count < columnCount {
+                        ForEach(0..<(columnCount - row.count), id: \.self) { _ in
+                            Color.clear.frame(width: itemWidth, height: 1)
+                        }
+                    }
+                }
+            }
+        }
+        .padding(.horizontal, 2)
+        .padding(.top, 4)
+        .padding(.bottom, 72)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
     private var projectList: some View {
         LazyVStack(spacing: 0) {
             ForEach(items) { item in
-                ProjectListRow(
-                    item: item,
-                    thumbnail: thumbnails[item.name],
-                    isSelected: selection.selected.contains(item.name),
-                    overflowItems: itemMenuItems(name: item.name),
-                    onTap: { handleTap(item.name) },
-                    onThumbnailTap: {
-                        // ProjectsActivity lambda$onCreateViewHolder$0: tapping the list
-                        // thumbnail starts/extends the selection.
-                        if selection.actionMode { selection.toggle(item.name) }
-                        else { startActionMode(item.name) }
-                    },
-                    onLongPress: { startActionMode(item.name) },
-                    onRename: {
-                        ProjectDialogs.rename(app: app, name: item.name) { _ in refresh() }
-                    },
-                    onCopy: {
-                        ProjectDialogs.copy(app: app, name: item.name) { _ in refresh() }
-                    },
-                    onDelete: {
-                        ProjectDialogs.deleteOne(app: app, name: item.name) { refresh() }
-                    }
-                )
+                listRowView(item)
             }
         }
         .padding(.bottom, 72)
+    }
+
+    /// Eager list for headless snapshots.
+    private var snapshotList: some View {
+        VStack(spacing: 0) {
+            ForEach(items) { item in
+                listRowView(item)
+            }
+        }
+        .padding(.bottom, 72)
+    }
+
+    @ViewBuilder
+    private func gridItemView(_ item: ProjectInfo) -> some View {
+        ProjectGridItem(
+            item: item,
+            thumbnail: thumbnails[item.name],
+            isSelected: selection.selected.contains(item.name),
+            overflowItems: itemMenuItems(name: item.name),
+            onTap: { handleTap(item.name) },
+            onLongPress: { startActionMode(item.name) },
+            onRename: {
+                ProjectDialogs.rename(app: app, name: item.name) { _ in refresh() }
+            },
+            onCopy: {
+                ProjectDialogs.copy(app: app, name: item.name) { _ in refresh() }
+            },
+            onDelete: {
+                ProjectDialogs.deleteOne(app: app, name: item.name) { refresh() }
+            }
+        )
+    }
+
+    @ViewBuilder
+    private func listRowView(_ item: ProjectInfo) -> some View {
+        ProjectListRow(
+            item: item,
+            thumbnail: thumbnails[item.name],
+            isSelected: selection.selected.contains(item.name),
+            overflowItems: itemMenuItems(name: item.name),
+            onTap: { handleTap(item.name) },
+            onThumbnailTap: {
+                // ProjectsActivity lambda$onCreateViewHolder$0: tapping the list thumbnail
+                // starts/extends the selection.
+                if selection.actionMode { selection.toggle(item.name) }
+                else { startActionMode(item.name) }
+            },
+            onLongPress: { startActionMode(item.name) },
+            onRename: {
+                ProjectDialogs.rename(app: app, name: item.name) { _ in refresh() }
+            },
+            onCopy: {
+                ProjectDialogs.copy(app: app, name: item.name) { _ in refresh() }
+            },
+            onDelete: {
+                ProjectDialogs.deleteOne(app: app, name: item.name) { refresh() }
+            }
+        )
+    }
+
+    private func chunked(_ values: [ProjectInfo], size: Int) -> [[ProjectInfo]] {
+        guard size > 0, !values.isEmpty else { return [] }
+        return stride(from: 0, to: values.count, by: size).map { start in
+            Array(values[start..<min(start + size, values.count)])
+        }
     }
 
     // MARK: Thumbnails
@@ -430,6 +504,9 @@ private struct ProjectGridItem: View {
     let overflowItems: [OrMenuItem]
     let onTap: () -> Void
     let onLongPress: () -> Void
+    let onRename: () -> Void
+    let onCopy: () -> Void
+    let onDelete: () -> Void
 
     var body: some View {
         VStack(spacing: 0) {
@@ -448,6 +525,14 @@ private struct ProjectGridItem: View {
         }
         .background(isSelected ? OrTheme.selectedItemBackground : OrTheme.surface)
         .clipShape(RoundedRectangle(cornerRadius: 2))
+        .contextMenu {
+            // Desktop convenience of the JS port: right click acts like a long press.
+            Button(ProjectDialogStrings.rename) { onRename() }
+            Button(ProjectDialogStrings.copy) { onCopy() }
+            Button(ProjectDialogStrings.remove) { onDelete() }
+            Divider()
+            Button("Select") { onLongPress() }
+        }
     }
 
     private var thumbnailArea: some View {
@@ -527,15 +612,18 @@ private struct ProjectListRow: View {
     var body: some View {
         HStack(spacing: 0) {
             ZStack {
-                if isSelected {
-                    MaterialIcon("ic_check_circle_dark_24px_custom", size: 32)
-                } else if let thumbnail {
+                if let thumbnail {
                     thumbnail
                         .resizable()
                         .scaledToFit()
-                        .opacity(1)
+                        .opacity(isSelected ? 0.5 : 1)
                 } else if let logo = AssetLoader.image("oripa_logo_v3_raster") {
-                    logo.resizable().scaledToFit().opacity(0.45)
+                    logo.resizable().scaledToFit().opacity(isSelected ? 0.25 : 0.45)
+                }
+                if isSelected {
+                    // `project_list_single_item.xml`: check badge overlays the thumbnail.
+                    MaterialIcon("ic_check_circle_dark_24px_custom", size: 32)
+                        .allowsHitTesting(false)
                 }
             }
             .frame(width: OrTheme.projectListThumbSize, height: OrTheme.projectListThumbSize)

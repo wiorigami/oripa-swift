@@ -225,6 +225,7 @@ struct SnapshotsMain {
             scenarios: entries
         )
         do {
+            try ensureDirectory(outputDirectory)
             let encoder = JSONEncoder()
             encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
             try encoder.encode(manifest)
@@ -263,7 +264,12 @@ struct SnapshotsMain {
     }
 
     /// Write a PNG file (via ImageIO, independent of AppKit bitmap representations).
+    ///
+    /// The output directory is re-created before every write: the tool may run while
+    /// another process cleans the working tree (shared CI/QA workspace), and losing the
+    /// directory mid-run must not abort the remaining snapshots.
     private static func writePNG(_ image: CGImage, to url: URL) throws {
+        try ensureDirectory(url.deletingLastPathComponent())
         guard let destination = CGImageDestinationCreateWithURL(
             url as CFURL, UTType.png.identifier as CFString, 1, nil) else {
             throw SnapshotError("cannot create PNG destination \(url.path)")
@@ -272,6 +278,10 @@ struct SnapshotsMain {
         guard CGImageDestinationFinalize(destination) else {
             throw SnapshotError("cannot write PNG \(url.path)")
         }
+    }
+
+    private static func ensureDirectory(_ url: URL) throws {
+        try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
     }
 
     private static func fail(_ message: String) -> Never {

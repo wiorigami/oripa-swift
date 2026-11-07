@@ -22,7 +22,7 @@
 
 | Job | 内容 | 首次耗时（大约） |
 |---|---|---|
-| `test` | `swift build` + `swift run ORIPATests` + 无头 UI 截图 | 5–10 分钟 |
+| `test` | `swift build` + `swift run ORIPATests` + `swift run ORIPAIntegration` + 无头 UI 截图 | 5–10 分钟 |
 | `ios` | 安装 XcodeGen、生成 Xcode 工程、Release 编译、打包未签名 IPA | 10–20 分钟 |
 | `macos` | Release 编译 ORIPAMac、组装 `.app`、ad-hoc 签名、zip | 6–12 分钟 |
 

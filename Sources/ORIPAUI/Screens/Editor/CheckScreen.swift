@@ -73,6 +73,7 @@ public struct CheckScreen: View {
     let app: AppModel
     let coordinator: CheckCoordinator
     private let interactionEnabled: Bool
+    @Environment(\.oripaSnapshotMode) private var snapshotMode
 
     init(session: EditorSession, renderer: CheckRenderer, app: AppModel,
          coordinator: CheckCoordinator, interactionEnabled: Bool = true) {
@@ -88,7 +89,7 @@ public struct CheckScreen: View {
             Color.white
             CheckCanvasView(renderer: renderer)
                 .contentShape(Rectangle())
-            if interactionEnabled {
+            if interactionEnabled && !snapshotMode {
                 CanvasGestureOverlay(recognizer: coordinator.recognizer)
                     .ignoresSafeArea()
             }

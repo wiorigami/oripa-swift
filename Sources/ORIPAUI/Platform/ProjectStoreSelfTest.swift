@@ -61,7 +61,6 @@ public extension ProjectStore {
 
             // 3. Unique naming rules (Exporter.getNewUniqueFile / getNewCopyFile).
             check("unique name appends -1", store2.uniqueName(base: "crane base") == "crane base-1")
-            store1.writeTempSave(Data(), meta: TempSaveMeta())
             try store2.write(name: "crane base-1", opxc: Data("X".utf8), thumbPNG: nil)
             check("unique name skips existing -1", store2.uniqueName(base: "crane base") == "crane base-2")
             check("copy name appends -copy", store2.copyName(base: "crane base") == "crane base-copy")

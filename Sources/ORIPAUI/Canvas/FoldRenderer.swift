@@ -82,6 +82,18 @@ public struct FoldCameraPair {
 
 // MARK: - Renderer preferences / options
 
+/// Default colours of the Overlap view (`RenderUtil.DEFAULT_*` /
+/// `FoldCpOverlapSettingsDialogFragment` default preference values). Non-isolated so the
+/// value types below can use them in default arguments.
+public enum FoldRenderDefaults {
+    /// 0xFFFF91AE (`-28242` Android int).
+    public static let frontColor: UInt32 = 0xFFFF_91AE
+    /// 0xFF00B7D9 (`-16730151`).
+    public static let backColor: UInt32 = 0xFF00_B7D9
+    /// 0xFF505050 (`-11513776`).
+    public static let lineColor: UInt32 = 0xFF50_5050
+}
+
 /// `rendererPreferences()` in `fold.js`: parsed from the Android SharedPreferences (the
 /// renderer never reads prefs itself).
 public struct FoldRenderPreferences: Equatable {
@@ -97,9 +109,9 @@ public struct FoldRenderPreferences: Equatable {
                 overlapEnabled: Bool = true,
                 overlapShadow: Bool = false,
                 flip: Bool = false,
-                frontColor: UInt32 = FoldRenderer.DEFAULT_FRONT_COLOR,
-                backColor: UInt32 = FoldRenderer.DEFAULT_BACK_COLOR,
-                lineColor: UInt32 = FoldRenderer.DEFAULT_LINE_COLOR) {
+                frontColor: UInt32 = FoldRenderDefaults.frontColor,
+                backColor: UInt32 = FoldRenderDefaults.backColor,
+                lineColor: UInt32 = FoldRenderDefaults.lineColor) {
         self.wireframe = wireframe
         self.overlapEnabled = overlapEnabled
         self.overlapShadow = overlapShadow
@@ -171,11 +183,6 @@ public enum FoldRenderStyle {
 /// per spinner item, like the three eagerly created GL views of `FragmentFoldCp`).
 @MainActor
 public final class FoldRenderer: ObservableObject {
-    // Defaults of `RenderUtil.DEFAULT_*` / `FoldCpOverlapSettingsDialogFragment`.
-    public static let DEFAULT_FRONT_COLOR: UInt32 = 0xFFFF_91AE
-    public static let DEFAULT_BACK_COLOR: UInt32 = 0xFF00_B7D9
-    public static let DEFAULT_LINE_COLOR: UInt32 = 0xFF50_5050
-
     /// `GLPolygonTwoColor` CP face colours (cross view CP panel): #FFF4F7 / #E6F8FB.
     public static let CP_FACE_FRONT = RGB(1.0, 0.956_862_75, 0.968_627_45)
     public static let CP_FACE_BACK = RGB(0.901_960_8, 0.972_549, 0.984_313_7)

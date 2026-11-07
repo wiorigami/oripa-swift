@@ -27,5 +27,10 @@ public enum OrAppIntegration {
     /// read-only crease-pattern preview renderer and the OPXC→PNG thumbnail renderer.
     private static func installEditor() {
         ORIPACanvasIntegration.install()
+        // `ProjectStore.regenerateThumb` repairs missing project thumbnails from the OPXC
+        // bytes; the canvas workstream provides the renderer through its registry.
+        if let renderer = OrScreenRegistry.projectThumbnailRenderer {
+            ProjectStore.thumbnailRenderer = renderer
+        }
     }
 }

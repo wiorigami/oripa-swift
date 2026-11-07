@@ -64,23 +64,6 @@ public enum HelpDialog {
         entries[toolType] ?? defaultEntry
     }
 
-    /// The dialog body as a plain `AnyView` for headless snapshots.
-    public static func snapshotContent(toolType: Int) -> AnyView {
-        let entry = entry(forTool: toolType)
-        let content = VStack(alignment: .leading, spacing: 12) {
-            if !entry.message.isEmpty {
-                Text(entry.message)
-                    .font(OrTheme.body())
-                    .foregroundColor(OrTheme.textPrimary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            MaterialIcon(entry.image, size: 160)
-                .frame(width: 160, height: 160, alignment: .center)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        return AnyView(content)
-    }
-
     /// HelpImageDialogFragment.newInstance(title, message, image).
     public static func showImageHelp(_ dialogs: DialogCenter,
                                      title: String,
