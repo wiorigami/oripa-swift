@@ -60,10 +60,14 @@ struct FoldToolbar: View {
 // MARK: - Mode spinner popup menu
 
 /// The AppCompat Spinner popup (`M.menu` anchored to the toolbar spinner): white menu,
-/// 48dp rows, check mark on the current item.
+/// 48dp rows, check mark on the current item. The transparent backdrop closes it.
 @MainActor
 struct FoldModeMenu: View {
     @ObservedObject var model: FoldViewModel
+    /// Safe-area top inset of the screen (the menu hangs under the floating toolbar).
+    var topInset: CGFloat
+
+    private static let menuWidth: CGFloat = 220
 
     var body: some View {
         ZStack(alignment: .topLeading) {
@@ -85,16 +89,19 @@ struct FoldModeMenu: View {
                             }
                         }
                         .padding(.horizontal, 16)
+                        .frame(width: Self.menuWidth, alignment: .leading)
                         .frame(minHeight: 48)
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(FoldPressableStyle())
                 }
             }
-            .frame(minWidth: 180)
+            .frame(width: Self.menuWidth)
             .background(FoldTheme.surface)
             .clipShape(RoundedRectangle(cornerRadius: 2, style: .continuous))
             .shadow(color: .black.opacity(0.26), radius: 12, x: 0, y: 6)
+            .padding(.leading, 52)
+            .padding(.top, topInset + FoldTheme.toolbarHeight - 4)
         }
     }
 }

@@ -65,6 +65,11 @@ private struct SaveExistingChoiceView: View {
 
 @MainActor
 public enum SaveDialog {
+    /// The SaveExisting single-choice body as a plain `AnyView` for headless snapshots.
+    public static func snapshotExistingContent() -> AnyView {
+        AnyView(SaveExistingChoicePreview())
+    }
+
     /// SaveExistingDialogFragment: single choice + Cancel / Discard / Save.
     @discardableResult
     public static func showExisting(_ dialogs: DialogCenter, host: SaveDialogHost) -> OrDialogSpec? {
@@ -133,5 +138,32 @@ public enum SaveDialog {
             return showExisting(dialogs, host: host)
         }
         return showNew(dialogs, host: host)
+    }
+}
+
+
+private struct SaveExistingChoicePreview: View {
+    @State private var selected = 0
+    var body: some View {
+        VStack(spacing: 0) {
+            row(index: 0, label: PaintStrings.saveCurrent)
+            row(index: 1, label: PaintStrings.saveNew)
+        }
+        .padding(.vertical, 4)
+    }
+
+    private func row(index: Int, label: String) -> some View {
+        HStack(spacing: 16) {
+            MaterialIcon("ic_save_dark_24dp", size: 24, tint: OrTheme.iconActive)
+            Text(label)
+                .font(OrTheme.menuItem())
+                .foregroundColor(OrTheme.textPrimary)
+            Spacer(minLength: 8)
+            OrRadioMark(isChecked: selected == index)
+        }
+        .padding(.horizontal, 8)
+        .frame(minHeight: 48)
+        .contentShape(Rectangle())
+        .onTapGesture { selected = index }
     }
 }

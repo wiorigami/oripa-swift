@@ -49,6 +49,20 @@ public enum NumberDialog {
                            })
     }
 
+    /// Text-field body as a plain `AnyView` for headless snapshots.
+    public static func snapshotContent(hint: String, value: String) -> AnyView {
+        AnyView(
+            VStack(alignment: .leading, spacing: 8) {
+                TextField(hint, text: .constant(value))
+                    .font(OrTheme.dialogText())
+                    .textFieldStyle(.roundedBorder)
+                Text(hint)
+                    .font(OrTheme.caption())
+                    .foregroundColor(OrTheme.textSecondary)
+            }
+        )
+    }
+
     /// Angle dialog: the value is reduced modulo 360 like `parseNumberText(text) % 360`.
     @discardableResult
     public static func showAngle(_ dialogs: DialogCenter,

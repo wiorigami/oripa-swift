@@ -31,6 +31,7 @@ let package = Package(
         .executable(name: "ORIPAMac", targets: ["ORIPAMac"]),
         .executable(name: "ORIPASnapshots", targets: ["ORIPASnapshots"]),
         .executable(name: "ORIPATests", targets: ["ORIPATests"]),
+        .executable(name: "ORIPAIntegration", targets: ["ORIPAIntegration"]),
     ],
     targets: [
         .target(
@@ -57,6 +58,15 @@ let package = Package(
             name: "ORIPATests",
             dependencies: ["ORIPACore"],
             path: "Tests/ORIPATests"
+        ),
+        // End-to-end integration checks that exercise the real app layer (ProjectStore
+        // persistence, EditorSession drawing/save/reload, autosave recovery, import,
+        // folding and exports) headlessly. Local: `swift run ORIPAIntegration`; CI runs it
+        // in the test job (macOS runner).
+        .executableTarget(
+            name: "ORIPAIntegration",
+            dependencies: ["ORIPACore", "ORIPAUI"],
+            path: "Tests/ORIPAIntegration"
         ),
     ]
 )

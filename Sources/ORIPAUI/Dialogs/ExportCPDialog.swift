@@ -62,6 +62,18 @@ public enum ExportCPDialog {
             width: 320))
     }
 
+    // MARK: - Snapshot QA content (no ScrollView: ImageRenderer cannot rasterise it)
+
+    /// The dialog body as a plain `AnyView` for headless snapshots.
+    public static func snapshotContent(fileTypes: [String] = fileTypes) -> AnyView {
+        AnyView(ExportTypeChoiceViewPreview(fileTypes: fileTypes))
+    }
+
+    /// The PNG square-size chooser as a plain `AnyView` for headless snapshots.
+    public static func snapshotPNGOptionsContent() -> AnyView {
+        AnyView(PngSizeChoiceViewPreview())
+    }
+
     // MARK: - File type handling
 
     private static func handleFileType(_ typeName: String,
@@ -251,6 +263,68 @@ private struct PngSizeChoiceView: View {
                 }
                 .buttonStyle(.plain)
                 .foregroundColor(OrTheme.iconActive)
+                Spacer(minLength: 0)
+            }
+        }
+    }
+}
+
+
+// MARK: - Snapshot-only previews (no dialog stack, no ScrollView)
+
+private struct ExportTypeChoiceViewPreview: View {
+    let fileTypes: [String]
+    @State private var selected: Int = -1
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            ForEach(Array(fileTypes.enumerated()), id: \.offset) { index, type in
+                Button { selected = index } label: {
+                    HStack(spacing: 16) {
+                        Text(type.lowercased())
+                            .font(OrTheme.menuItem())
+                            .foregroundColor(OrTheme.textPrimary)
+                        Spacer(minLength: 8)
+                        OrRadioMark(isChecked: selected == index)
+                    }
+                    .padding(.horizontal, 8)
+                    .frame(minHeight: 48)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+            HStack(spacing: 8) {
+                Spacer(minLength: 0)
+                OrTextButton(PaintStrings.cancel) {}
+                OrTextButton(PaintStrings.exportPositive, isPrimary: true) {}
+                    .disabled(selected < 0)
+                    .opacity(selected < 0 ? 0.38 : 1)
+            }
+            .padding(.top, 12)
+        }
+    }
+}
+
+private struct PngSizeChoiceViewPreview: View {
+    @State private var value = ExportCPDialog.pngDefault
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(PaintStrings.pngDimensionText)
+                .font(OrTheme.body())
+                .foregroundColor(OrTheme.textSecondary)
+            HStack {
+                Spacer(minLength: 0)
+                OrIconButton(icon: "ic_chevron_left_dark_24dp", title: "minus") {
+                    value = max(ExportCPDialog.pngMin, value - ExportCPDialog.pngStep)
+                }
+                Text("\(value)")
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundColor(OrTheme.textPrimary)
+                    .frame(minWidth: 96)
+                OrIconButton(icon: "ic_chevron_right_dark_24dp", title: "plus") {
+                    value = min(ExportCPDialog.pngMax, value + ExportCPDialog.pngStep)
+                }
                 Spacer(minLength: 0)
             }
         }

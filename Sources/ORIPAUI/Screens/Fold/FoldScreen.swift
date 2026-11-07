@@ -84,9 +84,8 @@ struct FoldScreenContent: View {
                 exportOverlay(export)
             }
             if model.showsModeMenu {
-                FoldModeMenu(model: model)
-                    .padding(.leading, 52)
-                    .padding(.top, safeArea.top + 4)
+                FoldModeMenu(model: model, topInset: safeArea.top)
+                    .ignoresSafeArea()
             }
         }
     }
