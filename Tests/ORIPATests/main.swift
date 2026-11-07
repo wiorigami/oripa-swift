@@ -17,7 +17,9 @@ func filtered(_ suites: [TestSuite]) -> [TestSuite] {
 }
 
 for suite in filtered(CoreModelTests.all) { harness.run(suite) }
+for suite in filtered(CoreToolsTests.all) { harness.run(suite) }
 for suite in filtered(FoldIOTests.all) { harness.run(suite) }
+for suite in filtered(FoldModelTestSuites.all) { harness.run(suite) }
 
 print(harness.summary())
 exit(harness.failures.isEmpty ? 0 : 1)

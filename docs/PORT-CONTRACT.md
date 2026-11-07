@@ -79,8 +79,10 @@ docs/                          # this contract, build/install/token guides
 | Workstream | Owns |
 |---|---|
 | **Lead** | `Package.swift`, `README.md`, `docs/PORT-CONTRACT.md`, `docs/DECISIONS.md`, `.gitignore`, `Tests/ORIPATests/Support/**`, `tools/fixtures/load_oripa.js`, git/GitHub, final integration |
-| **core-model** | `Sources/ORIPACore/{Resources,Geometry,Collections,Tree}/**`, `Sources/ORIPACore/Model/{CreasePattern,History,StateMachine,Tool}/**`, `Tests/ORIPATests/CoreModel/**`, `tools/fixtures/core/**`, `Fixtures/core/**` |
-| **fold-io** | `Sources/ORIPACore/Model/FoldedModel/**`, `Sources/ORIPACore/IO/**`, `Sources/ORIPACore/RenderData/**`, `Tests/ORIPATests/FoldIO/**`, `tools/fixtures/foldio/**`, `Fixtures/foldio/**`, `Fixtures/cases/**` |
+| **core-model** | `Sources/ORIPACore/{Resources,Geometry,Collections,Tree}/**`, `Sources/ORIPACore/Model/{CreasePattern,History}/**`, `Tests/ORIPATests/CoreModel/**`, `tools/fixtures/core/**`, `Fixtures/core/**` |
+| **core-tools** (helper) | `Sources/ORIPACore/Model/{StateMachine,Tool}/**`, `Tests/ORIPATests/CoreTools/**`, `tools/fixtures/tools/**`, `Fixtures/tools/**` |
+| **fold-io** | `Sources/ORIPACore/IO/**`, `Sources/ORIPACore/RenderData/**`, `Tests/ORIPATests/FoldIO/**` (except `FoldModelTests.swift`), `tools/fixtures/foldio/**`, `Fixtures/foldio/**`, `Fixtures/cases/**` |
+| **fold-engine** (helper) | `Sources/ORIPACore/Model/FoldedModel/**`, `Tests/ORIPATests/FoldIO/FoldModelTests.swift` |
 | **ui-shell** | `Sources/ORIPAUI/{App,DesignSystem,Platform}/**`, `Sources/ORIPAUI/Screens/{Splash,Projects,Preview,Settings}/**`, `Sources/ORIPAUI/Dialogs/{ProjectDialogs,AboutDialog,CommonDialogs}.swift`, `Sources/ORIPAUI/SnapshotScenarios/**` |
 | **ui-canvas** | `Sources/ORIPAUI/Screens/Editor/**`, `Sources/ORIPAUI/Canvas/{ViewTransform,Camera,PaintRenderer,CheckRenderer,PreviewRenderer,CPPNGExport}.swift`, `Sources/ORIPAUI/Canvas/Gestures.swift`, `Sources/ORIPAUI/Dialogs/{ExportCPDialog,SaveDialog,HelpDialog,NumberDialog}.swift` |
 | **ui-fold** | `Sources/ORIPAUI/Screens/Fold/**`, `Sources/ORIPAUI/Canvas/{FoldRenderer,FoldPNGExport}.swift`, `Sources/ORIPAUI/Dialogs/{FoldSettingsDialogs,ColorPicker}.swift` |
@@ -245,7 +247,8 @@ The JS reference is executable in Node. **Prove the Swift port against it**, do 
    (`Fixtures.decode`) and assert with the shared harness `TestHarness` from
    `Tests/ORIPATests/Support/TestHarness.swift` (`expect`, `expectEqual`, `expectClose` —
    1e-9 tolerance for doubles). Each workstream appends its suites to `CoreModelTests.all`
-   / `FoldIOTests.all`; `main.swift` runs them and exits non-zero on failure.
+   / `FoldIOTests.all`; `main.swift` runs them and exits non-zero on failure. Registries: `CoreModelTests.all`,
+   `CoreToolsTests.all`, `FoldIOTests.all`, `FoldModelTestSuites.all`.
 4. CI only runs `swift run ORIPATests`; it never needs Node. Regeneration is documented in `tools/fixtures/README.md`.
 5. Copy the real case files (`oripa-port/tools/fold_oracle/cases/**`) into `Fixtures/cases/` via the
    generator (fold-io owns).
