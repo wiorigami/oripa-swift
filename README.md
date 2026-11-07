@@ -1,5 +1,7 @@
 # ORIPA — native Apple port (Swift / SwiftUI)
 
+[![CI](https://github.com/wiorigami/oripa-swift/actions/workflows/ci.yml/badge.svg)](https://github.com/wiorigami/oripa-swift/actions/workflows/ci.yml)
+
 Native **iOS/iPadOS + macOS** port of **ORIPA for Android 0.2.3.3** — the crease-pattern
 (折痕図) editor from [ORIPA](https://github.com/oripaweb) / ORIPA S, as shipped in the
 [oripaweb](https://github.com/wiorigami/oripaweb) iPad build.
@@ -30,6 +32,9 @@ GitHub Actions builds two **unsigned/notarisation-free** artifacts on every push
 | `ORIPA-unsigned.ipa` | iPhone/iPad, iOS 16+ | Sign with Sideloadly / i4Tools / TrollStore — see [docs/INSTALL.md](docs/INSTALL.md) |
 | `ORIPA-macOS` (zip) | macOS 13+ | Unzip and run `ORIPA.app` (right-click → Open) — see [docs/INSTALL.md](docs/INSTALL.md) |
 | `oripa-ui-snapshots` (zip) | any | PNG renders of every screen for visual QA |
+
+The first CI run on `main` is green (tests, unsigned iOS IPA and macOS app); artifacts are
+under **Actions → CI → latest run → Artifacts** (14-day retention, login required).
 
 How to trigger builds and download the artifacts: [docs/PUBLISH.md](docs/PUBLISH.md).
 

@@ -136,12 +136,31 @@ bash scripts/build_mac.sh
 * `.github/workflows/ci.yml` builds three independent jobs: tests (+snapshots), unsigned
   iOS IPA, macOS app — no secrets/certificates.
 
-## 7. Known limitations / follow-ups
+## 7. GitHub Actions (real run)
+
+The repository was pushed to <https://github.com/wiorigami/oripa-swift> (`main`,
+commit `34ee2c1`, tag `v0.2.3.3-swift.1`) and the CI workflow ran for real:
+
+```
+run 42324572848 — conclusion: success (≈2m13s)
+  Tests + UI snapshots : success
+  Unsigned iOS IPA     : success
+  macOS app bundle     : success
+```
+
+Artifacts (retention 14 days, downloadable from the Actions run while signed in):
+`ORIPA-unsigned.ipa` (2.60 MB), `ORIPA-macOS` (2.54 MB), `oripa-ui-snapshots`
+(5.37 MB). The `ios` job runs XcodeGen + `xcodebuild` Release device build +
+`scripts/build_ipa.sh` (Payload packaging, arm64/platform/Info.plist assertions), so the
+iOS compile — including all `#if canImport(UIKit)` code — is verified by a full Xcode 16
+toolchain in CI, closing the local-CLT-only gap.
+
+## 8. Known limitations / follow-ups
 
 1. **iOS runtime devices**: iOS-only branches compile (typecheck) but real touch gestures,
    document picker and share sheet need a device run (no device/simulator here).
-2. **First GitHub Actions run** validates Xcode-specific packaging (IPA layout/signing
-   toggles) — no Xcode locally.
+2. iOS IPA runtime (install + launch on a physical iPad) still needs the owner to
+   sideload the unsigned IPA (`docs/INSTALL.md`).
 3. Snapshot-tool limitations: `ImageRenderer` does not run `onAppear`/`async task`s and
    renders `ScrollView`/`Lazy*` empty; the app opts into eager layouts in snapshot mode
    only. Projects-preview content uses the stored thumbnail/preview factory; its live
