@@ -176,6 +176,25 @@ downloadable from the Actions run while signed in. The `ios` job runs XcodeGen +
 iOS compile — including all `#if canImport(UIKit)` code — is verified by a full Xcode 16
 toolchain in CI, closing the local-CLT-only gap.
 
+## 7b. Device retest checklist (for the owner)
+
+After installing the newest `ORIPA-unsigned.ipa` (Actions run on `main`):
+
+1. Open a project → tap **Fold** in the FAB menu: the X-Ray view should appear immediately
+   (no need to open Settings first) and the back arrow should return to the paint canvas.
+2. Tap **Check**: the pink-faces view should appear immediately; back returns to paint.
+3. Draw a line: the crease should start/end exactly under the finger (no safe-area offset)
+   in both portrait and landscape.
+4. The status bar (time/battery) must not be visible; the app is edge-to-edge.
+5. Tap the FAB: the mini menu should look like the APK (grey label pills + small pink
+   circular buttons; the main button becomes a grey X).
+6. Open Settings and compare row heights/icons with the APK screenshot in
+   `docs/reference/apk/04-test-menu.png`.
+
+Report anything that still differs (screenshot + which screen) — the parity pass covers the
+measured APK metrics, the remaining differences are expected to be SF-vs-Roboto glyph
+metrics only.
+
 ## 8. Known limitations / follow-ups
 
 1. **iOS runtime devices**: iOS-only branches compile (typecheck) but real touch gestures,
