@@ -157,15 +157,21 @@ The repository was pushed to <https://github.com/wiorigami/oripa-swift> (`main`,
 commit `34ee2c1`, tag `v0.2.3.3-swift.1`) and the CI workflow ran for real:
 
 ```
-run 42324572848 — conclusion: success (≈2m13s)
+run 42324572848 — conclusion: success (≈2m13s)   commit 34ee2c1 (initial port)
   Tests + UI snapshots : success
   Unsigned iOS IPA     : success
   macOS app bundle     : success
+
+run 42332623870 — conclusion: success              commit 3370175 (device-review fixes)
+  Tests + UI snapshots : success
+  Unsigned iOS IPA     : success   -> ORIPA-unsigned.ipa (2.69 MB)
+  macOS app bundle     : success   -> ORIPA-macOS (2.64 MB), snapshots (6.77 MB)
 ```
 
-Artifacts (retention 14 days, downloadable from the Actions run while signed in):
-`ORIPA-unsigned.ipa` (2.60 MB), `ORIPA-macOS` (2.54 MB), `oripa-ui-snapshots`
-(5.37 MB). The `ios` job runs XcodeGen + `xcodebuild` Release device build +
+The second run is the one matching the current tree: it includes the Check/Fold
+fragment-observation fix, the full-screen/status-bar change, the touch-coordinate-space fix
+and the APK-reference UI parity pass (50 snapshots). Artifacts are retained for 14 days and
+downloadable from the Actions run while signed in. The `ios` job runs XcodeGen + `xcodebuild` Release device build +
 `scripts/build_ipa.sh` (Payload packaging, arm64/platform/Info.plist assertions), so the
 iOS compile — including all `#if canImport(UIKit)` code — is verified by a full Xcode 16
 toolchain in CI, closing the local-CLT-only gap.
