@@ -79,7 +79,8 @@ docs/                          # this contract, build/install/token guides
 | Workstream | Owns |
 |---|---|
 | **Lead** | `Package.swift`, `README.md`, `docs/PORT-CONTRACT.md`, `docs/DECISIONS.md`, `.gitignore`, `Tests/ORIPATests/Support/**`, `tools/fixtures/load_oripa.js`, git/GitHub, final integration |
-| **core-model** | `Sources/ORIPACore/{Resources,Geometry,Collections,Tree}/**`, `Sources/ORIPACore/Model/{CreasePattern,History}/**`, `Tests/ORIPATests/CoreModel/**`, `tools/fixtures/core/**`, `Fixtures/core/**` |
+| **core-model** | `Sources/ORIPACore/{Resources,Geometry,Collections}/**`, `Sources/ORIPACore/Model/{CreasePattern,History}/**` (except CreasePattern/{line,point}/**), `Tests/ORIPATests/CoreModel/**`, `tools/fixtures/core/**`, `Fixtures/core/**` |
+| **core-tree** (helper) | `Sources/ORIPACore/Tree/**`, `Sources/ORIPACore/Model/CreasePattern/{line,point}/**`, `Tests/ORIPATests/CoreTree/**` |
 | **core-tools** (helper) | `Sources/ORIPACore/Model/{StateMachine,Tool}/**`, `Tests/ORIPATests/CoreTools/**`, `tools/fixtures/tools/**`, `Fixtures/tools/**` |
 | **fold-io** | `Sources/ORIPACore/IO/**`, `Sources/ORIPACore/RenderData/**`, `Tests/ORIPATests/FoldIO/**` (except `FoldModelTests.swift`), `tools/fixtures/foldio/**`, `Fixtures/foldio/**`, `Fixtures/cases/**` |
 | **fold-engine** (helper) | `Sources/ORIPACore/Model/FoldedModel/**`, `Tests/ORIPATests/FoldIO/FoldModelTests.swift` |
