@@ -1,0 +1,36 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# SwiftPM
+.build/
+.swiftpm/
+Package.resolved
+
+# Xcode
+DerivedData/
+build/
+*.xcuserstate
+xcuserdata/
+*.xcscmblueprint
+*.xccheckout
+
+# XcodeGen generated output is committed on purpose (ORIPA.xcodeproj), but keep
+# per-user state out of the repo.
+ORIPA.xcodeproj/xcuserdata/
+ORIPA.xcodeproj/project.xcworkspace/xcuserdata/
+ORIPA.xcodeproj/project.xcworkspace/contents.xcworkspacedata
+ORIPA.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+
+# Build artifacts / packaging
+artifacts/
+dist/
+build-snapshots/
+*.ipa
+*.dmg
+*.xcarchive
+
+# Local scratch
+tools/local/
+tmp/
