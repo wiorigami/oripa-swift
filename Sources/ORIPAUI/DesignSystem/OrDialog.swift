@@ -38,6 +38,9 @@ public struct OrDialogSpec: Identifiable {
     public var buttons: [OrDialogButton]
     public var cancelable: Bool
     public var width: CGFloat?
+    /// `.m-dialog-actions { padding: 8px }`; project dialogs override the top to 20 dp
+    /// (`.projects-dialog .m-dialog-actions { padding-top: 20px }`).
+    public var actionsTopPadding: CGFloat
     public var onClose: (() -> Void)?
 
     public init(title: String? = nil,
@@ -46,6 +49,7 @@ public struct OrDialogSpec: Identifiable {
                 buttons: [OrDialogButton] = [],
                 cancelable: Bool = true,
                 width: CGFloat? = nil,
+                actionsTopPadding: CGFloat = 8,
                 onClose: (() -> Void)? = nil) {
         self.title = title
         self.icon = icon
@@ -53,6 +57,7 @@ public struct OrDialogSpec: Identifiable {
         self.buttons = buttons
         self.cancelable = cancelable
         self.width = width
+        self.actionsTopPadding = actionsTopPadding
         self.onClose = onClose
     }
 }
@@ -105,6 +110,8 @@ public final class DialogCenter: ObservableObject {
                         positiveText: String = "OK",
                         negativeText: String = "Cancel",
                         icon: String? = nil,
+                        width: CGFloat? = 280,
+                        actionsTopPadding: CGFloat = 20,
                         onResult: ((Bool) -> Void)? = nil) -> OrDialogSpec {
         let spec = OrDialogSpec(
             title: title,
@@ -113,7 +120,9 @@ public final class DialogCenter: ObservableObject {
             buttons: [
                 OrDialogButton(negativeText) { onResult?(false); return true },
                 OrDialogButton(positiveText, primary: true) { onResult?(true); return true },
-            ]
+            ],
+            width: width,
+            actionsTopPadding: actionsTopPadding
         )
         show(spec)
         return spec
@@ -124,12 +133,15 @@ public final class DialogCenter: ObservableObject {
     public func alert(title: String,
                       message: String? = nil,
                       icon: String? = nil,
-                      positiveText: String = "OK") -> OrDialogSpec {
+                      positiveText: String = "OK",
+                      width: CGFloat? = 280) -> OrDialogSpec {
         let spec = OrDialogSpec(
             title: title,
             icon: icon,
             content: message.map { AnyView(OrDialogText($0)) },
-            buttons: [OrDialogButton(positiveText, primary: true)]
+            buttons: [OrDialogButton(positiveText, primary: true)],
+            width: width,
+            actionsTopPadding: 20
         )
         show(spec)
         return spec
@@ -153,6 +165,9 @@ public final class DialogCenter: ObservableObject {
                            sanitize: ((String) -> String)? = nil,
                            positiveText: String = "OK",
                            negativeText: String = "Cancel",
+                           width: CGFloat? = 280,
+                           actionsTopPadding: CGFloat = 8,
+                           contentTopPadding: CGFloat = 0,
                            onResult: @escaping (String?) -> Void) -> OrTextInputModel {
         let model = OrTextInputModel(text: initialValue, hint: hint, sanitize: sanitize)
         model.onSubmit = { [weak self] in
@@ -163,14 +178,17 @@ public final class DialogCenter: ObservableObject {
         let spec = OrDialogSpec(
             title: title,
             icon: icon,
-            content: AnyView(OrTextInputField(model: model)),
+            content: AnyView(OrTextInputField(model: model)
+                .padding(.top, contentTopPadding)),
             buttons: [
                 OrDialogButton(negativeText) { onResult(nil); return true },
                 OrDialogButton(positiveText, primary: true) {
                     onResult(model.text)
                     return true
                 },
-            ]
+            ],
+            width: width,
+            actionsTopPadding: actionsTopPadding
         )
         show(spec)
         return model
@@ -223,7 +241,9 @@ public final class DialogCenter: ObservableObject {
             icon: icon,
             content: AnyView(choices),
             buttons: [],
-            cancelable: true
+            cancelable: true,
+            // AlertDialog.setSingleChoiceItems: wrap-content list dialog (min 280 dp).
+            width: 280
         )
         show(spec)
         return spec
@@ -292,8 +312,10 @@ private struct OrDialogCard: View {
     @Environment(\.oripaSnapshotMode) private var snapshotMode
 
     private var computedWidth: CGFloat {
+        // AppCompat AlertDialog measures 87 % of the phone width (357.7 dp on the APK's
+        // 411.4 dp window); tablet/iPad clamps to the 560 dp material maximum.
         let available = max(280, containerSize.width - OrTheme.dialogPadding * 2)
-        let preferred = spec.width ?? 560
+        let preferred = spec.width ?? 358
         return min(min(preferred, 560), available)
     }
 
@@ -308,20 +330,23 @@ private struct OrDialogCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             if spec.title != nil || spec.icon != nil {
-                HStack(spacing: 16) {
+                HStack(spacing: 8) {
                     if let icon = spec.icon {
-                        MaterialIcon(icon, size: 24, tint: OrTheme.iconActive)
+                        // abc_alert_dialog_title_material: 32 dp icon + 8 dp title margin.
+                        MaterialIcon(icon, size: 32, tint: OrTheme.iconActive)
                     }
                     if let title = spec.title {
                         Text(title)
                             .font(OrTheme.dialogTitle())
                             .foregroundColor(OrTheme.textPrimary)
+                            // `.m-dialog-title { font-size: 20px; line-height: 28px }`
+                            .orLineHeight(28, fontSize: 20)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     Spacer(minLength: 0)
                 }
                 .padding(.horizontal, 24)
-                .padding(.top, 20)
+                .padding(.top, 18)
             }
             if let content = spec.content {
                 if snapshotMode {
@@ -364,15 +389,19 @@ private struct OrDialogCard: View {
                         }
                     }
                 }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 8)
-                .frame(minHeight: OrTheme.dialogActionsHeight)
+                // abc_alert_dialog_button_bar_material: 12 dp horizontal / 4 dp vertical
+                // padding, 62 dp total bar height (54 dp buttons).
+                .padding(.horizontal, 12)
+                .padding(.top, spec.actionsTopPadding)
+                .padding(.bottom, 4)
+                .frame(minHeight: 54)
             }
         }
         .frame(width: computedWidth, alignment: .leading)
         .padding(.bottom, spec.buttons.isEmpty ? 8 : 0)
         .background(OrTheme.dialogBackground)
         .clipShape(RoundedRectangle(cornerRadius: 2))
+        .compositingGroup()
         .orElevation(24)
     }
 }
@@ -387,6 +416,8 @@ public struct OrDialogText: View {
         Text(text)
             .font(OrTheme.dialogText())
             .foregroundColor(OrTheme.textSecondary)
+            // `.m-dialog-content { font-size: 16px; line-height: 24px }`
+            .orLineHeight(24, fontSize: 16)
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -422,10 +453,15 @@ public struct OrTextInputField: View {
         if snapshotMode {
             // ImageRenderer cannot rasterise the AppKit/UIKit-backed TextField; draw the
             // editable line statically for visual QA (runtime always uses the TextField).
+            // The dialogs select-all on focus (dialog_edittext.xml), which the reference
+            // screenshots show as the platform selection highlight behind the value.
+            let hasSelection = !model.text.isEmpty
             VStack(alignment: .leading, spacing: 0) {
                 Text(model.text.isEmpty ? (model.hint ?? "") : model.text)
                     .font(.system(size: 16))
                     .foregroundColor(model.text.isEmpty ? OrTheme.textDisabled : OrTheme.textPrimary)
+                    .padding(.horizontal, 1)
+                    .background(hasSelection ? Color(hex: 0xB3D7FE) : Color.clear)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.vertical, 8)
                 Rectangle()

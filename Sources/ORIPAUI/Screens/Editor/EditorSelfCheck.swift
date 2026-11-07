@@ -212,6 +212,39 @@ public enum EditorSelfCheck {
         check("discard pops editor once", backApp.navigation.count == 1,
               "depth=\(backApp.navigation.count)")
 
+        // MARK: 13b. Fragment back paths (Check/Fold → Paint). Regression guard for the
+        // reported iPad bug where the Fold screen only appeared after an unrelated redraw
+        // and then would not exit; `EditorScreen` must observe the session directly.
+
+        backApp.push(.editor(EditorParams()))
+        let fragmentRuntime = EditorSnapshotSupport.makeRuntime(app: backApp)
+        backApp.setBackHandler(for: backApp.topEntry?.id) {
+            EditorScreen.handleBack(runtime: fragmentRuntime, app: backApp)
+        }
+        _ = fragmentRuntime.session.runFlatFoldabilityCheck()
+        check("check fragment shown", fragmentRuntime.session.fragment == .check,
+              "\(fragmentRuntime.session.fragment)")
+        backApp.dialogs.closeAll()
+        backApp.menus.dismiss()
+        let checkBackConsumed = backApp.back()
+        check("check back returns to paint",
+              checkBackConsumed && fragmentRuntime.session.fragment == .paint
+                  && backApp.navigation.count == 2,
+              "fragment=\(fragmentRuntime.session.fragment) depth=\(backApp.navigation.count)")
+        check("check back keeps session open", !fragmentRuntime.session.closed)
+
+        let foldReady = fragmentRuntime.session.prepareFold()
+        if foldReady { fragmentRuntime.session.setFragment(.fold) }
+        check("fold fragment shown", foldReady && fragmentRuntime.session.fragment == .fold,
+              "\(fragmentRuntime.session.fragment)")
+        let foldBackConsumed = backApp.back()
+        check("fold back returns to paint",
+              foldBackConsumed && fragmentRuntime.session.fragment == .paint,
+              "fragment=\(fragmentRuntime.session.fragment)")
+        check("fold back keeps session open", !fragmentRuntime.session.closed)
+        backApp.removeBackHandler(for: backApp.topEntry?.id)
+        backApp.pop()
+
         // MARK: 14. Fold hand-off: default square folds; a broken pattern reports the error.
 
         let foldSession = EditorSession(params: EditorParams(), app: app)

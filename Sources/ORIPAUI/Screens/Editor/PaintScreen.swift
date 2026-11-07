@@ -239,10 +239,12 @@ public struct PaintScreen: View {
     /// Snapshot/QA rendering has no window: `ImageRenderer` cannot rasterise the platform
     /// input surface (NSView/UIView), so snapshots build the screen without it.
     private let interactionEnabled: Bool
+    /// Snapshot/QA hook: render the FAB mini menu expanded (`FabMenu` open state).
+    private let fabMenuInitiallyOpen: Bool
 
     init(session: EditorSession, menu: PaintMenuModel, driver: PaintDriver,
          renderer: PaintRenderer, app: AppModel, coordinator: PaintCoordinator,
-         interactionEnabled: Bool = true) {
+         interactionEnabled: Bool = true, fabMenuInitiallyOpen: Bool = false) {
         self.session = session
         self.menu = menu
         self.driver = driver
@@ -250,13 +252,18 @@ public struct PaintScreen: View {
         self.app = app
         self.coordinator = coordinator
         self.interactionEnabled = interactionEnabled
+        self.fabMenuInitiallyOpen = fabMenuInitiallyOpen
     }
 
     public var body: some View {
         GeometryReader { proxy in
             ZStack(alignment: .top) {
                 Color.white
+                // Full-bleed: the gesture overlay below ignores the safe area, so the
+                // canvas must use the exact same frame/origin or taps map with a safe-area
+                // offset (touch y vs canvas y) on devices with insets.
                 PaintCanvasView(renderer: renderer)
+                    .ignoresSafeArea()
                     .contentShape(Rectangle())
                 // Transparent input surface above the drawing canvas (the recogniser turns
                 // raw touches into tap / long-press / drag / pinch / two-finger pan).
@@ -345,7 +352,8 @@ public struct PaintScreen: View {
             if !menu.menusHidden {
                 PaintFab(onExport: showExportDialog,
                          onFold: runFold,
-                         onCheck: runCheck)
+                         onCheck: runCheck,
+                         initiallyOpen: fabMenuInitiallyOpen)
             }
         }
     }

@@ -443,6 +443,10 @@ private struct macCanvasMouseView: NSViewRepresentable {
         private var mouseDownPoint: CGPoint?
         private var panActive = false
 
+        /// SwiftUI uses a top-left origin; without this the pointer coordinates would be
+        /// mirrored vertically (drawing/pinch focus offset).
+        override var isFlipped: Bool { true }
+
         override var acceptsFirstResponder: Bool { true }
         override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
 

@@ -111,3 +111,58 @@ Feature parity follows `oripa-port/docs/FEATURES.md` (90 rows) and the workstrea
 Android-only plumbing with no iOS equivalent (external-storage `DownloadManager`, runtime
 WRITE permission, hardware back key) is replaced by the native equivalents in AD-4; the
 workflow, menus, dialog texts, icons and algorithms are preserved.
+
+## AD-11 — Full-screen iOS app (no status bar)
+
+The user asked for a completely full-screen iOS build with no status bar (time/battery).
+Implementation (belt and braces, both required for different surfaces):
+
+- `iOSApp/Info.plist`: `UIStatusBarHidden=true`, `UIViewControllerBasedStatusBarAppearance=false`,
+  `UIRequiresFullScreen=true` (no iPad multitasking split view).
+- `ORIPARootView`: `.statusBarHidden(true)` + `.persistentSystemOverlays(.hidden)` on iOS
+  (iOS 16+), so the SwiftUI-hosted content (including the launch transition) is edge to edge.
+
+The editor canvas, gesture overlays and fold canvas use full-bleed frames (see AD-12); the
+chrome is positioned with the window safe-area insets where devices still have them
+(Dynamic Island / home indicator), so toolbars never sit under hardware cutouts.
+
+## AD-12 — One coordinate space for canvas and touch input
+
+The first iPad build mapped taps with an offset: the drawing canvas respected the safe area,
+while the transparent raw-touch overlay used `.ignoresSafeArea()`; on devices with safe-area
+insets (status bar shown, iPhone notch, home indicator) the two coordinate origins differed
+by the inset, so drawn lines landed below/next to the finger.
+
+Fix: the paint canvas and its gesture overlay (and the check canvas) are now **both**
+full-bleed `.ignoresSafeArea()` siblings in the same ZStack; `PaintRenderer.draw` sets the
+`ViewTransform` viewport from the exact Canvas size, and touch points are passed in the same
+coordinate space. On macOS the `NSViewRepresentable` surfaces (`MouseCaptureView`,
+`FoldMacGestureSurface`) now override `isFlipped = true` so pointer coordinates share
+SwiftUI's top-left origin instead of being mirrored vertically.
+
+## AD-13 — Editor fragments must be observed directly
+
+`EditorScreen` originally observed only `EditorRuntime` (a plain `ObservableObject`) but read
+`runtime.session.fragment`. `EditorSession` publishes `.paint/.check/.fold`, so tapping
+Check/Fold changed the fragment without telling SwiftUI: the screen only appeared after an
+unrelated redraw (opening Settings and coming back), and the back arrow appeared to do
+nothing ("cannot exit"). `EditorScreen` now stores `@ObservedObject private var session`
+(initialised from the runtime's session) so fragment switches and `closed` updates re-render
+immediately. `EditorSelfCheck` gained Check/Fold → Paint back-path checks.
+
+## AD-14 — UI parity is measured against the original APK, not the web rebuild
+
+The web port (`oripa-port`, published as `oripaweb`) is itself a reconstruction and deviates
+from the APK in a few visible places. UI detail parity is therefore audited against:
+
+- the decompiled APK resources (`rev/apktool/res/layout|menu|drawable|values`) as the
+  authoritative dimensions/styles/graphics source,
+- screenshots of the original APK running on an Android emulator
+  (`docs/reference/apk/`, 1080×2400 @ 420 dpi, dp = px / 2.625).
+
+Known APK-vs-web differences fixed in the native port: solid-coloured line-type square
+buttons instead of condensed letters, radio buttons in single-choice submenus instead of
+checkmarks, the original `FabMenu` mini-menu (labelled pills + 40 dp mini FABs, close-X
+state) instead of a white card list, APK toolbar insets (check/fold back button at the screen
+edge, titles at 72 dp), blank empty-projects state, and the APK preference-row metrics
+(48/72 dp rows, 72 dp icon column, 14 sp accent category headers).

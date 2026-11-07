@@ -18,6 +18,10 @@ import ORIPACore
 public struct EditorScreen: View {
     @ObservedObject private var app: AppModel
     @StateObject private var runtime: EditorRuntime
+    /// The retained session publishes `fragment`/`closed`/`canUndo`/`revision`. SwiftUI must
+    /// observe it directly: observing only `EditorRuntime` made Check/Fold appear only after
+    /// an unrelated redraw (e.g. opening Settings) and made back-from-fragment not repaint.
+    @ObservedObject private var session: EditorSession
     @Environment(\.oripaNavID) private var navID
     @Environment(\.scenePhase) private var scenePhase
 
@@ -26,7 +30,9 @@ public struct EditorScreen: View {
     public init(params: EditorParams, app: AppModel) {
         self.params = params
         self._app = ObservedObject(wrappedValue: app)
-        self._runtime = StateObject(wrappedValue: EditorRuntime(params: params, app: app))
+        let runtime = EditorRuntime(params: params, app: app)
+        self._runtime = StateObject(wrappedValue: runtime)
+        self._session = ObservedObject(wrappedValue: runtime.session)
     }
 
     public var body: some View {
@@ -39,10 +45,10 @@ public struct EditorScreen: View {
                         renderer: runtime.paintRenderer,
                         app: app,
                         coordinator: runtime.paintCoordinator)
-                .opacity(runtime.session.fragment == .paint ? 1 : 0)
-                .allowsHitTesting(runtime.session.fragment == .paint)
+                .opacity(session.fragment == .paint ? 1 : 0)
+                .allowsHitTesting(session.fragment == .paint)
 
-            if runtime.session.fragment == .check {
+            if session.fragment == .check {
                 CheckScreen(session: runtime.session,
                             renderer: runtime.checkRenderer,
                             app: app,
@@ -50,7 +56,7 @@ public struct EditorScreen: View {
                     .transition(.opacity)
             }
 
-            if runtime.session.fragment == .fold {
+            if session.fragment == .fold {
                 FoldScreen(session: runtime.session, app: app)
                     .transition(.opacity)
             }

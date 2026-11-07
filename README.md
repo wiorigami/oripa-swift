@@ -10,13 +10,14 @@ Native **iOS/iPadOS + macOS** port of **ORIPA for Android 0.2.3.3** — the crea
 > paint tools, flat-foldability check, X-Ray / Overlap / Cut Line folded views, settings,
 > OPX/OPXC/CP/SVG/PNG import-export) implemented in Swift/SwiftUI, with on-disk project
 > storage that survives relaunch. Verified with 35,849 golden checks against the JavaScript
-> reference, 64 end-to-end integration checks, and 47 headless UI screenshots. The iOS IPA
+> reference, 64 end-to-end integration checks, and 50 headless UI screenshots. The iOS IPA
 > and macOS app are built by GitHub Actions (`.github/workflows/ci.yml`).
 
 * Same workflow, tools, file formats (OPX/OPXC/CP/SVG/PNG), foldability check and
   folded-model views (X-Ray / Overlap / Cut Line) as the ported app.
 * Native system integration: Files.app-backed project storage, document picker import,
-  share-sheet export, multi-touch, pointer/keyboard, dark mode.
+  share-sheet export, multi-touch, pointer/keyboard, and a completely full-screen iOS
+  presentation (no status bar), matching the Android app's immersive editor.
 * Local-first: projects are stored on disk and survive restarts; crash-safe autosave.
   Same bundle id (`com.origamitoolbox.oripa`) as the previous WKWebView port, so existing
   projects keep working after upgrading.

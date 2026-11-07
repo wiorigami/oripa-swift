@@ -135,6 +135,38 @@ for svg in "$ICONS_SRC"/*.svg; do
   fail=$((fail+1))
 done
 
+# Re-normalise the icon alpha masks.
+#
+# The APK vector drawables are baked black with ~54% alpha (Material "dark" icons) or ~38%
+# (disabled variants). SwiftUI renders them as template images and multiplies the tint alpha
+# (OrTheme.iconActive = 54%, iconInactive = 38%) with the mask alpha, which would render
+# ~29% instead of the intended ~54%. Normalising each mask so its strongest pixel is fully
+# opaque keeps anti-aliased edges proportional, so tinting with the Material grey reproduces
+# the reference colour exactly. Multi-colour icons are already opaque and are left untouched.
+normalise_alpha() {
+  local file="$1"
+  local maxa scale rgb
+  maxa="$(magick "$file" -format '%[fx:maxima.a]' info: 2>/dev/null || echo 1)"
+  # Monochrome "dark" drawables are baked black; give them the Material grey they render
+  # as over white (black @ base alpha) so that tint-less uses also look right, then
+  # normalise the mask to fully opaque interiors.
+  rgb="$(magick "$file" -format '%[fx:maxima.r] %[fx:maxima.g] %[fx:maxima.b]' info: 2>/dev/null || echo '1 1 1')"
+  local is_black
+  is_black="$(python3 -c "r,g,b=[float(x) for x in '$rgb'.split()]; print(1 if max(r,g,b)<=0.02 else 0)")"
+  scale="$(python3 -c "m=float('$maxa'); print(1.0/m if 0.0 < m < 0.999 else 1.0)")"
+  if [ "$scale" != "1.0" ]; then
+    magick "$file" -channel A -evaluate multiply "$scale" +channel "$file"
+  fi
+  if [ "$is_black" = "1" ]; then
+    local gray
+    gray="$(python3 -c "m=float('$maxa'); v=round((1.0-m)*255.0) if 0.0 < m <= 1.0 else 112; print(max(64, min(255, v)))")"
+    magick "$file" -fill "gray($gray)" -colorize 100 "$file"
+  fi
+}
+for png in "$OUT"/*.png; do
+  normalise_alpha "$png"
+done
+
 # Raster logos (already ~1024 px PNGs in the web port) override the SVG rasterisations.
 for logo in oripa_logo_v3_raster oripa_logo_text_v2_raster; do
   if [ -s "$IMAGES_SRC/$logo.png" ]; then

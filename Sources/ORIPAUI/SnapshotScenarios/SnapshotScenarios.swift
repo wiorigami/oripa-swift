@@ -64,12 +64,13 @@ public enum SnapshotScenarios {
         ))
 
         // MARK: Projects (grid / landscape / list / sort / empty / selection)
-        let gridNames = ["crane base", "origami bird", "untitled"]
+        // The six projects of the reference screenshots (fixed names + mtimes + line art).
+        let gridNames = DemoProjects.referenceProjectNames
         let gridApp = DemoProjects.makeApp(projectNames: gridNames, route: [.projects])
         scenarios.append(SnapshotScenario(
             name: "02-projects-grid",
             size: portrait,
-            title: "Projects — grid, sorted by last modified (3 Files)",
+            title: "Projects — grid, sorted by last modified (6 Files)",
             view: rootView(gridApp, size: portrait)
         ))
         let landscapeApp = DemoProjects.makeApp(projectNames: gridNames, route: [.projects])
@@ -83,12 +84,11 @@ public enum SnapshotScenarios {
         scenarios.append(SnapshotScenario(
             name: "04-projects-empty",
             size: portrait,
-            title: "Projects — empty state (0 Files)",
+            title: "Projects — empty (0 Files, blank content area, FAB)",
             view: rootView(emptyApp, size: portrait)
         ))
 
-        let listNames = ["test-square", "crane base", "untitled", "hydrangea",
-                         "a-very-long-origami-project-name", "untitled-1"]
+        let listNames = DemoProjects.referenceProjectNames
         let listApp = DemoProjects.makeApp(projectNames: listNames, route: [.projects])
         scenarios.append(SnapshotScenario(
             name: "05-projects-list",
@@ -102,35 +102,42 @@ public enum SnapshotScenarios {
         scenarios.append(SnapshotScenario(
             name: "06-projects-sort-name",
             size: portrait,
-            title: "Projects — list view sorted by name",
+            // Reference `06-projects-sort-name.png`: grid view, sorted by name.
+            title: "Projects — grid sorted by name",
             view: screenView(sortApp, size: portrait) {
-                ProjectsScreen(initialShowList: true, initialSortLastModified: false)
+                ProjectsScreen(initialSortLastModified: false)
             }
         ))
         let selectionApp = DemoProjects.makeApp(projectNames: listNames, route: [.projects])
         scenarios.append(SnapshotScenario(
             name: "07-projects-selection",
             size: portrait,
-            title: "Projects — contextual action bar (1 selected)",
+            // Reference `projects-select.png`: grid view with the first project selected.
+            title: "Projects — contextual action bar (1 selected, grid)",
             view: screenView(selectionApp, size: portrait) {
-                ProjectsScreen(initialShowList: true,
-                               initialSelection: ["crane base"],
+                ProjectsScreen(initialSelection: ["test-square"],
                                initialActionMode: true)
             }
         ))
 
         // MARK: Project dialogs
-        let deleteMultipleApp = DemoProjects.makeApp(projectNames: gridNames, route: [.projects])
-        ProjectDialogs.deleteMultiple(app: deleteMultipleApp, count: 2) {}
+        // Reference `08-projects-delete-multiple.png`: selection mode with one file
+        // selected and the "Delete 1 file?" confirmation above the action bar.
+        let deleteMultipleApp = DemoProjects.makeApp(projectNames: listNames, route: [.projects])
+        ProjectDialogs.deleteMultiple(app: deleteMultipleApp, count: 1) {}
         scenarios.append(SnapshotScenario(
             name: "08-dialog-delete-multiple",
             size: portrait,
-            title: "Delete 2 files? / Cancel / Delete All",
-            view: rootView(deleteMultipleApp, size: portrait)
+            title: "Delete 1 file? / Cancel / Delete All (1 selected)",
+            view: screenView(deleteMultipleApp, size: portrait) {
+                ProjectsScreen(initialSelection: ["test-square"], initialActionMode: true)
+            }
         ))
 
         let menuApp = DemoProjects.makeApp(projectNames: gridNames, route: [.projects])
-        menuApp.menus.show(anchor: CGRect(x: 600, y: 210, width: 40, height: 40),
+        // Overflow button of the first grid card: info area starts at 60 + 160 dp, the
+        // 40 dp button sits 8 dp above the card bottom at the card's right edge.
+        menuApp.menus.show(anchor: CGRect(x: 122, y: 244, width: 40, height: 40),
                            items: [
                                OrMenuItem(label: ProjectDialogStrings.rename),
                                OrMenuItem(label: ProjectDialogStrings.copy),
@@ -144,16 +151,16 @@ public enum SnapshotScenarios {
         ))
 
         let renameApp = DemoProjects.makeApp(projectNames: gridNames, route: [.projects])
-        ProjectDialogs.rename(app: renameApp, name: "crane base")
+        ProjectDialogs.rename(app: renameApp, name: "test-square")
         scenarios.append(SnapshotScenario(
             name: "10-dialog-rename",
             size: portrait,
-            title: "Rename file? / Filename / Rename",
+            title: "Rename file? / Filename / Rename (first project)",
             view: rootView(renameApp, size: portrait)
         ))
 
         let copyApp = DemoProjects.makeApp(projectNames: gridNames, route: [.projects])
-        ProjectDialogs.copy(app: copyApp, name: "crane base")
+        ProjectDialogs.copy(app: copyApp, name: "test-square")
         scenarios.append(SnapshotScenario(
             name: "11-dialog-copy",
             size: portrait,
@@ -162,7 +169,7 @@ public enum SnapshotScenarios {
         ))
 
         let deleteApp = DemoProjects.makeApp(projectNames: gridNames, route: [.projects])
-        ProjectDialogs.deleteOne(app: deleteApp, name: "crane base")
+        ProjectDialogs.deleteOne(app: deleteApp, name: "test-square")
         scenarios.append(SnapshotScenario(
             name: "12-dialog-delete",
             size: portrait,
@@ -190,17 +197,20 @@ public enum SnapshotScenarios {
         ))
 
         // MARK: Preview
-        let previewApp = DemoProjects.makeApp(projectNames: ["origami bird"],
-                                              route: [.projects, .preview(PreviewParams(name: "origami bird"))])
+        // Reference `projects-preview.png` / `projects-previewmenu.png`: first project opened
+        // (test-square), whose preview shows the seeded CP line art.
+        let previewApp = DemoProjects.makeApp(projectNames: DemoProjects.referenceProjectNames,
+                                              route: [.projects, .preview(PreviewParams(name: "test-square"))])
         scenarios.append(SnapshotScenario(
             name: "15-preview",
             size: portrait,
             title: "Preview — read-only CP, transparent toolbar, Edit FAB",
             view: rootView(previewApp, size: portrait)
         ))
-        let previewMenuApp = DemoProjects.makeApp(projectNames: ["origami bird"],
-                                                  route: [.projects, .preview(PreviewParams(name: "origami bird"))])
-        previewMenuApp.menus.show(anchor: CGRect(x: 760, y: 8, width: 40, height: 40),
+        let previewMenuApp = DemoProjects.makeApp(projectNames: DemoProjects.referenceProjectNames,
+                                                  route: [.projects, .preview(PreviewParams(name: "test-square"))])
+        // Preview toolbar overflow button: 48 dp button at the bar's trailing edge.
+        previewMenuApp.menus.show(anchor: CGRect(x: 768, y: 4, width: 48, height: 48),
                                   items: [
                                       OrMenuItem(label: ProjectDialogStrings.rename),
                                       OrMenuItem(label: ProjectDialogStrings.copy),
@@ -218,7 +228,7 @@ public enum SnapshotScenarios {
         scenarios.append(SnapshotScenario(
             name: "17-settings",
             size: portrait,
-            title: "Settings — Drawing / Folded Model preference rows",
+            title: "Settings — Drawing / Folded Model preference rows (APK row metrics)",
             view: rootView(settingsApp, size: portrait)
         ))
         let numberApp = DemoProjects.makeApp(projectNames: [], route: [.projects, .settings])
@@ -241,6 +251,12 @@ public enum SnapshotScenarios {
         // MARK: Fold — xray / overlap / cut line + fold dialogs (ui-fold, 40…53)
         scenarios.append(contentsOf: FoldSnapshot.scenarios())
 
+        // `EditorSnapshotSupport`/`FoldSnapshot` call `ORIPACanvasIntegration.install()` while
+        // building their scenarios, which replaces the snapshot preview factory above.
+        // Re-install it last so 15/16 render the seeded line art in the headless renderer
+        // (runtime still uses the ui-canvas factory installed by the app integration).
+        installSnapshotPreviewRenderer()
+
         return scenarios
     }
 
@@ -250,8 +266,8 @@ public enum SnapshotScenarios {
     /// synthetic demo line art in the preview screen so the snapshot shows a real CP.
     private static func installSnapshotPreviewRenderer() {
         OrScreenRegistry.creasePatternPreviewFactory = { data in
-            guard let pattern = DemoProjects.marker(from: data) else { return nil }
-            return AnyView(DemoProjects.previewView(pattern: pattern))
+            guard let seed = DemoProjects.seed(from: data) else { return nil }
+            return AnyView(DemoProjects.previewView(seed: seed))
         }
     }
 

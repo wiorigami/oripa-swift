@@ -1,7 +1,8 @@
 // "Export Crease Pattern" flow.
 //
 // Port of `oripa-port/src/js/ui/dialogs/export_cp.js`:
-//   ExportExternalDialogFragment (radio list of file types)
+//   ExportExternalDialogFragment (single-choice list of file types, Export disabled until
+//   one is picked)
 //   ExportPngSquareDialogFragment (square PNG size 200..1600 step 40, default 1000)
 //   PaintCpFragment.onClickExportFile / onExportFileTypeSelected /
 //   onExportPngSquareOptionsSelected
@@ -10,6 +11,12 @@
 // The session provides the encoded bytes through `ExportCPHost`; PNG is rendered by
 // `CPPNGExport` from the editor bridge, exactly like `renderCpPng` with the Android
 // `lineWidthScale = 2.0` factor.
+//
+// Dialog chrome follows `editor.css` + `dialogs/error.js` `D.material.dialog`: a 24 dp
+// heading icon, 20/28 medium title, 48 dp single-choice rows with the Material radio at
+// the trailing edge, and uppercase text buttons (CANCEL / EXPORT). The export card has no
+// explicit width in the reference and therefore hugs its content at 284 dp; PNG Options
+// passes width=320 like the reference.
 import Foundation
 import SwiftUI
 
@@ -39,13 +46,20 @@ public enum ExportCPDialog {
     public static let pngStep = 40
     public static let pngDefault = 1000
 
+    /// Reference card widths (`M.dialog` width option / content-driven min-width 280).
+    private static let exportDialogWidth: CGFloat = 284
+    private static let pngDialogWidth: CGFloat = 320
+
     // MARK: - Entry point
 
     public static func show(_ dialogs: DialogCenter,
                             fileExchange: FileExchange,
                             toast: SnackbarCenter,
                             host: ExportCPHost) {
-        let content = ExportTypeChoiceView(dialogs: dialogs, fileTypes: fileTypes) { index in
+        let state = ExportChoiceState()
+        let content = ExportDialogContent(state: state,
+                                          fileTypes: fileTypes,
+                                          dialogs: dialogs) { index in
             // The dialog closes itself before exporting (JS dlg.close(); export…).
             handleFileType(fileTypes[index],
                            dialogs: dialogs,
@@ -54,12 +68,12 @@ public enum ExportCPDialog {
                            host: host)
         }
         dialogs.show(OrDialogSpec(
-            title: PaintStrings.exportTitle,
-            icon: "ic_file_download_dark_24dp",
+            title: nil,
+            icon: nil,
             content: AnyView(content),
             buttons: [],
             cancelable: true,
-            width: 320))
+            width: exportDialogWidth))
     }
 
     // MARK: - File type handling
@@ -105,20 +119,16 @@ public enum ExportCPDialog {
                                       fileExchange: FileExchange,
                                       toast: SnackbarCenter,
                                       host: ExportCPHost) {
-        var value = pngDefault
-        let content = PngSizeChoiceView(initialValue: value) { newValue in
-            value = newValue
-        }
+        let model = PngSizeModel(ExportCPDialog.pngDefault)
+        let content = PngOptionsDialogContent(model: model)
         dialogs.show(OrDialogSpec(
-            title: PaintStrings.pngOptionsTitle,
-            icon: "ic_image_dark_24dp",
+            title: nil,
+            icon: nil,
             content: AnyView(content),
             buttons: [
                 OrDialogButton(PaintStrings.cancel),
                 OrDialogButton("OK", primary: true) {
-                    // The size chooser keeps its value in the observed model.
-                    let size = content.value
-                    guard let data = host.exportPNGData(sizePx: size) else {
+                    guard let data = host.exportPNGData(sizePx: model.value) else {
                         snackFail(dialogs, toast)
                         return true
                     }
@@ -129,8 +139,7 @@ public enum ExportCPDialog {
                 },
             ],
             cancelable: true,
-            width: 320))
-        _ = value
+            width: pngDialogWidth))
     }
 
     // MARK: - Writing + snackbars
@@ -152,107 +161,117 @@ public enum ExportCPDialog {
     }
 }
 
-// MARK: - File-type radio list (buttons live in the content so Export can stay disabled)
+// MARK: - File-type single choice list
 
-private struct ExportTypeChoiceView: View {
-    let dialogs: DialogCenter
+@MainActor
+private final class ExportChoiceState: ObservableObject {
+    /// Android `ExportExternalDialogFragment.selected = -1`: nothing is checked initially.
+    @Published var selected: Int = -1
+}
+
+/// 24 dp heading icon + 20/28 title, then four 48 dp radio rows and the CANCEL / EXPORT
+/// action row. The action row cancels the card's 24 dp content inset (`-16` horizontal)
+/// and its 8 dp bottom padding (`-8`) so it spans the card like the reference actions bar.
+private struct ExportDialogContent: View {
+    @ObservedObject var state: ExportChoiceState
     let fileTypes: [String]
+    let dialogs: DialogCenter
     let onExport: (Int) -> Void
 
-    @State private var selected: Int = -1
-
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(spacing: 0) {
+            EditorDialogHeading(icon: "ic_file_download_dark_24dp",
+                                title: PaintStrings.exportTitle)
             ForEach(Array(fileTypes.enumerated()), id: \.offset) { index, type in
-                Button {
-                    selected = index
-                } label: {
-                    HStack(spacing: 16) {
-                        Text(type.lowercased())
-                            .font(OrTheme.menuItem())
-                            .foregroundColor(OrTheme.textPrimary)
-                        Spacer(minLength: 8)
-                        OrRadioMark(isChecked: selected == index)
-                    }
-                    .padding(.horizontal, 8)
-                    .frame(minHeight: 48)
-                    .contentShape(Rectangle())
+                EditorDialogChoiceRow(label: type.lowercased(),
+                                      isChecked: state.selected == index) {
+                    state.selected = index
                 }
-                .buttonStyle(.plain)
             }
             HStack(spacing: 8) {
                 Spacer(minLength: 0)
-                OrTextButton(PaintStrings.cancel) {
+                EditorDialogTextButton(text: PaintStrings.cancel,
+                                       color: OrTheme.textSecondary) {
                     dialogs.closeTop()
                 }
-                OrTextButton(PaintStrings.exportPositive, isPrimary: true) {
-                    guard selected >= 0 else { return }
+                EditorDialogTextButton(text: PaintStrings.exportPositive,
+                                       color: state.selected >= 0 ? OrTheme.accent
+                                                                  : OrTheme.textDisabled,
+                                       isEnabled: state.selected >= 0) {
+                    guard state.selected >= 0 else { return }
                     dialogs.closeTop()
-                    onExport(selected)
+                    onExport(state.selected)
                 }
-                .disabled(selected < 0)
-                .opacity(selected < 0 ? 0.38 : 1)
             }
-            .padding(.top, 12)
+            .padding(8)
+            .frame(minHeight: OrTheme.dialogActionsHeight)
+            .padding(.top, 8)
+            .padding(.horizontal, -24)
+            // The action row is the card's last element; eat the dialog content's bottom
+            // padding plus the empty-actions card padding so the row ends at the card edge.
+            .padding(.bottom, -16)
         }
     }
 }
 
-// MARK: - PNG size chooser (NumberPicker 200..1600 step 40, default 1000)
+// MARK: - PNG size chooser (200..1600 step 40, default 1000)
 
-private struct PngSizeChoiceView: View {
-    /// Value is mirrored into this class so the dialog buttons can read it.
-    final class Model: ObservableObject {
-        @Published var value: Int
-        init(_ value: Int) { self.value = value }
+/// Mirrors the JS `value` closure so the OK button (owned by the dialog spec) can read it.
+@MainActor
+private final class PngSizeModel: ObservableObject {
+    @Published private(set) var value: Int
+
+    init(_ value: Int) {
+        self.value = PngSizeModel.clamp(value)
     }
 
-    @ObservedObject private var model: Model
-    let onChange: (Int) -> Void
-
-    init(initialValue: Int, onChange: @escaping (Int) -> Void) {
-        self.model = Model(initialValue)
-        self.onChange = onChange
+    func step(_ delta: Int) {
+        value = PngSizeModel.clamp(value + delta)
     }
 
-    var value: Int { model.value }
-
-    private func setValue(_ v: Int) {
-        let stepped = Int((Double(v) / Double(ExportCPDialog.pngStep)).rounded()) * ExportCPDialog.pngStep
-        let clamped = min(ExportCPDialog.pngMax, max(ExportCPDialog.pngMin, stepped))
-        model.value = clamped
-        onChange(clamped)
+    private static func clamp(_ raw: Int) -> Int {
+        let stepped = Int((Double(raw) / Double(ExportCPDialog.pngStep)).rounded())
+            * ExportCPDialog.pngStep
+        return min(ExportCPDialog.pngMax, max(ExportCPDialog.pngMin, stepped))
     }
+}
+
+/// `ui-png-options`: "Image size (pixels):" then a centered − value + stepper row.
+private struct PngOptionsDialogContent: View {
+    @ObservedObject var model: PngSizeModel
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(spacing: 0) {
+            EditorDialogHeading(icon: "ic_image_dark_24dp", title: PaintStrings.pngOptionsTitle)
             Text(PaintStrings.pngDimensionText)
-                .font(OrTheme.body())
+                .font(.system(size: 16))
                 .foregroundColor(OrTheme.textSecondary)
-            HStack {
+                .lineLimit(1)
+                .frame(height: 24, alignment: .leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            HStack(spacing: 12) {
                 Spacer(minLength: 0)
-                Button { setValue(model.value - ExportCPDialog.pngStep) } label: {
-                    Image(systemName: "minus")
-                        .font(.system(size: 16, weight: .medium))
-                        .frame(width: OrTheme.stepperButtonSize, height: OrTheme.stepperButtonSize)
-                }
-                .buttonStyle(.plain)
-                .foregroundColor(OrTheme.iconActive)
-
+                stepperButton("\u{2212}") { model.step(-ExportCPDialog.pngStep) }
                 Text(String(model.value))
-                    .font(.system(size: 20, weight: .medium))
+                    .font(.system(size: 20))
                     .foregroundColor(OrTheme.textPrimary)
-                    .frame(minWidth: 96)
-
-                Button { setValue(model.value + ExportCPDialog.pngStep) } label: {
-                    Image(systemName: "plus")
-                        .font(.system(size: 16, weight: .medium))
-                        .frame(width: OrTheme.stepperButtonSize, height: OrTheme.stepperButtonSize)
-                }
-                .buttonStyle(.plain)
-                .foregroundColor(OrTheme.iconActive)
+                    .frame(minWidth: 64, alignment: .leading)
+                stepperButton("+") { model.step(ExportCPDialog.pngStep) }
                 Spacer(minLength: 0)
             }
+            .padding(.top, 8)
         }
+    }
+
+    /// `.m-stepper-btn`: 40 × 40, accent, 22 sp glyph, no background.
+    private func stepperButton(_ glyph: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(glyph)
+                .font(.system(size: 22))
+                .foregroundColor(OrTheme.accent)
+                .frame(width: OrTheme.stepperButtonSize, height: OrTheme.stepperButtonSize)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 }

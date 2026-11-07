@@ -16,7 +16,9 @@ public enum CommonDialogs {
             title: CommonDialogStrings.attention,
             icon: "ic_error_outline_dark_24dp",
             content: AnyView(OrDialogText(message)),
-            buttons: [OrDialogButton(CommonDialogStrings.ok, primary: true)]
+            buttons: [OrDialogButton(CommonDialogStrings.ok, primary: true)],
+            width: 280,
+            actionsTopPadding: 20
         ))
     }
 
@@ -29,7 +31,8 @@ public enum CommonDialogs {
         app.dialogs.show(OrDialogSpec(
             title: nil,
             content: AnyView(OrDialogText(message)),
-            buttons: [OrDialogButton(CommonDialogStrings.ok, primary: true)]
+            buttons: [OrDialogButton(CommonDialogStrings.ok, primary: true)],
+            width: 280
         ))
     }
 

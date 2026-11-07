@@ -124,7 +124,7 @@ struct FoldXraySettingsDialog: View {
                     onWireframe(wireframe)
                 }
             }
-            .frame(maxWidth: 360)
+            .frame(width: FoldTheme.dialogWidth)
         }
     }
 }
@@ -212,9 +212,11 @@ struct FoldOverlapSettingsDialog: View {
     var body: some View {
         FoldDialogScrim(onDismiss: onDismiss) {
             ZStack {
+                // `dialog_fold_cp_overlap.xml`: paddingLeft 0, paddingTop 8,
+                // paddingRight "@dimen/text_margin" (16), paddingBottom 8.
                 FoldDialogCard(title: FoldStrings.settingsTitle,
                                icon: "ic_settings_dark_24dp",
-                               contentPadding: EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0),
+                               contentPadding: EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 16),
                                buttons: []) {
                     VStack(alignment: .leading, spacing: 0) {
                         FoldCheckRow(label: FoldStrings.flipText,
@@ -231,7 +233,7 @@ struct FoldOverlapSettingsDialog: View {
                         }
                     }
                 }
-                .frame(maxWidth: 360)
+                .frame(width: FoldTheme.dialogWidth)
 
                 if let target = activePicker {
                     FoldColorPickerDialog(
@@ -340,7 +342,7 @@ struct FoldCrossLineSettingsDialog: View {
                     }
                 }
             }
-            .frame(maxWidth: 360)
+            .frame(width: FoldTheme.dialogWidth)
         }
     }
 }

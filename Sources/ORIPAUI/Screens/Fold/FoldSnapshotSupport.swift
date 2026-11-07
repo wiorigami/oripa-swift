@@ -6,11 +6,13 @@
 // Overlap-shadow / Cut Line portrait + landscape, the three settings dialogs, the export
 // dialogs and the HSV colour picker) over a **real folded model**.
 //
-// Model seeding: the same `Fixtures/cases/fu_character.cp` pattern as the reference
-// screenshots `oripa-port/docs/screenshots/fold-fu-*.png`, folded through the real engine
-// (`isFlatFoldable` -> `foldWithoutOverlap` -> `foldWithOverlap` -> `crossLineManager.getNew`);
-// when the fixture is not next to the executable (e.g. a bare CI artifact run) it falls back
-// to the synthetic waterbomb-base model of the web port's `ui-fold.html` harness.
+// Model seeding: the certified `Fixtures/cases/crane_base_mitani.opx` crease pattern
+// (the same crane base as `oripa-port/docs/screenshots/fold-crane-base-xray.png` and the
+// ORIPA Android `screen2.png`), folded through the real engine (`isFlatFoldable` ->
+// `foldWithoutOverlap` -> `foldWithOverlap` -> `crossLineManager.getNew`). The fixture is
+// located through this source file's `#filePath` (so the snapshot binary always finds the
+// repo checkout), with the fu-character fixture and finally the synthetic waterbomb-base
+// model of the web port's `ui-fold.html` harness as fallbacks.
 //
 // `ImageRenderer` never runs `.onAppear`/`.task`, so the view model is entered eagerly and
 // `FoldScreenContent` is rendered directly (no platform gesture surface: ImageRenderer cannot
@@ -69,6 +71,32 @@ public enum FoldSnapshot {
 
     // MARK: - Real fixture-backed session
 
+    /// Repository root derived from this source file (`Sources/ORIPAUI/Screens/Fold/…`):
+    /// five parent hops. Snapshot runs are started from arbitrary working directories, so the
+    /// compile-time `#filePath` is the reliable way to find `Fixtures/`.
+    private static var repoRootFromSource: URL {
+        URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent() // Fold
+            .deletingLastPathComponent() // Screens
+            .deletingLastPathComponent() // ORIPAUI
+            .deletingLastPathComponent() // Sources
+            .deletingLastPathComponent() // <repo>
+    }
+
+    /// Locate a fixture by its path relative to the repo root, also trying the process
+    /// working directory for bare-artifact CI runs.
+    private static func fixtureURL(relativePath: String) -> URL? {
+        var candidates: [URL] = [repoRootFromSource.appendingPathComponent(relativePath)]
+        candidates.append(URL(fileURLWithPath: relativePath))
+        candidates.append(URL(fileURLWithPath: "../\(relativePath)"))
+        candidates.append(URL(fileURLWithPath: "../../\(relativePath)"))
+        let fileManager = FileManager.default
+        for candidate in candidates where fileManager.fileExists(atPath: candidate.path) {
+            return candidate
+        }
+        return nil
+    }
+
     /// Load a `.cp`/`.opx`/`.opxc` file and fold it (`isFlatFoldable` → `foldWithoutOverlap`
     /// → `foldWithOverlap` → `crossLineManager.getNew`, i.e. the `prepareFold` path).
     public static func loadSession(app: AppModel,
@@ -79,6 +107,23 @@ public enum FoldSnapshot {
         guard let cp = try? OripaIO.readCreasePatternFile(data: data, filename: filename) else {
             return nil
         }
+        return foldSession(app: app, cp: cp, filename: filename)
+    }
+
+    /// Load an internal OPX/OPXC/CreasePattern file without touching `modified`
+    /// (`OripaIO.loadCreasePatternForce`) and fold it.
+    public static func loadSessionForce(app: AppModel,
+                                        fileURL: URL,
+                                        name: String? = nil) -> (any EditorSessionProtocol)? {
+        guard let data = try? Data(contentsOf: fileURL),
+              let cp = try? OripaIO.loadCreasePatternForce(data: data) else { return nil }
+        let filename = name ?? fileURL.lastPathComponent
+        return foldSession(app: app, cp: cp, filename: filename)
+    }
+
+    private static func foldSession(app: AppModel,
+                                    cp: CreasePattern,
+                                    filename: String) -> (any EditorSessionProtocol)? {
         let fm = FoldedModel()
         let clm = CrossLineManager()
         let session = FoldDemoSession(cp: cp,
@@ -90,22 +135,23 @@ public enum FoldSnapshot {
         return session
     }
 
-    /// Fixture used by the reference screenshots (`fold-fu-xray/overlap/cutline.png`).
-    private static var fixtureURL: URL? {
-        let candidates = [
-            "Fixtures/cases/fu_character.cp",
-            "../Fixtures/cases/fu_character.cp",
-            "../../Fixtures/cases/fu_character.cp",
-        ]
-        let fileManager = FileManager.default
-        for candidate in candidates where fileManager.fileExists(atPath: candidate) {
-            return URL(fileURLWithPath: candidate)
-        }
-        return nil
+    /// Certified crane-base pattern used by the reference screenshots
+    /// (`oripa-port/docs/screenshots/fold-crane-base-xray.png`, `ref/screen2.png`).
+    private static var craneFixtureURL: URL? {
+        fixtureURL(relativePath: "Fixtures/cases/crane_base_mitani.opx")
+    }
+
+    /// Fu-character pattern used by the earlier reference screenshots
+    /// (`fold-fu-xray/overlap/cutline.png`); fallback when the crane fixture is missing.
+    private static var fuFixtureURL: URL? {
+        fixtureURL(relativePath: "Fixtures/cases/fu_character.cp")
     }
 
     private static func scenarioSession(app: AppModel) -> (any EditorSessionProtocol)? {
-        if let url = fixtureURL, let session = loadSession(app: app, fileURL: url) {
+        if let url = craneFixtureURL, let session = loadSessionForce(app: app, fileURL: url) {
+            return session
+        }
+        if let url = fuFixtureURL, let session = loadSession(app: app, fileURL: url) {
             return session
         }
         return demoSession(app: app)
@@ -221,9 +267,12 @@ public enum FoldSnapshot {
                                          title: "Fold — HSV colour picker",
                                          view: AnyView(ZStack {
                                              base
+                                             // Same default/current pair as the reference
+                                             // `fold-dlg-color.png`: default front pink,
+                                             // current back cyan.
                                              FoldColorPickerDialog(
                                                  defaultColor: FoldOverlapDefaults.frontColor,
-                                                 currentColor: FoldOverlapDefaults.frontColor,
+                                                 currentColor: FoldOverlapDefaults.backColor,
                                                  onCancel: {},
                                                  onOK: { _ in })
                                          })))

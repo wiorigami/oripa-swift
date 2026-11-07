@@ -16,12 +16,14 @@ import ORIPACore
 public enum EditorSnapshotSupport {
     // MARK: - Scenarios
 
-    /// Paint screen with both toolbars shown and the demo pattern (matches
-    /// `ui-editor-paint-tools.png`).
+    /// Paint screen with a configurable toolbar state and the reference demo pattern.
+    /// `ui-editor-paint.png` itself is the initial state (main toolbar only); the top
+    /// toolbar is revealed with the brush button (`ui-editor-paint-tools.png`).
     public static func paint(app: AppModel,
                              showTopToolbar: Bool = true,
                              menusHidden: Bool = false,
-                             byValue: Bool = false) -> AnyView {
+                             byValue: Bool = false,
+                             fabMenuOpen: Bool = false) -> AnyView {
         let runtime = makeRuntime(app: app)
         resetMenu(runtime.menu)
         seedDemoPattern(runtime.session.cp)
@@ -39,7 +41,8 @@ public enum EditorSnapshotSupport {
                                   renderer: runtime.paintRenderer,
                                   app: app,
                                   coordinator: runtime.paintCoordinator,
-                                  interactionEnabled: false)
+                                  interactionEnabled: false,
+                                  fabMenuInitiallyOpen: fabMenuOpen)
             .frame(maxWidth: .infinity, maxHeight: .infinity))
     }
 
@@ -97,17 +100,19 @@ public enum EditorSnapshotSupport {
             AnyView(SnapshotScreenHost(app: app, content: content).oripaSnapshotMode())
         }
 
-        // 19 — paint screen, both toolbars, seeded pattern (grid + typed lines + vertices).
+        // 19 — reference initial paint state: main toolbar only, demo pattern.
         var app = DemoProjects.makeApp(projectNames: [], route: [.projects])
         out.append(SnapshotScenario(name: "19-editor-paint",
                                     size: SnapshotScenarios.portrait,
-                                    title: "Editor — paint CP: main + top toolbar, grid/lines/vertices",
-                                    view: host(app, paint(app: app))))
+                                    title: "Editor — paint CP initial state (main toolbar, grid/lines/vertices)",
+                                    view: host(app, paint(app: app, showTopToolbar: false))))
 
-        // 20 — cascading Action menu open.
+        // 20 — cascading Action menu open under the toolbar's Action button.
         app = DemoProjects.makeApp(projectNames: [], route: [.projects])
         let paintMenuView = paint(app: app)
-        app.menus.show(anchor: CGRect(x: 330, y: 90, width: 120, height: 48),
+        // The action button frame at 820×1180 (top toolbar starts 66 dp below the top,
+        // the action spinner is the first item of the centred top bar).
+        app.menus.show(anchor: CGRect(x: 270, y: 66, width: 112, height: 48),
                        items: PaintTools.actions.map { item in
                            OrMenuItem(label: item.title, icon: item.icon, kind: .radio,
                                       checked: item.id == PaintTools.Id.actionAddLine,
@@ -139,12 +144,12 @@ public enum EditorSnapshotSupport {
                                     title: "Editor — Hide Menus mode (Show Menus unfold icon)",
                                     view: host(app, paint(app: app, menusHidden: true))))
 
-        // 24 — landscape paint layout.
+        // 24 — landscape paint layout (the reference capture keeps the by-value column open).
         app = DemoProjects.makeApp(projectNames: [], route: [.projects])
         out.append(SnapshotScenario(name: "24-editor-paint-landscape",
                                     size: SnapshotScenarios.landscape,
                                     title: "Editor — paint CP landscape (iPad)",
-                                    view: host(app, paint(app: app))))
+                                    view: host(app, paint(app: app, byValue: true))))
 
         // 25 — AddSegment tool: a line drawn through the real state machine + history path.
         app = DemoProjects.makeApp(projectNames: [], route: [.projects])
@@ -161,11 +166,13 @@ public enum EditorSnapshotSupport {
                                     title: "Check — Local Flat Foldability (pink faces, red error vertices)",
                                     view: host(app, check(app: app))))
 
-        // 27 — export CP dialog.
+        // 27 — export CP dialog (the reference capture still has the menus collapsed, so
+        // only the main floating toolbar is visible behind the dialog).
         app = DemoProjects.makeApp(projectNames: [], route: [.projects])
         out.append(dialogScenario(app: app,
                                   name: "27-dialog-export-cp",
-                                  title: "Export Crease Pattern (svg / png / opx / cp)") { app in
+                                  title: "Export Crease Pattern (svg / png / opx / cp)",
+                                  showTopToolbar: false) { app in
             let session = EditorSession(params: EditorParams(), app: app)
             ExportCPDialog.show(app.dialogs, fileExchange: app.fileExchange,
                                 toast: app.toast, host: session)
@@ -181,28 +188,32 @@ public enum EditorSnapshotSupport {
                                           toast: app.toast, host: session)
         })
 
-        // 29 — per-tool help dialog with the 160 dp illustration.
+        // 29 — per-tool help dialog with the 160 dp illustration, opened from the
+        // Segment-by-Value tool (matches `editor-help.png`).
         app = DemoProjects.makeApp(projectNames: [], route: [.projects])
         out.append(dialogScenario(app: app,
                                   name: "29-dialog-help-segment",
-                                  title: "Paint help — Segment (160 dp illustration)") { app in
-            HelpDialog.showForTool(app.dialogs, toolType: 0)
+                                  title: "Paint help — Segment by Value (160 dp illustration)",
+                                  byValue: true) { app in
+            HelpDialog.showForTool(app.dialogs, toolType: 9)
         })
 
-        // 30 — save-changes dialog (SaveNew path).
+        // 30 — save-changes dialog (SaveNew path, reference has the menus collapsed).
         app = DemoProjects.makeApp(projectNames: [], route: [.projects])
         out.append(dialogScenario(app: app,
                                   name: "30-dialog-save-changes",
-                                  title: "Save changes? (Save / Discard / Cancel)") { app in
+                                  title: "Save changes? (Save / Discard / Cancel)",
+                                  showTopToolbar: false) { app in
             let session = EditorSession(params: EditorParams(), app: app)
             SaveDialog.showNew(app.dialogs, host: session)
         })
 
-        // 31 — by-value angle dialog.
+        // 31 — by-value angle dialog over the Segment-by-Value tool.
         app = DemoProjects.makeApp(projectNames: [], route: [.projects])
         out.append(dialogScenario(app: app,
                                   name: "31-dialog-number-angle",
-                                  title: "Set Angle (Degrees)") { app in
+                                  title: "Set Angle (Degrees)",
+                                  byValue: true) { app in
             NumberDialog.showAngle(app.dialogs, initialValue: 45) { _ in }
         })
 
@@ -230,6 +241,37 @@ public enum EditorSnapshotSupport {
             size: SnapshotScenarios.portrait,
             title: "Editor route integration (ORIPARootView → editorScreenFactory)",
             view: AnyView(ORIPARootView(app: routedApp).oripaSnapshotMode())))
+
+        // 35 — paint with the draw-tools (top) toolbar revealed: the reference
+        // `ui-editor-paint-tools.png` state (Action spinner, Add Line method, line type M,
+        // help and overflow).
+        app = DemoProjects.makeApp(projectNames: [], route: [.projects])
+        out.append(SnapshotScenario(
+            name: "35-editor-paint-tools",
+            size: SnapshotScenarios.portrait,
+            title: "Editor — paint CP with the top toolbar revealed (Add Line / method / M / help / overflow)",
+            view: host(app, paint(app: app))))
+
+        // 37 — CP Options FAB mini menu expanded: the APK `FabMenu` open state
+        // (grey_300 close FAB + Export / Fold / Check mini FABs with grey_800 label pills).
+        app = DemoProjects.makeApp(projectNames: [], route: [.projects])
+        out.append(SnapshotScenario(
+            name: "37-editor-fab-menu",
+            size: SnapshotScenarios.portrait,
+            title: "Editor — CP Options FAB menu expanded (Export / Fold / Check)",
+            view: host(app, paint(app: app, fabMenuOpen: true))))
+
+        // 36 — save-existing variant: single choice "Save to current file / new file".
+        // (`editor-save.png` captures this dialog; scenario 30 covers SaveNew.)
+        app = DemoProjects.makeApp(projectNames: [], route: [.projects])
+        out.append(dialogScenario(app: app,
+                                  name: "36-dialog-save-existing",
+                                  title: "Save changes? (existing file: current / new, Discard / Save)",
+                                  showTopToolbar: false) { app in
+            let session = EditorSession(params: EditorParams(), app: app)
+            session.cp.modified = true
+            SaveDialog.showExisting(app.dialogs, host: session)
+        })
 
         return out
     }
@@ -281,13 +323,19 @@ public enum EditorSnapshotSupport {
     public static func dialogScenario(app: AppModel,
                                       name: String,
                                       title: String,
+                                      showTopToolbar: Bool = true,
+                                      byValue: Bool = false,
                                       prepare: (AppModel) -> Void) -> SnapshotScenario {
         prepare(app)
         return SnapshotScenario(
             name: name,
             size: SnapshotScenarios.portrait,
             title: title,
-            view: AnyView(SnapshotScreenHost(app: app, content: paint(app: app)).oripaSnapshotMode()))
+            view: AnyView(SnapshotScreenHost(app: app,
+                                             content: paint(app: app,
+                                                            showTopToolbar: showTopToolbar,
+                                                            byValue: byValue))
+                .oripaSnapshotMode()))
     }
 
     // MARK: - Runtime construction
@@ -310,32 +358,39 @@ public enum EditorSnapshotSupport {
 
     // MARK: - Demo patterns
 
-    /// Simple crease pattern with mountain/valley/boundary lines (the paint screenshots'
-    /// 4×4 grid square pattern).
+    /// The reference harness pattern (`tools/ui_harness/ui-editor.html` `seedDemoProject`,
+    /// `pattern=demo`): square + diagonals + centre cross + inner square, mountain (red) /
+    /// valley (blue) exactly as in `ref/screen0.png` and the ui_harness screenshots.
+    ///
+    /// The harness seeds it through `AddSegmentSM.addNewLine`, which splits the centre cross
+    /// at the inner-square crossings and registers the resulting vertices; using the plain
+    /// `addLineCheckNoException` would produce a different (sparser) vertex/face set and the
+    /// paint/check screenshots would no longer be comparable.
     public static func seedDemoPattern(_ cp: CreasePattern) {
         cp.clearAll()
         cp.initializeDefaultSquare()
-        let h = Double(cp.creasePatternHalfSize)
-        let half = h
+        let half = Double(cp.creasePatternHalfSize)
+        let splitter = AddSegmentSM(true)
         func add(_ x0: Double, _ y0: Double, _ x1: Double, _ y1: Double, _ type: LineType) {
-            cp.addLineCheckNoException(OriLine(OriPoint(x0, y0), OriPoint(x1, y1), type))
+            _ = splitter.addNewLine(cp,
+                                    PointDouble(x0, y0),
+                                    PointDouble(x1, y1),
+                                    type)
         }
-        // centre cross (valley/mountain split like the harness demo pattern)
-        add(-half, 0, 0, 0, .mountain)
-        add(0, 0, half, 0, .valley)
-        add(0, -half, 0, 0, .mountain)
-        add(0, 0, 0, half, .valley)
-        // inner square
-        let q = half / 2
-        add(-q, -q, q, -q, .mountain)
-        add(q, -q, q, q, .mountain)
-        add(q, q, -q, q, .valley)
-        add(-q, q, -q, -q, .valley)
-        // diagonals
+        // Reference-like sparse pattern (mountain red / valley blue).
         add(-half, -half, 0, 0, .mountain)
-        add(0, 0, half, half, .valley)
-        add(half, -half, 0, 0, .valley)
-        add(0, 0, -half, half, .mountain)
+        add(0, 0, half, half, .mountain)
+        add(-half, half, 0, 0, .valley)
+        add(0, 0, half, -half, .valley)
+        add(0, -half, 0, 0, .mountain)
+        add(0, 0, 0, half, .mountain)
+        add(-half, 0, 0, 0, .valley)
+        add(0, 0, half, 0, .valley)
+        let q = half / 2
+        add(-q, q, q, q, .mountain)
+        add(q, q, q, -q, .valley)
+        add(q, -q, -q, -q, .mountain)
+        add(-q, -q, -q, q, .valley)
         cp.modified = false
     }
 

@@ -209,6 +209,10 @@ private final class FoldMacGestureSurface: NSView {
     /// A new pinch/scroll sequence starts after a short idle gap (AppKit gives no pointer ids).
     private static let sequenceGap: TimeInterval = 0.3
 
+    /// SwiftUI top-left origin (see Canvas/Gestures.swift); without this the fold
+    /// gestures map pointer y mirrored on macOS.
+    override var isFlipped: Bool { true }
+
     override var isOpaque: Bool { false }
     override var acceptsFirstResponder: Bool { true }
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }

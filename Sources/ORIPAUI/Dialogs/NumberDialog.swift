@@ -5,6 +5,11 @@
 //   title "Set Angle (Degrees)" / hint "Degrees"  (paint_top_add_by_value_dialog_angle_*)
 //   title "Set Length"          / hint "Length"   (paint_top_add_by_value_dialog_length_*)
 // OK parses the text; an empty value is ignored (the JS `if (text === "") return;`).
+//
+// The reference dialog is `D.material.dialog({ icon, title, content: input, buttons })`:
+// a 24 dp heading icon + 20/28 heading inside the 24 dp dialog content, then the single
+// underlined 16 sp text field, then CANCEL / OK. The card is content-sized at the
+// Material AlertDialog min width (280 dp).
 import Foundation
 import SwiftUI
 
@@ -19,34 +24,65 @@ public enum NumberDialog {
                             hint: String,
                             initialValue: String,
                             onResult: @escaping (Double) -> Void) -> OrTextInputModel {
-        dialogs.textDialog(title: title,
-                           icon: icon,
-                           initialValue: initialValue,
-                           hint: hint,
-                           sanitize: { text in
-                               // Decimal keyboard equivalent: digits, one separator, optional minus.
-                               var out = ""
-                               var hasSeparator = false
-                               for ch in text {
-                                   if ch.isNumber {
-                                       out.append(ch)
-                                   } else if (ch == "." || ch == ",") && !hasSeparator {
-                                       out.append(ch)
-                                       hasSeparator = true
-                                   } else if ch == "-" && out.isEmpty {
-                                       out.append(ch)
-                                   }
-                               }
-                               return out
-                           },
-                           positiveText: PaintStrings.ok,
-                           negativeText: PaintStrings.cancel,
-                           onResult: { text in
-                               guard let text else { return }
-                               let trimmed = text.trimmingCharacters(in: .whitespaces)
-                               guard !trimmed.isEmpty else { return }
-                               onResult(PaintStrings.parseNumber(trimmed))
-                           })
+        let model = OrTextInputModel(
+            text: initialValue,
+            hint: hint,
+            sanitize: { text in
+                // Decimal keyboard equivalent: digits, one separator, optional minus.
+                var out = ""
+                var hasSeparator = false
+                for ch in text {
+                    if ch.isNumber {
+                        out.append(ch)
+                    } else if (ch == "." || ch == ",") && !hasSeparator {
+                        out.append(ch)
+                        hasSeparator = true
+                    } else if ch == "-" && out.isEmpty {
+                        out.append(ch)
+                    }
+                }
+                return out
+            })
+
+        func submit(_ text: String?) {
+            guard let text else { return }
+            let trimmed = text.trimmingCharacters(in: .whitespaces)
+            guard !trimmed.isEmpty else { return }
+            onResult(PaintStrings.parseNumber(trimmed))
+        }
+
+        let content = VStack(spacing: 0) {
+            if let icon {
+                EditorDialogHeading(icon: icon, title: title)
+            } else {
+                Text(title)
+                    .font(OrTheme.dialogTitle())
+                    .foregroundColor(OrTheme.textPrimary)
+                    .frame(minHeight: 28, alignment: .leading)
+                    .padding(.bottom, 10)
+            }
+            OrTextInputField(model: model)
+        }
+
+        model.onSubmit = {
+            submit(model.text)
+            dialogs.closeTop()
+        }
+
+        dialogs.show(OrDialogSpec(
+            title: nil,
+            icon: nil,
+            content: AnyView(content),
+            buttons: [
+                OrDialogButton(PaintStrings.cancel),
+                OrDialogButton(PaintStrings.ok, primary: true) {
+                    submit(model.text)
+                    return true
+                },
+            ],
+            cancelable: true,
+            width: 280))
+        return model
     }
 
     /// Angle dialog: the value is reduced modulo 360 like `parseNumberText(text) % 360`.

@@ -95,7 +95,13 @@ public enum ProjectDialogs {
             hint: ProjectDialogStrings.renameHint,
             sanitize: { ProjectStore.sanitizeFilename($0) },
             positiveText: ProjectDialogStrings.renamePositive,
-            negativeText: ProjectDialogStrings.cancel
+            negativeText: ProjectDialogStrings.cancel,
+            // `.projects-dialog`: dialog content sized by its wrap-content title
+            // (min-width 280 dp) and `.m-dialog-actions { padding-top: 20px }`;
+            // `.projects-dialog-input { margin-top: 4px }`.
+            width: 358,
+            actionsTopPadding: 20,
+            contentTopPadding: 4
         ) { entered in
             // doPositiveClick(): empty or unchanged name is a no-op (the dialog closes).
             guard let entered, !entered.isEmpty, entered != name else { return }
@@ -129,7 +135,9 @@ public enum ProjectDialogs {
                     }
                     return true
                 },
-            ]
+            ],
+            width: 358,
+            actionsTopPadding: 20
         ))
     }
 
@@ -151,7 +159,9 @@ public enum ProjectDialogs {
                     }
                     return true
                 },
-            ]
+            ],
+            width: 358,
+            actionsTopPadding: 20
         ))
     }
 
@@ -168,7 +178,9 @@ public enum ProjectDialogs {
                     onConfirm()
                     return true
                 },
-            ]
+            ],
+            width: 358,
+            actionsTopPadding: 20
         ))
     }
 
@@ -178,7 +190,9 @@ public enum ProjectDialogs {
             title: ProjectDialogStrings.errorTitle,
             icon: "ic_error_outline_dark_24dp",
             content: AnyView(OrDialogText(message)),
-            buttons: [OrDialogButton(ProjectDialogStrings.ok, primary: true)]
+            buttons: [OrDialogButton(ProjectDialogStrings.ok, primary: true)],
+            width: 358,
+            actionsTopPadding: 20
         ))
     }
 }

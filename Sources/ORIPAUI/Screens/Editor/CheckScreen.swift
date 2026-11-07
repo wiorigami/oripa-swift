@@ -88,6 +88,7 @@ public struct CheckScreen: View {
         ZStack(alignment: .top) {
             Color.white
             CheckCanvasView(renderer: renderer)
+                .ignoresSafeArea()
                 .contentShape(Rectangle())
             if interactionEnabled && !snapshotMode {
                 CanvasGestureOverlay(recognizer: coordinator.recognizer)
@@ -106,18 +107,32 @@ public struct CheckScreen: View {
     }
 
     /// `.editor-check-toolbar`: transparent gradient over the canvas, no elevation.
+    ///
+    /// APK `fragment_check_cp.xml` is a full-width `Toolbar` (56 dp, `actionBarSize`) with
+    /// `background_gradient_transparent` (colorPrimary at the top → transparent at the
+    /// bottom, no elevation). Its home-as-up button is 56 dp wide starting at x = 0, so the
+    /// 24 dp arrow sits 16 dp from the screen edge and the title starts at x = 72 dp
+    /// (56 dp navigation + 16 dp `contentInsetStartWithNavigation`). The title uses the
+    /// AppCompat toolbar style `abc_text_size_title_material_toolbar` = 20 sp; the
+    /// measured 6 px stems at 2.625 px/dp (0.115 em) are Roboto **Medium**, matching
+    /// `OrTheme.toolbarTitle()` (the Settings title measures the same 6 px stems).
     private var checkToolbar: some View {
-        HStack(spacing: 4) {
-            OrIconButton(icon: "ic_arrow_back_dark_24dp", title: PaintStrings.navigateUp) {
+        HStack(spacing: 0) {
+            EditorIconButton(icon: "ic_arrow_back_dark_24dp",
+                             title: PaintStrings.navigateUp,
+                             size: 56,
+                             // The bundled back-arrow PNG is opaque white; the reference
+                             // tints it with the Material icon-active colour.
+                             role: .tint(OrTheme.iconActive)) {
                 session.returnToPaint()
             }
             Text(PaintStrings.checkTitle)
-                .font(.system(size: 20))
+                .font(OrTheme.toolbarTitle())
                 .foregroundColor(OrTheme.textPrimary)
                 .lineLimit(1)
+                .padding(.leading, 16)
             Spacer(minLength: 0)
         }
-        .padding(.horizontal, 4)
         .frame(minHeight: 56)
         .background(
             LinearGradient(colors: [Color(hex: 0xF5F5F5, opacity: 0.94),

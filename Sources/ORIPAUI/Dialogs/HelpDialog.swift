@@ -5,6 +5,12 @@
 // illustration (assets/icons/ic_oripa_*_help_*.svg, rasterised in Resources/Icons),
 // with a single "Close" button.
 //
+// Reference chrome (`editor.css` `.ui-help-body` / `.ui-help-text` / `.ui-help-image`):
+//   * card width 320 dp, icon + title heading,
+//   * hint text: 16 sp, line-height 24, color text-secondary, stretched to the content
+//     width, with the tool's explicit blank lines preserved,
+//   * 160 × 160 full-colour illustration horizontally centred, 12 dp below the text.
+//
 // The tool type is `CpToolType` / `StateMachineManager.getToolType()` (byte).
 import Foundation
 import SwiftUI
@@ -69,23 +75,31 @@ public enum HelpDialog {
                                      title: String,
                                      message: String,
                                      image: String) {
-        let content = VStack(alignment: .leading, spacing: 12) {
-            if !message.isEmpty {
-                Text(message)
-                    .font(OrTheme.body())
-                    .foregroundColor(OrTheme.textPrimary)
-                    .fixedSize(horizontal: false, vertical: true)
+        let content = VStack(spacing: 0) {
+            EditorDialogHeading(icon: "ic_help_outline_dark_24dp", title: title)
+            VStack(spacing: 12) {
+                if !message.isEmpty {
+                    Text(message)
+                        .font(.system(size: 16))
+                        .lineSpacing(5) // CSS line-height: 24px at 16px
+                        .foregroundColor(OrTheme.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        // CSS 16/24 text has 2.5 dp half-leading above/below each line;
+                        // SwiftUI adds lineSpacing only between lines.
+                        .padding(.vertical, 2.5)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                if !image.isEmpty {
+                    MaterialIcon(image, size: 160)
+                        .frame(width: 160, height: 160)
+                }
             }
-            if !image.isEmpty {
-                MaterialIcon(image, size: 160)
-                    .frame(width: 160, height: 160, alignment: .center)
-            }
+            .frame(maxWidth: .infinity)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
 
         dialogs.show(OrDialogSpec(
-            title: title,
-            icon: "ic_help_outline_dark_24dp",
+            title: nil,
+            icon: nil,
             content: AnyView(content),
             buttons: [OrDialogButton(PaintStrings.close, primary: true)],
             width: 320))

@@ -71,6 +71,10 @@ public struct OrIconButton: View {
 }
 
 /// Icon + optional condensed label (AppCompat `withText` menu item).
+///
+/// `.m-toolbar-action-with-text { padding: 0 8px; gap: 6px }` on the toolbar and
+/// `.projects-action-bar .m-action-bar-action { padding: 0 12px; gap: 8px }` in action
+/// mode, hence the configurable padding/spacing.
 public struct OrIconTextButton: View {
     public var icon: String
     public var title: String
@@ -78,6 +82,12 @@ public struct OrIconTextButton: View {
     public var tint: Color
     public var labelColor: Color
     public var isEnabled: Bool
+    public var horizontalPadding: CGFloat
+    public var iconSpacing: CGFloat
+    /// Extra tracking on top of SwiftUI's default font tracking. CSS uses .08em
+    /// (1.12 dp at 14 sp); SF is wider than Roboto per glyph, so the toolbar condensed
+    /// labels use 0.6 and the action-mode labels (fewer, wider glyphs) compensate more.
+    public var kerning: CGFloat
     public var action: () -> Void
 
     public init(icon: String,
@@ -86,6 +96,9 @@ public struct OrIconTextButton: View {
                 tint: Color = OrTheme.iconActive,
                 labelColor: Color = OrTheme.textPrimary,
                 isEnabled: Bool = true,
+                horizontalPadding: CGFloat = 8,
+                iconSpacing: CGFloat = 6,
+                kerning: CGFloat = 0.6,
                 action: @escaping () -> Void) {
         self.icon = icon
         self.title = title
@@ -93,20 +106,24 @@ public struct OrIconTextButton: View {
         self.tint = tint
         self.labelColor = labelColor
         self.isEnabled = isEnabled
+        self.horizontalPadding = horizontalPadding
+        self.iconSpacing = iconSpacing
+        self.kerning = kerning
         self.action = action
     }
 
     public var body: some View {
         Button(action: action) {
-            HStack(spacing: 6) {
+            HStack(spacing: iconSpacing) {
                 MaterialIcon(icon, size: 24, tint: isEnabled ? tint : OrTheme.iconInactive)
                 Text(label.uppercased())
+                    // CSS letter-spacing: .08em at 14 px = 1.12 px.
                     .font(OrTheme.button())
-                    .kerning(0.9)
+                    .kerning(kerning)
                     .foregroundColor(isEnabled ? labelColor : OrTheme.textDisabled)
                     .lineLimit(1)
             }
-            .padding(.horizontal, 8)
+            .padding(.horizontal, horizontalPadding)
             .frame(minWidth: OrTheme.iconButtonSize, minHeight: OrTheme.iconButtonSize)
             .contentShape(Rectangle())
         }
@@ -143,8 +160,10 @@ public struct OrTextButton: View {
                 .font(OrTheme.button())
                 .kerning(1.0)
                 .foregroundColor(tint ?? (isPrimary ? OrTheme.accent : OrTheme.textSecondary))
-                .padding(.horizontal, 10)
-                .padding(.vertical, 8)
+                // AppCompat alert-dialog button: min 64 x 54 dp box, 8 dp horizontal
+                // padding, 52 dp button nowrap content (abc_alert_dialog_button_bar).
+                .frame(minWidth: 64, minHeight: 54)
+                .padding(.horizontal, 8)
                 .contentShape(Rectangle())
         }
         .buttonStyle(OrPressableButtonStyle(shape: AnyShape(RoundedRectangle(cornerRadius: 2)),
@@ -179,7 +198,11 @@ public struct OrMaterialSwitch: View {
     }
 
     public var body: some View {
-        ZStack(alignment: isOn ? .trailing : .leading) {
+        // Android Material switch: 36 × 20 dp track, 26 dp thumb overhanging 3 dp on the
+        // inactive side (components.css `.m-switch` / `.m-switch-thumb { left:-3 }`).
+        // The element stays 36 dp wide so the row's 16 dp end padding matches the
+        // reference; the thumb draws outside the element bounds.
+        ZStack(alignment: .leading) {
             Capsule()
                 .fill(isOn ? OrTheme.switchOnTrack
                            : (enabled ? OrTheme.switchOffTrack : OrTheme.switchOffTrack.opacity(0.5)))
@@ -188,9 +211,9 @@ public struct OrMaterialSwitch: View {
                 .fill(isOn ? OrTheme.accent : OrTheme.switchThumb)
                 .frame(width: OrTheme.switchThumbSize, height: OrTheme.switchThumbSize)
                 .shadow(color: .black.opacity(0.3), radius: 1.5, x: 0, y: 1)
-                .offset(x: isOn ? 3 : -3)
+                .offset(x: isOn ? 13 : -3)
         }
-        .frame(width: OrTheme.switchWidth + 6, height: OrTheme.switchThumbSize)
+        .frame(width: OrTheme.switchWidth, height: OrTheme.switchThumbSize, alignment: .leading)
         .animation(.easeOut(duration: 0.12), value: isOn)
     }
 }

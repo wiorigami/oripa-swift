@@ -93,25 +93,142 @@ public struct OrSeekBar: View {
     }
 }
 
+// MARK: - Preference metrics (measured from the APK)
+
+/// Android text-metric envelopes and row geometry of the preference list, measured from the
+/// reference APK (`ORIPA 0.2.3.3`, 1080 × 2400 px, density 420 → 1 dp = 2.625 px).
+///
+/// `preference_compat_material.xml` gives the rows no explicit height: they are sized by
+/// `paddingTop/Bottom` of the text column plus the text's own line boxes. In the APK those
+/// boxes are larger than SF's default line height, so the constraints below reproduce the
+/// rows measured in `04-test-menu.png` exactly:
+///
+///   * single-line preference (`Subhead` 16 sp, no summary):
+///     16 + 22.857 + 16 = **54.857 dp** (measured 144 px = 54.86 dp);
+///   * two-line preference (`Subhead` + `Body1` 14 sp summary):
+///     16 + 22.857 + 19.429 + 16 = **74.286 dp** (measured 195 px = 74.29 dp);
+///   * category header (`paddingTop` 16 + `Body2`-sized bold 14 sp):
+///     **35.43 dp** (measured 91 px = 34.7 dp; the XML's `layout_marginBottom="16dp"` is
+///     ignored by the framework preference ListView, which drops item margins).
+public enum OrMaterialMetrics {
+    /// `TextAppearance.AppCompat.Subhead` 16 sp line box (60 px @ 2.625).
+    public static let subheadLineHeight: CGFloat = 22.857
+    /// `TextAppearance.AppCompat.Body1` 14 sp line box (51 px @ 2.625).
+    public static let body1LineHeight: CGFloat = 19.429
+    /// `TextAppearance.AppCompat.Caption` 12 sp line box.
+    public static let captionLineHeight: CGFloat = 17.143
+    /// Preference text column `paddingTop` / `paddingBottom` (`@dimen/text_margin`).
+    public static let preferencePadding: CGFloat = 16
+    /// `android:id="@android:id/icon"`: 24 dp drawable, `scaleType="fitStart"`, drawn at
+    /// x = 12 dp inside the 72 dp icon column (measured icon ink 53.7…77.7 px from the
+    /// screen edge, i.e. 12 dp from the row's leading edge).
+    public static let preferenceIconLeading: CGFloat = 12
+    public static let preferenceIconSize: CGFloat = 24
+    /// Title/summary column start when the row has an icon (72 dp from the row edge).
+    public static let preferenceTextLeading: CGFloat = 72
+    /// Title/summary column start for rows without an icon (the icon view is `GONE`, so the
+    /// text column collapses onto the row padding).
+    public static let preferenceNoIconLeading: CGFloat = 16
+    /// `android:id="@android:id/widget_frame"` `paddingLeft`.
+    public static let preferenceWidgetLeading: CGFloat = 16
+    /// Trailing inset of the switch (APK: switch ink ends 17.5 dp from the screen edge).
+    public static let preferenceTrailing: CGFloat = 16
+    /// `listPreferredItemHeightSmall` — the minimum height of a preference row.
+    public static let preferenceMinHeight: CGFloat = 48
+}
+
 // MARK: - Preference category
 
-/// Android `PreferenceCategory` heading (accent uppercase).
+/// Android `PreferenceCategory` heading.
+///
+/// `preference_category_compat_material.xml` + `AppTheme.PreferenceListSeparatorTextView`:
+/// `TextAppearance.Small` (14 sp), bold, `?attr/colorAccent`, `paddingTop` 16 dp,
+/// `paddingLeft` 16 dp. `layout_marginBottom="16dp"` is *not* applied by the Android list
+/// (measured: the following row starts flush against the header).
 public struct OrPreferenceCategory: View {
     public var title: String
     public init(_ title: String) { self.title = title }
     public var body: some View {
-        HStack {
-            Text(title.uppercased())
-                .font(.system(size: 14, weight: .medium))
-                .kerning(0.84)
+        HStack(spacing: 0) {
+            // Android's list-separator text style keeps the label's original case.
+            Text(title)
+                .font(.system(size: 14, weight: .bold))
                 .foregroundColor(OrTheme.accent)
+                .orLineHeight(OrMaterialMetrics.body1LineHeight, fontSize: 14)
             Spacer(minLength: 0)
         }
-        .padding(.horizontal, 16)
-        .padding(.top, 16)
-        .padding(.bottom, 4)
-        .frame(minHeight: 48, alignment: .bottom)
+        .padding(.leading, 16)
+        .padding(.trailing, 16)
+        .padding(.top, OrMaterialMetrics.preferencePadding)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(OrTheme.background)
+    }
+}
+
+// MARK: - Preference row chrome
+
+/// Leading block of a preference row: the icon column (24 dp icon at x = 12 dp, text column
+/// at x = 72 dp) or, when the preference has no icon, a plain 16 dp inset.
+private struct OrPreferenceLeading: View {
+    var icon: String?
+
+    var body: some View {
+        if let icon {
+            HStack(spacing: 0) {
+                Color.clear.frame(width: OrMaterialMetrics.preferenceIconLeading, height: 0)
+                MaterialIcon(icon, size: OrMaterialMetrics.preferenceIconSize, tint: OrTheme.iconActive)
+                Color.clear.frame(width: OrMaterialMetrics.preferenceTextLeading
+                                   - OrMaterialMetrics.preferenceIconLeading
+                                   - OrMaterialMetrics.preferenceIconSize,
+                                   height: 0)
+            }
+        } else {
+            Color.clear.frame(width: OrMaterialMetrics.preferenceNoIconLeading, height: 0)
+        }
+    }
+}
+
+/// Title (Subhead 16 sp) + optional summary (Body1 14 sp secondary) text column.
+///
+/// The line boxes are pinned to the heights measured in the APK (`OrMaterialMetrics`)
+/// instead of relying on the platform font's own line height, so the preference rows come
+/// out at exactly 54.857 dp (single line) / 74.286 dp (title + summary).
+private struct OrPreferenceTextColumn: View {
+    var title: String
+    var summary: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text(title)
+                .font(.system(size: 16))
+                .foregroundColor(OrTheme.textPrimary)
+                .multilineTextAlignment(.leading)
+                .lineLimit(1)
+                .frame(height: OrMaterialMetrics.subheadLineHeight)
+            if let summary {
+                Text(summary)
+                    .font(.system(size: 14, weight: .regular))
+                    .foregroundColor(OrTheme.textSecondary)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(minHeight: OrMaterialMetrics.body1LineHeight, alignment: .top)
+            }
+        }
+        .padding(.top, OrMaterialMetrics.preferencePadding)
+        .padding(.bottom, OrMaterialMetrics.preferencePadding)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .fixedSize(horizontal: false, vertical: true)
+    }
+}
+
+/// `preference_compat_material.xml` root background: the list draws on the window
+/// background (grey_50) — preferences are not white cards.
+private struct OrSettingsRowButtonStyle: ButtonStyle {
+    var enabled: Bool
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .background(configuration.isPressed ? Color.black.opacity(0.04) : OrTheme.background)
+            .opacity(enabled ? 1 : 0.38)
     }
 }
 
@@ -126,6 +243,8 @@ public struct OrSwitchRow: View {
     public var iconOff: String?
     @Binding public var isOn: Bool
     public var isEnabled: Bool
+    /// 1 dp `#1f000000` divider under the row (the framework list's item divider).
+    public var showsDivider: Bool
     public var onChange: ((Bool) -> Void)?
 
     public init(title: String,
@@ -134,6 +253,7 @@ public struct OrSwitchRow: View {
                 iconOff: String? = nil,
                 isOn: Binding<Bool>,
                 isEnabled: Bool = true,
+                showsDivider: Bool = true,
                 onChange: ((Bool) -> Void)? = nil) {
         self.title = title
         self.summary = summary
@@ -141,6 +261,7 @@ public struct OrSwitchRow: View {
         self.iconOff = iconOff
         self._isOn = isOn
         self.isEnabled = isEnabled
+        self.showsDivider = showsDivider
         self.onChange = onChange
     }
 
@@ -155,88 +276,69 @@ public struct OrSwitchRow: View {
             isOn.toggle()
             onChange?(isOn)
         } label: {
-            HStack(spacing: 16) {
-                if let icon = currentIcon {
-                    MaterialIcon(icon, size: 24, tint: OrTheme.iconActive)
-                }
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .font(OrTheme.settingsTitle())
-                        .foregroundColor(OrTheme.textPrimary)
-                        .multilineTextAlignment(.leading)
-                    if let summary {
-                        Text(summary)
-                            .font(OrTheme.settingsSummary())
-                            .foregroundColor(OrTheme.textSecondary)
-                            .multilineTextAlignment(.leading)
-                    }
-                }
-                Spacer(minLength: 8)
+            HStack(spacing: 0) {
+                OrPreferenceLeading(icon: currentIcon)
+                OrPreferenceTextColumn(title: title, summary: summary)
+                Spacer(minLength: OrMaterialMetrics.preferenceWidgetLeading)
                 OrMaterialSwitch(isOn: isOn, enabled: isEnabled)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
-            .frame(minHeight: 56)
+            .padding(.trailing, OrMaterialMetrics.preferenceTrailing)
+            .frame(minHeight: OrMaterialMetrics.preferenceMinHeight)
+            .fixedSize(horizontal: false, vertical: true)
             .contentShape(Rectangle())
         }
         .buttonStyle(OrSettingsRowButtonStyle(enabled: isEnabled))
         .disabled(!isEnabled)
+        .overlay(alignment: .bottom) {
+            if showsDivider { OrDivider() }
+        }
         .accessibilityValue(Text(isOn ? "On" : "Off"))
     }
 }
 
-/// `ListPreference` / `NumberPickerPreference` style row with a value summary and chevron.
+/// `NumberPickerPreference` / `ListPreference` row: Subhead title + Body1 secondary summary
+/// with the current value. The Android dialog preferences show no trailing affordance.
 public struct OrListPreferenceRow: View {
     public var title: String
     public var summary: String
     public var showsChevron: Bool
     public var isEnabled: Bool
+    public var showsDivider: Bool
     public var action: () -> Void
 
     public init(title: String,
                 summary: String,
-                showsChevron: Bool = true,
+                showsChevron: Bool = false,
                 isEnabled: Bool = true,
+                showsDivider: Bool = true,
                 action: @escaping () -> Void) {
         self.title = title
         self.summary = summary
         self.showsChevron = showsChevron
         self.isEnabled = isEnabled
+        self.showsDivider = showsDivider
         self.action = action
     }
 
     public var body: some View {
         Button(action: { if isEnabled { action() } }) {
-            HStack(spacing: 16) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .font(OrTheme.settingsTitle())
-                        .foregroundColor(OrTheme.textPrimary)
-                    Text(summary)
-                        .font(OrTheme.settingsSummary())
-                        .foregroundColor(OrTheme.textSecondary)
-                }
-                Spacer(minLength: 8)
+            HStack(spacing: 0) {
+                OrPreferenceLeading(icon: nil)
+                OrPreferenceTextColumn(title: title, summary: summary)
                 if showsChevron {
                     MaterialIcon("ic_chevron_right_dark_24dp", size: 24, tint: OrTheme.iconActive)
+                        .padding(.trailing, OrMaterialMetrics.preferenceTrailing)
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
-            .frame(minHeight: 56)
+            .frame(minHeight: OrMaterialMetrics.preferenceMinHeight)
+            .fixedSize(horizontal: false, vertical: true)
             .contentShape(Rectangle())
         }
         .buttonStyle(OrSettingsRowButtonStyle(enabled: isEnabled))
         .disabled(!isEnabled)
-    }
-}
-
-private struct OrSettingsRowButtonStyle: ButtonStyle {
-    var enabled: Bool
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .background(configuration.isPressed ? Color.black.opacity(0.04) : OrTheme.surface)
-            .opacity(enabled ? 1 : 0.45)
+        .overlay(alignment: .bottom) {
+            if showsDivider { OrDivider() }
+        }
     }
 }
 
@@ -380,6 +482,9 @@ public struct OrNumberPickerDialogContent: View {
     }
 
     public var body: some View {
+        // `dialog_number_picker.xml`: horizontal LinearLayout, `gravity="center"`,
+        // `paddingLeft/Right="8dp"`, three `layout_weight="1"` children with
+        // `layout_margin="8dp"` — half button | number picker | double button.
         VStack(spacing: 8) {
             if let label {
                 Text(label)
@@ -387,42 +492,37 @@ public struct OrNumberPickerDialogContent: View {
                     .foregroundColor(OrTheme.textSecondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
-            HStack(spacing: 8) {
+            HStack(spacing: 0) {
                 if let halfLabel {
-                    Button {
-                        model.halve()
-                    } label: {
-                        Text(halfLabel)
-                            .font(OrTheme.button())
-                            .foregroundColor(OrTheme.accent)
-                            .frame(minWidth: 64)
-                            .padding(.vertical, 8)
-                    }
-                    .buttonStyle(.plain)
+                    weightButton(halfLabel) { model.halve() }
                 }
-                VStack(spacing: 4) {
-                    OrNumberPicker(model: model)
-                    Text(String(model.value))
-                        .font(.system(size: 18))
-                        .foregroundColor(OrTheme.textPrimary)
-                        .frame(minHeight: 24)
-                }
-                .frame(minWidth: 120)
+                OrNumberPicker(model: model)
+                    .padding(8)
+                    .frame(maxWidth: .infinity)
                 if let twiceLabel {
-                    Button {
-                        model.double()
-                    } label: {
-                        Text(twiceLabel)
-                            .font(OrTheme.button())
-                            .foregroundColor(OrTheme.accent)
-                            .frame(minWidth: 64)
-                            .padding(.vertical, 8)
-                    }
-                    .buttonStyle(.plain)
+                    weightButton(twiceLabel) { model.double() }
                 }
             }
             .frame(maxWidth: .infinity)
         }
-        .padding(.vertical, 4)
+        .padding(.horizontal, 8)
+    }
+
+    /// AppCompat dialog button (14 sp medium, uppercase, accent, weight 1).
+    private func weightButton(_ label: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(label.uppercased())
+                .font(OrTheme.button())
+                .kerning(0.6)
+                .foregroundColor(OrTheme.accent)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 8)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .frame(maxWidth: .infinity)
+        .padding(8)
     }
 }

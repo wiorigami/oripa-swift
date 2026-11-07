@@ -3,8 +3,13 @@
 // Port of `oripa-port/src/js/ui/dialogs/save.js`:
 //   SaveExistingDialogFragment (project file already on disk):
 //       single choice "Save to current file" / "Save to new file"
-//   SaveNewDialogFragment (new project): Save / Discard / Cancel
+//   SaveNewDialogFragment (new project): title + Save / Discard / Cancel
 //   EditorActivity.onCloseProject(): when to show which dialog.
+//
+// Reference chrome (`M.dialog` + `dialogs/error.js` `D.material.dialog`): 24 dp heading
+// icon, 20/28 medium title, content-driven card at the 280 dp AlertDialog min width,
+// 48 dp single-choice rows with a trailing Material radio, uppercase CANCEL / DISCARD /
+// SAVE text buttons (SAVE is the accent positive button).
 //
 // The dialogs are presented through the shared `DialogCenter` (ui-shell) and drive the
 // session through `SaveDialogHost` so this file has no core-model dependency.
@@ -26,53 +31,69 @@ public protocol SaveDialogHost: AnyObject {
     func saveDialogClosed()
 }
 
+@MainActor
 private final class SaveChoiceModel: ObservableObject {
     @Published var selected: Int = 0
 
     init(selected: Int) { self.selected = selected }
 }
 
+/// Reference `SaveExistingDialogFragment` body: two 48 dp single-choice rows, no icons.
 private struct SaveExistingChoiceView: View {
     @ObservedObject var model: SaveChoiceModel
 
     var body: some View {
         VStack(spacing: 0) {
-            choiceRow(index: 0, label: PaintStrings.saveCurrent)
-            choiceRow(index: 1, label: PaintStrings.saveNew)
-        }
-        .padding(.vertical, 4)
-    }
-
-    private func choiceRow(index: Int, label: String) -> some View {
-        Button {
-            model.selected = index
-        } label: {
-            HStack(spacing: 16) {
-                MaterialIcon("ic_save_dark_24dp", size: 24, tint: OrTheme.iconActive)
-                Text(label)
-                    .font(OrTheme.menuItem())
-                    .foregroundColor(OrTheme.textPrimary)
-                Spacer(minLength: 8)
-                OrRadioMark(isChecked: model.selected == index)
+            EditorDialogHeading(icon: "ic_save_dark_24dp",
+                                title: PaintStrings.saveChangesTitle)
+            EditorDialogChoiceRow(label: PaintStrings.saveCurrent,
+                                  isChecked: model.selected == 0) {
+                model.selected = 0
             }
-            .padding(.horizontal, 8)
-            .frame(minHeight: 48)
-            .contentShape(Rectangle())
+            EditorDialogChoiceRow(label: PaintStrings.saveNew,
+                                  isChecked: model.selected == 1) {
+                model.selected = 1
+            }
         }
-        .buttonStyle(.plain)
+    }
+}
+
+/// Reference `SaveNewDialogFragment` body: title only.
+private struct SaveNewHeadingView: View {
+    var body: some View {
+        EditorDialogHeading(icon: "ic_save_dark_24dp",
+                            title: PaintStrings.saveChangesTitle)
     }
 }
 
 @MainActor
 public enum SaveDialog {
+    /// Material AlertDialog min width (the JS `M.dialog` has no explicit width here).
+    private static let dialogWidth: CGFloat = 280
+
+    /// Identity holder for the close closure (avoids the spec capturing itself).
+    private final class DialogToken {
+        var specID: UUID?
+    }
+
+    /// Specs of the save dialogs currently on screen; the JS/Android fragments guard
+    /// against showing a second copy while one is open (`EditorSession.closeProject`
+    /// re-entrancy). A set keeps independent windows / dialog centers working.
+    private static var activeSpecIDs: Set<UUID> = []
+
+    private static func isAlreadyPresented(_ dialogs: DialogCenter) -> Bool {
+        dialogs.stack.contains { activeSpecIDs.contains($0.id) }
+    }
+
     /// SaveExistingDialogFragment: single choice + Cancel / Discard / Save.
     @discardableResult
     public static func showExisting(_ dialogs: DialogCenter, host: SaveDialogHost) -> OrDialogSpec? {
-        guard dialogs.top == nil || dialogs.top?.title != PaintStrings.saveChangesTitle else { return nil }
+        guard !isAlreadyPresented(dialogs) else { return nil }
         let model = SaveChoiceModel(selected: 0)
+        let token = DialogToken()
         let spec = OrDialogSpec(
-            title: PaintStrings.saveChangesTitle,
-            icon: "ic_save_dark_24dp",
+            title: nil,
+            icon: nil,
             content: AnyView(SaveExistingChoiceView(model: model)),
             buttons: [
                 OrDialogButton(PaintStrings.cancel),
@@ -91,7 +112,13 @@ public enum SaveDialog {
                 },
             ],
             cancelable: true,
-            onClose: { host.saveDialogClosed() })
+            width: dialogWidth,
+            onClose: {
+                if let id = token.specID { activeSpecIDs.remove(id) }
+                host.saveDialogClosed()
+            })
+        token.specID = spec.id
+        activeSpecIDs.insert(spec.id)
         dialogs.show(spec)
         return spec
     }
@@ -99,10 +126,12 @@ public enum SaveDialog {
     /// SaveNewDialogFragment (no extra body: title + buttons like Android).
     @discardableResult
     public static func showNew(_ dialogs: DialogCenter, host: SaveDialogHost) -> OrDialogSpec? {
-        guard dialogs.top == nil || dialogs.top?.title != PaintStrings.saveChangesTitle else { return nil }
+        guard !isAlreadyPresented(dialogs) else { return nil }
+        let token = DialogToken()
         let spec = OrDialogSpec(
-            title: PaintStrings.saveChangesTitle,
-            icon: "ic_save_dark_24dp",
+            title: nil,
+            icon: nil,
+            content: AnyView(SaveNewHeadingView()),
             buttons: [
                 OrDialogButton(PaintStrings.cancel),
                 OrDialogButton(PaintStrings.discard) {
@@ -115,7 +144,13 @@ public enum SaveDialog {
                 },
             ],
             cancelable: true,
-            onClose: { host.saveDialogClosed() })
+            width: dialogWidth,
+            onClose: {
+                if let id = token.specID { activeSpecIDs.remove(id) }
+                host.saveDialogClosed()
+            })
+        token.specID = spec.id
+        activeSpecIDs.insert(spec.id)
         dialogs.show(spec)
         return spec
     }

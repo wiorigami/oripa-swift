@@ -69,6 +69,8 @@ struct FoldScreenContent: View {
     @ObservedObject var model: FoldViewModel
     var safeArea: EdgeInsets
     var rendersPlatformGestures: Bool
+    /// Measured toolbar spinner width, used to anchor the mode popup (`M.menu`).
+    @State private var spinnerWidth: CGFloat = 0
 
     var body: some View {
         ZStack(alignment: .topLeading) {
@@ -84,7 +86,11 @@ struct FoldScreenContent: View {
                 exportOverlay(export)
             }
             if model.showsModeMenu {
-                FoldModeMenu(model: model, topInset: safeArea.top)
+                FoldModeMenu(model: model,
+                             topInset: safeArea.top,
+                             // APK screenshot: the spinner dropdown's left edge is 72 dp
+                             // (back button 56 + content inset 16), overlapping the toolbar.
+                             leading: 72)
                     .ignoresSafeArea()
             }
         }
@@ -109,7 +115,9 @@ struct FoldScreenContent: View {
     private var chrome: some View {
         ZStack(alignment: .topLeading) {
             VStack(spacing: 0) {
-                FoldToolbar(model: model, topInset: safeArea.top)
+                FoldToolbar(model: model,
+                            topInset: safeArea.top,
+                            spinnerWidth: $spinnerWidth)
                 Spacer(minLength: 0)
             }
             ZStack(alignment: .bottomLeading) {

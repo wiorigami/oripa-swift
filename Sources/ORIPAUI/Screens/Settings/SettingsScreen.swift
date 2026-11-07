@@ -31,7 +31,10 @@ public struct SettingsScreen: View {
 
     public var body: some View {
         VStack(spacing: 0) {
-            OrToolbar(title: SettingsStrings.title)
+            // `activity_paint_cp_settings.xml`: 56 dp `?attr/colorPrimary` (grey_100) toolbar
+            // with the up arrow; the 20 sp title starts at x = 72 dp (measured 191 px @ 2.625
+            // in `04-test-menu.png`), i.e. after the 48 dp nav button + 16 dp inset.
+            OrToolbar(title: SettingsStrings.title, titlePadding: 16)
             if snapshotMode {
                 // ImageRenderer cannot rasterise ScrollView content; render eagerly for QA.
                 settingsContent
@@ -55,8 +58,11 @@ public struct SettingsScreen: View {
         VStack(spacing: 0) {
             drawingSection
             foldedModelSection
-            Color.clear.frame(height: 24)
+            // Keep the preference rows at their measured heights instead of letting the
+            // enclosing VStack stretch them over the remaining screen height.
+            Spacer(minLength: 0)
         }
+        .frame(maxWidth: .infinity, alignment: .top)
     }
 
     // MARK: - Drawing
@@ -104,10 +110,12 @@ public struct SettingsScreen: View {
                       iconOff: "ic_line_weight_dark_inactive_24dp",
                       key: Preferences.Key.useDashedLines,
                       value: $useDashedLines)
+            // APK: the last row of a category has no divider before the next header.
             switchRow(title: SettingsStrings.directSelection,
                       summary: SettingsStrings.directSelectionSummary,
                       key: Preferences.Key.directSelection,
-                      value: $directSelection)
+                      value: $directSelection,
+                      showsDivider: false)
         }
     }
 
@@ -134,7 +142,8 @@ public struct SettingsScreen: View {
                            iconOff: String? = nil,
                            key: String,
                            value: Binding<Bool>,
-                           isEnabled: Bool = true) -> some View {
+                           isEnabled: Bool = true,
+                           showsDivider: Bool = true) -> some View {
         OrSwitchRow(
             title: title,
             summary: summary,
@@ -147,7 +156,8 @@ public struct SettingsScreen: View {
                     app.prefs.setBool(newValue, for: key)
                 }
             ),
-            isEnabled: isEnabled
+            isEnabled: isEnabled,
+            showsDivider: showsDivider
         )
     }
 

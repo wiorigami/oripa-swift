@@ -1,11 +1,22 @@
 // Material popup menu with cascading submenus.
 //
-// Port of `M.menu` / `M.clearMenus` from `src/js/ui/components/material.js` and the
-// `.m-menu*` rules of `src/css/components.css`: white surface, 2 dp radius, 48 dp rows,
-// 16 dp horizontal padding, leading icon, trailing check mark for radio/check items and
-// a chevron for submenus. Menus are presented in a root-level overlay (`OrMenuHost`), so
-// they are never clipped by a scrolling container, exactly like the JS menu layer.
+// Reference: the original APK's AppCompat `PopupMenu` (`abc_popup_menu_item_layout.xml`
+// + `Widget.AppCompat.Light.PopupMenu`) rather than the JS port's `.m-menu`:
+//   * white content-sized card (min 140 dp, max 280 dp), 2 dp radius, elevation;
+//   * 48 dp rows, 16 dp horizontal padding, leading 24 dp icon;
+//   * single-choice (`checkableBehavior="single"`) rows render a Material radio button at
+//     the trailing edge — accent ring + dot when checked, #757575 ring when not (the APK
+//     screenshots show `Add Line` etc. with radios, not check marks);
+//   * a chevron for cascading submenus (kept for the JS menu API).
+// Menus are presented in a root-level overlay (`OrMenuHost`), so they are never clipped by
+// a scrolling container, exactly like the Android popup window.
 import SwiftUI
+
+#if canImport(UIKit)
+import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 
 // MARK: - Model
 
@@ -13,13 +24,20 @@ import SwiftUI
 public struct OrMenuItem: Identifiable {
     public enum Kind: Hashable {
         case normal
+        /// Single-choice row: always draws the trailing Material radio button
+        /// (checked = accent, unchecked = grey ring).
         case radio
+        /// Legacy checkbox row: draws a check mark only when `checked`.
         case check
     }
 
     public let id: UUID
     public var label: String
     public var icon: String?
+    /// Keep the drawable's own colours (ORIPA tool / line-type icons) instead of the
+    /// monochrome Material icon tint. The APK popups render
+    /// `ic_oripa_line_mountain`…`ic_oripa_line_any` and the tool illustrations untinted.
+    public var preservesIconColor: Bool
     public var kind: Kind
     public var checked: Bool
     public var enabled: Bool
@@ -29,6 +47,7 @@ public struct OrMenuItem: Identifiable {
 
     public init(label: String,
                 icon: String? = nil,
+                preservesIconColor: Bool = false,
                 kind: Kind = .normal,
                 checked: Bool = false,
                 enabled: Bool = true,
@@ -37,6 +56,7 @@ public struct OrMenuItem: Identifiable {
         self.id = UUID()
         self.label = label
         self.icon = icon
+        self.preservesIconColor = preservesIconColor
         self.kind = kind
         self.checked = checked
         self.enabled = enabled
@@ -49,6 +69,7 @@ public struct OrMenuItem: Identifiable {
         self.id = UUID()
         self.label = ""
         self.icon = nil
+        self.preservesIconColor = false
         self.kind = .normal
         self.checked = false
         self.enabled = true
@@ -191,6 +212,71 @@ public struct OrMenuIconButton: View {
     }
 }
 
+// MARK: - Menu metrics
+
+/// Popup geometry shared by the width estimate and the row layout (all dp/pt).
+enum OrMenuMetrics {
+    /// `?attr/listPreferredItemHeightSmall` — 48 dp menu row.
+    static let rowHeight: CGFloat = 48
+    /// `?attr/listPreferredItemPaddingLeft` — 16 dp content inset.
+    static let horizontalPadding: CGFloat = 16
+    /// Menu item icon (`?attr/listMenuViewItemIconSize` equivalent in the APK layouts).
+    static let iconSize: CGFloat = 24
+    /// Gap between the icon and the label.
+    static let iconGap: CGFloat = 16
+    /// Trailing radio / check mark (`abc_btn_radio_material` intrinsic width is 20 dp).
+    static let markSize: CGFloat = 20
+    /// Minimum gap between the label and the trailing mark.
+    static let markGap: CGFloat = 16
+    /// `abc_popup_menu_item_layout.xml` `android:minWidth="196dip"` is the AppCompat list
+    /// item floor; the port uses the design-system card floor/cap instead.
+    static let minWidth: CGFloat = 140
+    static let maxWidth: CGFloat = 280
+    /// Label text style (`textAppearanceLargePopupMenu` → `TextAppearance.AppCompat.Menu`).
+    static let labelFontSize: CGFloat = 16
+
+    /// System-font width of one menu label at the 16 sp menu style.
+    static func textWidth(_ text: String) -> CGFloat {
+        #if canImport(UIKit)
+        let font = UIFont.systemFont(ofSize: labelFontSize)
+        return (text as NSString).size(withAttributes: [.font: font]).width
+        #elseif canImport(AppKit)
+        let font = NSFont.systemFont(ofSize: labelFontSize)
+        return (text as NSString).size(withAttributes: [.font: font]).width
+        #else
+        return CGFloat(text.count) * labelFontSize * 0.55
+        #endif
+    }
+
+    /// Intrinsic card width for a set of rows (`content-sized`, clamped).
+    static func cardWidth(items: [OrMenuItem]) -> CGFloat {
+        var widest: CGFloat = 0
+        for item in items where !item.isDivider {
+            var width = horizontalPadding
+            if iconColumnVisible(items) { width += iconSize + iconGap }
+            width += textWidth(item.label) + 2 // metric slack for SwiftUI text layout
+            if trailingMark(item) { width += markGap + markSize }
+            width += horizontalPadding
+            widest = max(widest, width)
+        }
+        return min(maxWidth, max(minWidth, ceil(widest)))
+    }
+
+    /// The APK popup only reserves the leading icon column when the menu has icons.
+    static func iconColumnVisible(_ items: [OrMenuItem]) -> Bool {
+        items.contains { $0.icon != nil }
+    }
+
+    static func trailingMark(_ item: OrMenuItem) -> Bool {
+        if item.submenu != nil { return true }
+        switch item.kind {
+        case .radio: return true
+        case .check: return item.checked
+        case .normal: return false
+        }
+    }
+}
+
 // MARK: - Menu rendering
 
 /// Root-level overlay that draws the currently presented menu above everything else.
@@ -230,24 +316,13 @@ struct OrMenuList: View {
 
     @State private var submenu: OrMenuSubmenuState?
 
-    private var estimatedWidth: CGFloat {
-        let longest = items.map { item -> CGFloat in
-            if item.isDivider { return 0 }
-            var w: CGFloat = 32 // left/right padding
-            if item.icon != nil { w += 24 + 24 } else { w += 0 }
-            w += CGFloat(item.label.count) * 9
-            if item.checked { w += 20 + 16 }
-            if item.submenu != nil { w += 20 + 16 }
-            return w
-        }.max() ?? 140
-        return min(320, max(140, longest))
-    }
+    private var estimatedWidth: CGFloat { OrMenuMetrics.cardWidth(items: items) }
 
     private var estimatedHeight: CGFloat {
         let rows = items.reduce(CGFloat(0)) { partial, item in
-            partial + (item.isDivider ? 17 : 48)
+            partial + (item.isDivider ? 17 : OrMenuMetrics.rowHeight)
         }
-        return rows + 16
+        return rows
     }
 
     var body: some View {
@@ -270,7 +345,8 @@ struct OrMenuList: View {
             x = max(8, container.width - estimatedWidth - 8)
         }
         if y + estimatedHeight > container.height - 8 {
-            y = max(8, anchor.minY - estimatedHeight)
+            // JS: `y = Math.max(8, y - mh)` with y = anchor.bottom + 2.
+            y = max(8, y - estimatedHeight)
         }
         return CGPoint(x: round(x), y: round(y))
     }
@@ -283,6 +359,7 @@ struct OrMenuList: View {
                         .padding(.vertical, 8)
                 } else {
                     OrMenuRow(item: item,
+                              showsIconColumn: OrMenuMetrics.iconColumnVisible(items),
                               onActivate: { handle(item) },
                               onSubmenu: item.submenu != nil
                                   ? { openSubmenu(item, rowOriginY: nil) }
@@ -290,10 +367,12 @@ struct OrMenuList: View {
                 }
             }
         }
-        .padding(.vertical, 8)
         .frame(width: estimatedWidth, alignment: .leading)
-        .background(OrTheme.surface)
+        .background(OrTheme.background)
         .clipShape(RoundedRectangle(cornerRadius: 2))
+        // Flatten before the drop shadow, otherwise SwiftUI also shadows each label and
+        // the menu text gets a visible halo.
+        .compositingGroup()
         .orElevation(8)
     }
 
@@ -311,12 +390,12 @@ struct OrMenuList: View {
         guard let subItems = item.submenu else { return }
         let menuOrigin = origin
         let rowIndex = items.firstIndex(where: { $0.id == item.id }) ?? 0
-        var y = menuOrigin.y + 8
+        var y = menuOrigin.y
         for index in 0..<min(rowIndex, items.count) {
-            y += items[index].isDivider ? 17 : 48
+            y += items[index].isDivider ? 17 : OrMenuMetrics.rowHeight
         }
         let rowRect = CGRect(x: menuOrigin.x, y: y,
-                             width: estimatedWidth, height: 48)
+                             width: estimatedWidth, height: OrMenuMetrics.rowHeight)
         submenu = OrMenuSubmenuState(items: subItems, anchor: rowRect)
     }
 }
@@ -328,32 +407,57 @@ private struct OrMenuSubmenuState {
 
 private struct OrMenuRow: View {
     var item: OrMenuItem
+    var showsIconColumn: Bool
     var onActivate: () -> Void
     var onSubmenu: (() -> Void)?
 
     var body: some View {
         Button(action: onActivate) {
             HStack(spacing: 0) {
-                if let icon = item.icon {
-                    MaterialIcon(icon, size: 24, tint: OrTheme.iconActive)
-                        .padding(.trailing, 24)
+                if showsIconColumn {
+                    if let icon = item.icon {
+                        // Full-colour ORIPA drawables (line types, tool illustrations) keep
+                        // their own colours; monochrome Material icons get the 54 % tint.
+                        MaterialIcon(icon,
+                                     size: OrMenuMetrics.iconSize,
+                                     tint: item.preservesIconColor ? nil : OrTheme.iconActive)
+                            .frame(width: OrMenuMetrics.iconSize,
+                                   height: OrMenuMetrics.iconSize)
+                    } else {
+                        Color.clear
+                            .frame(width: OrMenuMetrics.iconSize,
+                                   height: OrMenuMetrics.iconSize)
+                    }
+                    Spacer().frame(width: OrMenuMetrics.iconGap)
                 }
                 Text(item.label)
                     .font(OrTheme.menuItem())
                     .foregroundColor(item.enabled ? OrTheme.textPrimary : OrTheme.textDisabled)
                     .lineLimit(1)
-                Spacer(minLength: 0)
-                if item.checked {
-                    MaterialIcon("ic_done_dark_24dp", size: 20, tint: OrTheme.textPrimary)
-                        .padding(.leading, 16)
+                Spacer(minLength: OrMenuMetrics.trailingMark(item)
+                       ? OrMenuMetrics.markGap : 0)
+                switch item.kind {
+                case .radio:
+                    // AppCompat `abc_list_menu_item_radio`: 20 dp Material radio.
+                    OrRadioMark(isChecked: item.checked)
+                        .frame(width: OrMenuMetrics.markSize,
+                               height: OrMenuMetrics.markSize)
+                case .check:
+                    if item.checked {
+                        MaterialIcon("ic_done_dark_24dp",
+                                     size: OrMenuMetrics.markSize,
+                                     tint: OrTheme.textPrimary)
+                    }
+                case .normal:
+                    EmptyView()
                 }
                 if item.submenu != nil {
                     MaterialIcon("ic_chevron_right_dark_24dp", size: 20, tint: OrTheme.iconActive)
-                        .padding(.leading, 16)
+                        .padding(.leading, 8)
                 }
             }
-            .padding(.horizontal, 16)
-            .frame(minHeight: 48)
+            .padding(.horizontal, OrMenuMetrics.horizontalPadding)
+            .frame(minHeight: OrMenuMetrics.rowHeight)
             .contentShape(Rectangle())
         }
         .buttonStyle(OrMenuRowButtonStyle())

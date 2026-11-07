@@ -140,6 +140,14 @@ public enum FoldColorMath {
 // MARK: - ColorPicker row widget (res/layout/view_color_picker.xml)
 
 /// `dialogs.colorPicker`: ring swatch + title + `#RRGGBB` summary; taps open the dialog.
+///
+/// `view_color_picker.xml` (measured in `18-fold-settings-overlap.png`):
+///   * root `paddingLeft="18dp"`, `paddingRight="@dimen/text_margin"` (16 dp);
+///   * `@android:id/icon` 36 dp ring swatch, vertically centred (`top`+`bottom` constrained);
+///   * `title` `layout_marginLeft="18dp"`, `layout_marginTop="12dp"`, Subhead 16 sp,
+///     single line, starting at x = 18 + 36 + 18 = **72 dp**;
+///   * `summary` Body1 14 sp `?android:attr/textColorSecondary`, `layout_marginBottom="12dp"`;
+///   * row height 12 + 22.86 + 19.43 + 12 = **66.29 dp** (measured 65.7 dp).
 struct FoldColorPickerRow: View {
     let title: String
     let currentColor: UInt32
@@ -147,7 +155,7 @@ struct FoldColorPickerRow: View {
 
     var body: some View {
         Button(action: onTap) {
-            HStack(spacing: 18) {
+            HStack(spacing: 0) {
                 ZStack {
                     Circle()
                         .fill(FoldColorMath.color(currentColor))
@@ -158,19 +166,25 @@ struct FoldColorPickerRow: View {
                         .padding(2)
                 }
                 .frame(width: 36, height: 36)
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: 0) {
                     Text(title)
                         .font(.system(size: 16))
                         .foregroundStyle(FoldTheme.textPrimary)
+                        .lineLimit(1)
+                        .frame(height: FoldTheme.subheadLineHeight, alignment: .leading)
+                        .padding(.top, 12)
                     Text(FoldColorMath.intToStringRgb(currentColor))
                         .font(.system(size: 14))
                         .foregroundStyle(FoldTheme.textSecondary)
+                        .lineLimit(1)
+                        .frame(minHeight: FoldTheme.body1LineHeight, alignment: .top)
+                        .padding(.bottom, 12)
                 }
+                .padding(.leading, 18)
                 Spacer(minLength: 0)
             }
-            .padding(.vertical, 8)
-            .padding(.horizontal, 18)
-            .frame(minHeight: 64)
+            .padding(.leading, 18)
+            .padding(.trailing, 16)
             .contentShape(Rectangle())
         }
         .buttonStyle(FoldPressableStyle())
@@ -206,7 +220,7 @@ struct FoldColorPickerDialog: View {
     }
 
     var body: some View {
-        FoldDialogScrim(dismissOnScrimTap: false) {
+        FoldDialogScrim(onDismiss: onCancel) {
             FoldDialogCard(title: nil,
                            icon: nil,
                            contentPadding: EdgeInsets(top: 0, leading: 0, bottom: 8, trailing: 0),
@@ -229,7 +243,7 @@ struct FoldColorPickerDialog: View {
                         .padding(.bottom, 4)
                 }
             }
-            .frame(maxWidth: 360)
+            .frame(width: FoldTheme.colorDialogWidth)
             .overlay {
                 if showsHexDialog {
                     FoldColorHexDialog(
@@ -462,7 +476,7 @@ struct FoldColorHexDialog: View {
     }
 
     var body: some View {
-        FoldDialogScrim(dismissOnScrimTap: false) {
+        FoldDialogScrim(onDismiss: onCancel) {
             FoldDialogCard(title: "Set Color",
                            icon: nil,
                            contentPadding: EdgeInsets(top: 16, leading: 24, bottom: 8, trailing: 24),
@@ -475,7 +489,7 @@ struct FoldColorHexDialog: View {
                         .font(.system(size: 16))
                         .foregroundStyle(FoldTheme.textSecondary)
                     TextField("hex color, e.g. #abc012", text: $text)
-                        .font(.system(size: 16, design: .monospaced))
+                        .font(.system(size: 16))
                         .foregroundStyle(FoldTheme.textPrimary)
                         .textFieldStyle(.plain)
                         .autocorrectionDisabled()
@@ -487,6 +501,7 @@ struct FoldColorHexDialog: View {
                         .frame(height: 2)
                 }
             }
+            .frame(width: FoldTheme.dialogWidth)
         }
         .onAppear { focused = true }
     }

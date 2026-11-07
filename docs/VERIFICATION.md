@@ -65,7 +65,7 @@ covered by both the persistence self-test and the save→relaunch path above.
 
 ```bash
 swift run ORIPASnapshots build-snapshots
-# 47 PNGs + manifest.json
+# 50 PNGs + manifest.json
 ```
 
 Every screen/mode is rendered at iPad sizes (820×1180 / 1180×820 @2x):
@@ -136,6 +136,21 @@ bash scripts/build_mac.sh
 * `.github/workflows/ci.yml` builds three independent jobs: tests (+snapshots), unsigned
   iOS IPA, macOS app — no secrets/certificates.
 
+## 6b. APK-reference UI parity round (post-review)
+
+After the first device test the owner reported (a) Check/Fold not appearing / not exiting,
+(b) touch positions offset while drawing, and (c) many UI detail differences versus the
+**original APK**, plus requested a completely full-screen iOS app without the status bar.
+
+Root causes fixed and verified:
+
+| Issue | Root cause | Fix | Evidence |
+|---|---|---|---|
+| Check/Fold only appeared after opening Settings; back did not exit | `EditorScreen` observed `EditorRuntime` but read `runtime.session.fragment`; `EditorSession` publishes fragment changes, so SwiftUI never re-rendered | `EditorScreen` now has `@ObservedObject private var session`, initialised from the runtime's session | `EditorSelfCheck` 61/61 incl. 6 new Check/Fold → Paint back-path checks; Check/Fold fragments verified |
+| Taps offset while drawing | Canvas respected the safe area while the raw-touch overlay used `.ignoresSafeArea()`; on iPad/iPhone with insets the origins differed by the inset | Paint/Check canvases are now full-bleed `.ignoresSafeArea()` siblings of the gesture overlays (same coordinate space, viewport = Canvas size); macOS `NSView` surfaces override `isFlipped` | code audit + parity render; device retest pending |
+| Status bar / not full screen | — | `Info.plist`: `UIStatusBarHidden`, `UIViewControllerBasedStatusBarAppearance=false`, `UIRequiresFullScreen`; SwiftUI: `.statusBarHidden(true)` + `.persistentSystemOverlays(.hidden)` | iOS typecheck; build |
+| UI differs from the APK | The first parity pass targeted the web rebuild; the APK is the authoritative reference | Audited every screen against the decompiled APK resources **and real APK screenshots** (Android emulator, `docs/reference/apk/`): solid-colour line-type squares instead of "M", Material radio buttons in single-choice menus, original `FabMenu` mini-menu (label pills + 40 dp mini FABs + close-X state), APK paint/check/fold toolbar insets, APK Settings preference rows (54.857/74.286 dp, 72 dp icon column, 14 sp accent headers), APK hint/button dialog chrome, blank empty-projects state | 50 snapshots; APK-vs-native side-by-sides; measured dp values |
+
 ## 7. GitHub Actions (real run)
 
 The repository was pushed to <https://github.com/wiorigami/oripa-swift> (`main`,
@@ -160,7 +175,11 @@ toolchain in CI, closing the local-CLT-only gap.
 1. **iOS runtime devices**: iOS-only branches compile (typecheck) but real touch gestures,
    document picker and share sheet need a device run (no device/simulator here).
 2. iOS IPA runtime (install + launch on a physical iPad) still needs the owner to
-   sideload the unsigned IPA (`docs/INSTALL.md`).
+   sideload the unsigned IPA (`docs/INSTALL.md`); the Check/Fold navigation and touch
+   coordinate fixes above should be re-tested there (the structural fixes are in, but a
+   device is the final judge).
+3. SF Pro vs Roboto glyph metrics: text blocks are 1–5 dp wider/narrower than the APK
+   (no Roboto bundle is shipped; this is the accepted native-font difference).
 3. Snapshot-tool limitations: `ImageRenderer` does not run `onAppear`/`async task`s and
    renders `ScrollView`/`Lazy*` empty; the app opts into eager layouts in snapshot mode
    only. Projects-preview content uses the stored thumbnail/preview factory; its live

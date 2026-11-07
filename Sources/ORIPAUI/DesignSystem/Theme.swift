@@ -153,38 +153,30 @@ public enum OrTheme {
 
 /// Material elevation shadows (theme.css `.m-elevation-*`).
 public extension View {
-    /// 0…24 dp elevation from the CSS box-shadow definitions.
+    /// 0…24 dp elevation from the CSS box-shadow definitions, reproduced with the two
+    /// shadow layers of each `m-elevation-*` rule:
+    ///   elevation 4  → `0 2px 5px rgba(0,0,0,.22), 0 1px 3px rgba(0,0,0,.14)`
+    ///   elevation 8  → `0 5px 12px rgba(0,0,0,.24), 0 2px 5px rgba(0,0,0,.16)`
+    ///   elevation 24 → `0 12px 28px rgba(0,0,0,.28), 0 6px 12px rgba(0,0,0,.18)`
+    @ViewBuilder
     func orElevation(_ level: CGFloat) -> some View {
-        self.shadow(color: .black.opacity(shadowOpacity(for: level)),
-                    radius: shadowRadius(for: level),
-                    x: 0,
-                    y: shadowOffset(for: level))
-    }
-
-    private func shadowOpacity(for level: CGFloat) -> Double {
         switch level {
-        case ..<2: return 0
-        case ..<6: return 0.20
-        case ..<12: return 0.24
-        default: return 0.28
-        }
-    }
-
-    private func shadowRadius(for level: CGFloat) -> CGFloat {
-        switch level {
-        case ..<2: return 0
-        case ..<6: return 3
-        case ..<12: return 7
-        default: return 14
-        }
-    }
-
-    private func shadowOffset(for level: CGFloat) -> CGFloat {
-        switch level {
-        case ..<2: return 0
-        case ..<6: return 1
-        case ..<12: return 2.5
-        default: return 6
+        case ..<2:
+            self
+        case ..<6:
+            // CSS 0 2px 5px .22 + 0 1px 3px .14. SwiftUI's shadow radius spreads about
+            // twice as far as a CSS blur radius, so the CSS values are halved.
+            self
+                .shadow(color: .black.opacity(0.22), radius: 2.5, x: 0, y: 2)
+                .shadow(color: .black.opacity(0.14), radius: 1.5, x: 0, y: 1)
+        case ..<12:
+            self
+                .shadow(color: .black.opacity(0.24), radius: 6, x: 0, y: 5)
+                .shadow(color: .black.opacity(0.16), radius: 2.5, x: 0, y: 2)
+        default:
+            self
+                .shadow(color: .black.opacity(0.28), radius: 14, x: 0, y: 12)
+                .shadow(color: .black.opacity(0.18), radius: 6, x: 0, y: 6)
         }
     }
 }
@@ -208,5 +200,24 @@ public extension View {
 
     func orDialogTitleStyle() -> some View {
         self.font(OrTheme.dialogTitle()).foregroundColor(OrTheme.textPrimary)
+    }
+
+    /// Material `line-height` for a text run.
+    ///
+    /// The web port sets an explicit CSS `line-height` on nearly every text style
+    /// (`components.css`, `projects.css`, `settings.css`); SwiftUI's default SF line
+    /// height is ~19.3 % larger than the font size, which made every multi-line block
+    /// and every row that is sized by its content a little shorter than the reference.
+    /// `orLineHeight` adds the matching leading between wrapped lines and gives a single
+    /// line an explicit box height, so rows hug the Android metrics.
+    ///
+    /// - Parameters:
+    ///   - lineHeight: CSS `line-height` in dp.
+    ///   - fontSize: the font's size in dp (used for SwiftUI's default line height).
+    func orLineHeight(_ lineHeight: CGFloat, fontSize: CGFloat) -> some View {
+        let defaultLineHeight = fontSize * 1.1934
+        return self
+            .lineSpacing(max(0, lineHeight - defaultLineHeight))
+            .frame(minHeight: lineHeight)
     }
 }

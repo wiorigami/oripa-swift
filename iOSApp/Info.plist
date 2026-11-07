@@ -49,12 +49,17 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 
-	<!-- Status bar: default (dark content in light mode), controlled by UIKit, not
-	     by individual view controllers -- matches the previous port. -->
+	<!-- Full-screen app: hide the status bar (time/battery) like the Android ORIPA,
+	     and require full screen instead of iPad multitasking (UIRequiresFullScreen).
+	     SwiftUI additionally calls .statusBarHidden(true) in ORIPARootView. -->
+	<key>UIStatusBarHidden</key>
+	<true/>
 	<key>UIStatusBarStyle</key>
 	<string>UIStatusBarStyleDefault</string>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>UIRequiresFullScreen</key>
+	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 

@@ -106,7 +106,6 @@ private struct SnackbarView: View {
                 .font(.system(size: 14))
                 .foregroundColor(.white)
                 .fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: .infinity, alignment: .leading)
             if let actionText = item.actionText {
                 Button {
                     center.performAction()
@@ -123,7 +122,11 @@ private struct SnackbarView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
-        .frame(minWidth: OrTheme.snackbarMinWidth, maxWidth: 560, alignment: .leading)
+        // `.m-snackbar { min-width: 280px; max-width: calc(100vw - 32px) }`: the bar hugs
+        // its content and only grows to 280 dp for short messages (the previous flexible
+        // maxWidth made every snackbar 560 dp wide).
+        .frame(minWidth: OrTheme.snackbarMinWidth, alignment: .leading)
+        .fixedSize(horizontal: true, vertical: true)
         .background(OrTheme.snackbarBackground)
         .clipShape(RoundedRectangle(cornerRadius: 2))
         .orElevation(8)

@@ -45,6 +45,13 @@ public struct ORIPARootView: View {
         .environmentObject(app.dialogs)
         .environmentObject(app.menus)
         .preferredColorScheme(.light)
+        #if os(iOS)
+        // Full-screen editor like the Android app: no status bar (time/battery), no
+        // home-indicator reserve. Info.plist also sets UIStatusBarHidden +
+        // UIRequiresFullScreen for the launch screen and non-SwiftUI surfaces.
+        .statusBarHidden(true)
+        .persistentSystemOverlays(.hidden)
+        #endif
         .task {
             guard !didStart else { return }
             didStart = true

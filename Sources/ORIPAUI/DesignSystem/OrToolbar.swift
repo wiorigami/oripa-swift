@@ -87,6 +87,8 @@ public struct OrToolbar: View {
             Text(title)
                 .font(OrTheme.toolbarTitle())
                 .foregroundColor(OrTheme.textPrimary)
+                // `.m-toolbar-title { line-height: 28px }`
+                .orLineHeight(28, fontSize: 20)
                 .lineLimit(1)
                 .truncationMode(.tail)
         )
@@ -137,7 +139,14 @@ public struct OrToolbar: View {
         .padding(.horizontal, 4)
         .frame(minHeight: OrTheme.toolbarHeight)
         .background(backgroundView)
+        // Flatten before the elevation shadow: otherwise SwiftUI shadows the text and
+        // icons individually and they get a visible halo over the bar.
+        .compositingGroup()
         .orElevation(background == .primary ? 4 : 0)
+        // The web toolbar has `z-index: 30`, so its elevation shadow paints *over* the
+        // list/grid content below it. Without an explicit zIndex SwiftUI draws the
+        // following siblings (the content) after the toolbar and hides the shadow.
+        .zIndex(1)
     }
 
     private var iconTint: Color {
@@ -193,7 +202,10 @@ public struct OrToolbar: View {
                              title: action.title,
                              label: action.condensedLabel ?? action.title,
                              tint: iconTint,
-                             labelColor: titleColor,
+                             // `.m-icon-button { color: var(--m-icon-active) }`; the
+                             // condensed label inherits the button colour (54 % black),
+                             // not the toolbar's primary text colour.
+                             labelColor: iconTint,
                              isEnabled: action.isEnabled,
                              action: action.action)
         case .always, .never:
@@ -243,10 +255,10 @@ public struct OrActionBar: View {
     public var body: some View {
         HStack(spacing: 0) {
             OrIconButton(icon: closeIcon, title: "Close", tint: OrTheme.iconLight, action: onClose)
-                .padding(.trailing, 4)
             Text(title)
                 .font(OrTheme.actionBarTitle())
                 .foregroundColor(OrTheme.iconLight)
+                .orLineHeight(28, fontSize: 20)
                 .lineLimit(1)
                 .padding(.horizontal, 8)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -258,6 +270,13 @@ public struct OrActionBar: View {
                                      tint: OrTheme.iconLight,
                                      labelColor: OrTheme.iconLight,
                                      isEnabled: action.isEnabled,
+                                     // `.projects-action-bar .m-action-bar-action`
+                                     horizontalPadding: 12,
+                                     iconSpacing: 8,
+                                     // "DELETE" in SF is ~5 dp narrower than Roboto at
+                                     // the same tracking; compensate so the icon/text
+                                     // pair matches the reference's right-edge layout.
+                                     kerning: 1.5,
                                      action: action.action)
                 }
             }
@@ -266,7 +285,9 @@ public struct OrActionBar: View {
         .padding(.horizontal, 4)
         .frame(minHeight: OrTheme.actionBarHeight)
         .background(OrTheme.primarySelected)
+        .compositingGroup()
         .orElevation(4)
+        .zIndex(1)
     }
 }
 

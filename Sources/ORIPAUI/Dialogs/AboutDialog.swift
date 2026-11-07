@@ -75,21 +75,25 @@ public struct AboutDialogContent: View {
             Text(AboutDialog.headline)
                 .font(.system(size: 24))
                 .foregroundColor(OrTheme.textPrimary)
+                // `.projects-about-headline { font-size: 24px; line-height: 32px }`
+                .orLineHeight(32, fontSize: 24)
                 .fixedSize(horizontal: false, vertical: true)
 
             Text(AboutDialog.versionFormat.replacingOccurrences(of: "%@", with: version))
                 .font(.system(size: 14))
                 .foregroundColor(OrTheme.textPrimary)
-                .padding(.top, 2)
+                .orLineHeight(20, fontSize: 14)
 
+            // `dialog_about.xml`: the subheading follows the version line with no margin.
             Text(AboutDialog.subheading)
                 .font(.system(size: 16))
                 .foregroundColor(OrTheme.textPrimary)
-                .padding(.top, 8)
+                .orLineHeight(24, fontSize: 16)
 
             Text(AboutDialog.description)
                 .font(.system(size: 14))
                 .foregroundColor(OrTheme.textPrimary)
+                .orLineHeight(20, fontSize: 14)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.top, 16)
 
@@ -103,6 +107,8 @@ public struct AboutDialogContent: View {
             Text(AboutDialog.disclaimer)
                 .font(.system(size: 12))
                 .foregroundColor(OrTheme.textPrimary)
+                // `.projects-about-disclaimer { font-size: 12px; line-height: 16px }`
+                .orLineHeight(16, fontSize: 12)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.top, 16)
         }
@@ -116,6 +122,7 @@ public struct AboutDialogContent: View {
             Text(text)
                 .font(.system(size: 14))
                 .foregroundColor(OrTheme.textPrimary)
+                .orLineHeight(20, fontSize: 14)
                 .fixedSize(horizontal: false, vertical: true)
         case .link(let urlString):
             if let url = URL(string: urlString) {
@@ -124,6 +131,7 @@ public struct AboutDialogContent: View {
                     Text(urlString)
                         .font(.system(size: 14))
                         .foregroundColor(OrTheme.accent)
+                        .orLineHeight(20, fontSize: 14)
                         .underline(false)
                 }
                 .buttonStyle(.plain)
@@ -131,6 +139,7 @@ public struct AboutDialogContent: View {
                 Text(urlString)
                     .font(.system(size: 14))
                     .foregroundColor(OrTheme.accent)
+                    .orLineHeight(20, fontSize: 14)
             }
         case .spacer:
             Color.clear.frame(height: 20)

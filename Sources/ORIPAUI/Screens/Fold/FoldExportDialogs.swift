@@ -16,7 +16,7 @@ struct FoldExportFileTypeDialog: View {
     @State private var selectedIndex = -1
 
     var body: some View {
-        FoldDialogScrim(dismissOnScrimTap: false) {
+        FoldDialogScrim(onDismiss: onCancel) {
             FoldDialogCard(title: FoldStrings.exportTitle,
                            icon: "ic_file_download_dark_24dp",
                            contentPadding: EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0),
@@ -38,7 +38,7 @@ struct FoldExportFileTypeDialog: View {
                     }
                 }
             }
-            .frame(maxWidth: 360)
+            .frame(width: FoldTheme.dialogWidth)
         }
     }
 }
@@ -68,10 +68,13 @@ struct FoldPngOptionsDialog: View {
     }
 
     var body: some View {
-        FoldDialogScrim(dismissOnScrimTap: false) {
+        FoldDialogScrim(onDismiss: onCancel) {
+            // `dialog_export_png_square.xml`: horizontal LinearLayout, `paddingLeft/Right 8dp`,
+            // `gravity="center"`, children `layout_margin="8dp"` with `layout_weight="1"`
+            // (label and NumberPicker split the card width evenly).
             FoldDialogCard(title: FoldStrings.pngOptionsTitle,
                            icon: "ic_image_dark_24dp",
-                           contentPadding: EdgeInsets(top: 20, leading: 24, bottom: 8, trailing: 24),
+                           contentPadding: EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8),
                            buttons: [
                                FoldDialogButton(text: "cancel", action: onCancel),
                                FoldDialogButton(text: "ok", primary: true) {
@@ -80,15 +83,21 @@ struct FoldPngOptionsDialog: View {
                                    onOK(values[safeIndex])
                                },
                            ]) {
-                HStack(spacing: 16) {
+                HStack(spacing: 0) {
                     Text(FoldStrings.imageSizeLabel)
                         .font(.system(size: 14))
-                        .foregroundStyle(FoldTheme.textSecondary)
+                        .foregroundStyle(FoldTheme.textPrimary)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.85)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(8)
                     FoldNumberPicker(values: FoldPngOptionsDialog.values, index: $index)
+                        .frame(maxWidth: .infinity)
+                        .padding(8)
                 }
                 .frame(maxWidth: .infinity)
             }
-            .frame(maxWidth: 360)
+            .frame(width: FoldTheme.dialogWidth)
         }
     }
 }
@@ -117,6 +126,7 @@ struct FoldNumberPicker: View {
             }
         }
         .frame(width: 96)
+        .padding(.vertical, 8)
         .contentShape(Rectangle())
         .gesture(
             DragGesture(minimumDistance: 1)

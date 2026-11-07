@@ -40,7 +40,9 @@ public struct PreviewScreen: View {
                                           showAs: .never) { onCopy() },
                           OrToolbarAction(title: ProjectDialogStrings.remove,
                                           showAs: .never) { onDelete() },
-                      ])
+                      ],
+                      // `.preview-toolbar .m-toolbar-title { padding: 0 4px 0 8px }`
+                      titlePadding: 8)
         }
         .overlay(alignment: .bottomTrailing) {
             OrFAB(icon: "ic_edit_light_24dp", title: "Edit") {

@@ -138,7 +138,9 @@ public struct ProjectsScreen: View {
         } else {
             OrToolbar(title: ProjectDialogStrings.projectsTitle(count: items.count),
                       nav: .none,
-                      actions: toolbarActions)
+                      actions: toolbarActions,
+                      // `.projects-toolbar .m-toolbar-title { padding: 0 4px 0 12px }`
+                      titlePadding: 12)
         }
     }
 
@@ -228,19 +230,12 @@ public struct ProjectsScreen: View {
         }
     }
 
-    /// The Android layout has no empty view: only the ORIPA wordmark watermark is shown
-    /// (no invented strings), with the toolbar title reading "0 Files".
+    /// `activity_projects.xml` has no empty view: with zero projects the RecyclerView simply
+    /// has no children, so the content area is blank (APK screenshot `01-launch.png` shows
+    /// only the "0 Files" toolbar and the FAB — no watermark, no invented empty-state art).
     private var emptyState: some View {
-        ZStack {
-            if let logo = AssetLoader.image("oripa_logo_text_v2_raster") {
-                logo
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 150)
-                    .opacity(0.16)
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        Color.clear
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private func projectGrid(columns: Int) -> some View {
@@ -289,6 +284,7 @@ public struct ProjectsScreen: View {
                 listRowView(item)
             }
         }
+        .padding(.top, 4)   // RecyclerView paddingTop 4dp
         .padding(.bottom, 72)
     }
 
@@ -299,6 +295,7 @@ public struct ProjectsScreen: View {
                 listRowView(item)
             }
         }
+        .padding(.top, 4)   // RecyclerView paddingTop 4dp
         .padding(.bottom, 72)
     }
 
@@ -525,14 +522,17 @@ private struct ProjectGridItem: View {
         }
         .background(isSelected ? OrTheme.selectedItemBackground : OrTheme.surface)
         .clipShape(RoundedRectangle(cornerRadius: 2))
+        #if os(macOS)
         .contextMenu {
             // Desktop convenience of the JS port: right click acts like a long press.
+            // iOS keeps the Android long-press gesture (selection action mode) instead.
             Button(ProjectDialogStrings.rename) { onRename() }
             Button(ProjectDialogStrings.copy) { onCopy() }
             Button(ProjectDialogStrings.remove) { onDelete() }
             Divider()
             Button("Select") { onLongPress() }
         }
+        #endif
     }
 
     private var thumbnailArea: some View {
@@ -544,10 +544,11 @@ private struct ProjectGridItem: View {
                     .scaledToFit()
                     .opacity(isSelected ? 0.5 : 1)
             } else if let logo = AssetLoader.image("oripa_logo_v3_raster") {
+                // `.projects-thumb-fallback { padding: 22% }` of the 160 dp cell.
                 logo
                     .resizable()
                     .scaledToFit()
-                    .padding(24)
+                    .padding(35)
                     .opacity(isSelected ? 0.25 : 0.45)
             }
         }
@@ -561,35 +562,44 @@ private struct ProjectGridItem: View {
     }
 
     private var infoArea: some View {
-        ZStack(alignment: .bottomTrailing) {
-            VStack(alignment: .leading, spacing: 2) {
+        // ConstraintLayout chain: `title` (marginTop 16) → `last_modified` (marginBottom 16),
+        // packed vertically; the overflow ImageButton spans preview-bottom → card-bottom and
+        // is therefore centred on the text block.
+        HStack(alignment: .center, spacing: 0) {
+            VStack(alignment: .leading, spacing: 0) {
                 Text(item.name)
-                    .font(OrTheme.projectGridTitle())
+                    .font(.system(size: 16))
+                    // `android:textColor="?android:attr/textColorSecondary"` (grey, 54 %).
                     .foregroundColor(OrTheme.textSecondary)
+                    .orLineHeight(OrMaterialMetrics.subheadLineHeight, fontSize: 16)
                     .lineLimit(1)
                     .truncationMode(.middle)
+                    .padding(.top, 16)          // android:layout_marginTop="@dimen/text_margin"
                 Text(ProjectStore.modifiedTextShort(item.modifiedAt))
-                    .font(OrTheme.projectGridDate())
+                    .font(.system(size: 12))
+                    // Caption inherits textColorPrimary.
                     .foregroundColor(OrTheme.textPrimary)
+                    .orLineHeight(OrMaterialMetrics.captionLineHeight, fontSize: 12)
                     .lineLimit(1)
                     .truncationMode(.middle)
+                    .padding(.bottom, 16)       // android:layout_marginBottom="@dimen/text_margin"
             }
+            .padding(.leading, 16)              // android:layout_marginLeft="@dimen/text_margin"
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.leading, 16)
-            .padding(.trailing, 40)
-            .padding(.vertical, 16)
-            .frame(minHeight: 72, alignment: .top)
             .contentShape(Rectangle())
             .onTapGesture { onTap() }
             .onLongPressGesture(minimumDuration: OrTheme.longPressDuration) { onLongPress() }
 
+            // `overflow` ImageButton: 40 dp wide, `?android:borderlessButtonStyle`.
+            // `android:paddingBottom="@dimen/text_margin"` pushes the 24 dp glyph to the top
+            // of the 40 dp button, which ConstraintLayout then centres in the info block —
+            // the icon therefore sits 8 dp above the block's centre line.
             OrMenuIconButton(icon: "ic_more_vert_dark_24dp",
                              title: ProjectDialogStrings.overflow,
                              items: overflowItems,
                              size: OrTheme.projectOverflowSize,
                              iconSize: 24)
-                .padding(.trailing, 0)
-                .padding(.bottom, 8)
+                .offset(y: -8)
         }
         .frame(maxWidth: .infinity)
     }
@@ -618,7 +628,9 @@ private struct ProjectListRow: View {
                         .scaledToFit()
                         .opacity(isSelected ? 0.5 : 1)
                 } else if let logo = AssetLoader.image("oripa_logo_v3_raster") {
-                    logo.resizable().scaledToFit().opacity(isSelected ? 0.25 : 0.45)
+                    // `.projects-thumb-fallback { padding: 22% }` of the 32 dp cell.
+                    logo.resizable().scaledToFit().padding(7)
+                        .opacity(isSelected ? 0.25 : 0.45)
                 }
                 if isSelected {
                     // `project_list_single_item.xml`: check badge overlays the thumbnail.
@@ -633,17 +645,19 @@ private struct ProjectListRow: View {
 
             VStack(alignment: .leading, spacing: 0) {
                 Text(item.name)
-                    .font(OrTheme.projectListTitle())
+                    .font(.system(size: 16))
                     .foregroundColor(OrTheme.textPrimary)
+                    .orLineHeight(OrMaterialMetrics.subheadLineHeight, fontSize: 16)
                     .lineLimit(1)
                     .truncationMode(.middle)
                 Text(ProjectStore.modifiedText(item.modifiedAt))
-                    .font(OrTheme.projectListDate())
+                    .font(.system(size: 14))
                     .foregroundColor(OrTheme.textSecondary)
+                    .orLineHeight(OrMaterialMetrics.body1LineHeight, fontSize: 14)
                     .lineLimit(1)
                     .truncationMode(.middle)
             }
-            .padding(.leading, 24)
+            .padding(.leading, 24)          // android:layout_marginLeft="24dp"
             .frame(maxWidth: .infinity, alignment: .leading)
             .contentShape(Rectangle())
             .onTapGesture { onTap() }
@@ -655,25 +669,28 @@ private struct ProjectListRow: View {
                              size: OrTheme.projectOverflowSize,
                              iconSize: 24)
                 .frame(maxHeight: .infinity)
-                .padding(.trailing, 4)
         }
-        .padding(.leading, 16)
+        .padding(.leading, 16)              // android:paddingLeft="@dimen/text_margin"
         .frame(height: OrTheme.projectListRowHeight)
         .background(isSelected ? OrTheme.selectedItemBackground : OrTheme.surface)
         .overlay(alignment: .bottom) {
-            if !isSelected {
-                OrDivider()
-            }
+            // `@drawable/background_list_item_bottom_border`: 1 dp #1f000000 stroke whose
+            // left/top/right edges are pulled 2 dp outside the item, so only the bottom edge
+            // is visible — and it stays visible on the selected (grey_300) item too.
+            OrDivider()
         }
         .contentShape(Rectangle())
+        #if os(macOS)
         .contextMenu {
             // Desktop right click: the JS port used it as a long press for selection mode.
             // A context menu is the native macOS equivalent, with the item actions on top.
+            // iOS keeps the long-press selection gesture only.
             Button(ProjectDialogStrings.rename) { onRename() }
             Button(ProjectDialogStrings.copy) { onCopy() }
             Button(ProjectDialogStrings.remove) { onDelete() }
             Divider()
             Button("Select") { onLongPress() }
         }
+        #endif
     }
 }
